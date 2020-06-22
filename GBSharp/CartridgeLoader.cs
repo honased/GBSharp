@@ -9,7 +9,7 @@ namespace GBSharp
 {
     public static class CartridgeLoader
     {
-        public static void LoadDataIntoMemory(MMU mmu, byte[] cart, int position)
+        public static void LoadDataIntoMemory(MMU mmu, int[] cart, int position)
         {
             if(position >= 0 && position + cart.Length < MMU.MEMORY_SIZE)
             {
@@ -17,7 +17,7 @@ namespace GBSharp
             }
         }
 
-        public static byte[] LoadCart(string path)
+        public static int[] LoadCart(string path)
         {
             BinaryReader br = new BinaryReader(File.OpenRead(path));
 
@@ -25,7 +25,11 @@ namespace GBSharp
 
             br.Close();
 
-            return rom;
+            int[] returnRom = new int[rom.Length];
+
+            Array.Copy(rom, returnRom, rom.Length);
+
+            return returnRom;
         }
     }
 }

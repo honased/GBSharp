@@ -24,7 +24,8 @@ namespace GBSharp
             D,
             E,
             H,
-            L
+            L,
+            None
         }
 
         public enum Registers16Bit
@@ -34,7 +35,8 @@ namespace GBSharp
             DE,
             HL,
             SP,
-            PC
+            PC,
+            None
         }
 
         public enum Flags
@@ -53,10 +55,10 @@ namespace GBSharp
             else SetRegister(Registers8Bit.F, currentFlag & (~flags));
         }
 
-        /*private void SetFlag(Flags flag, bool on)
+        private void SetFlag(Flags flag, bool on)
         {
             SetFlag((int)flag, on);
-        }*/
+        }
 
         private byte LoadRegister(Registers8Bit register)
         {

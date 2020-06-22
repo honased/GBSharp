@@ -20,12 +20,18 @@ namespace GBSharp
             InitializeRegisters();
         }
 
+        private int ReadByte()
+        {
+            return _mmu.ReadByte(PC++);
+        }
+
         public void ProcessInstructions()
         {
-            byte opcode = _mmu.ReadByte(PC++);
+            int opcode = _mmu.ReadByte(PC++);
             Instruction instruction = _instructions[opcode];
             string instructionName = (instruction == null) ? "Unknown" : instruction.Name;
-            Console.WriteLine("[" + PC + "] {0:X}:" + instructionName, PC-1);
+            Console.WriteLine("[{0:X}] 0x{1:X}: " + instructionName, PC-1, opcode);
+            if(instruction != null) instruction.Execute();
         }
     }
 }

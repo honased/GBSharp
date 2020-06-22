@@ -8,20 +8,25 @@ namespace GBSharp
 {
     public class MMU
     {
-        private byte[] _memoryBank;
+        private int[] _memoryBank;
         public const int MEMORY_SIZE = 0xFFFF;
 
         public MMU()
         {
-            _memoryBank = new byte[MEMORY_SIZE];
+            _memoryBank = new int[MEMORY_SIZE];
         }
 
-        public void WriteBytes(byte[] bytes, int position)
+        public void WriteBytes(int[] bytes, int position)
         {
             Array.Copy(bytes, 0, _memoryBank, position, bytes.Length);
         }
 
-        public byte ReadByte(int position)
+        public void WriteByte(int value, int position)
+        {
+            _memoryBank[position] = value;
+        }
+
+        public int ReadByte(int position)
         {
             return _memoryBank[position];
         }
