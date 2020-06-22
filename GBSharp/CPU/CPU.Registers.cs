@@ -44,7 +44,8 @@ namespace GBSharp
             Z = 128,
             N = 64,
             H = 32,
-            C = 16
+            C = 16,
+            None = 0
         }
 
         private void SetFlag(int flags, bool on)
@@ -60,16 +61,26 @@ namespace GBSharp
             SetFlag((int)flag, on);
         }
 
-        private byte LoadRegister(Registers8Bit register)
+        private bool IsFlagOn(int flags)
         {
-            int index = ((int)register) / 2;
-            if(((int)register) % 2 == 0) return (byte)(_registers[index] >> 8);
-            return (byte)_registers[index];
+            return (LoadRegister(Registers8Bit.F) & flags) > 0;
         }
 
-        private short LoadRegister(Registers16Bit register)
+        private bool IsFlagOn(Flags flag)
         {
-            return (short)_registers[((int)register) / 2];
+            return IsFlagOn((int)flag);
+        }
+
+        private int LoadRegister(Registers8Bit register)
+        {
+            int index = ((int)register) / 2;
+            if(((int)register) % 2 == 0) return (_registers[index] >> 8);
+            return _registers[index];
+        }
+
+        private int LoadRegister(Registers16Bit register)
+        {
+            return _registers[((int)register)];
         }
 
         private void SetRegister(Registers8Bit register, int value)
@@ -89,7 +100,7 @@ namespace GBSharp
 
         private void SetRegister(Registers16Bit register, int value)
         {
-            _registers[((int)register) / 2] = value;
+            _registers[((int)register)] = value;
         }
     }
 }

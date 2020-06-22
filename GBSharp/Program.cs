@@ -18,7 +18,7 @@ namespace GBSharp
             while (true)
             {
                 cpu.ProcessInstructions();
-                Console.ReadKey();
+                //Console.ReadKey();
             }
         }
     }

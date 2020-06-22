@@ -27,11 +27,12 @@ namespace GBSharp
 
         public void ProcessInstructions()
         {
-            int opcode = _mmu.ReadByte(PC++);
-            Instruction instruction = _instructions[opcode];
+            int pc = PC;
+            Instruction instruction = GetNextInstruction();
             string instructionName = (instruction == null) ? "Unknown" : instruction.Name;
-            Console.WriteLine("[{0:X}] 0x{1:X}: " + instructionName, PC-1, opcode);
-            if(instruction != null) instruction.Execute();
+            instruction.Execute();
+            //Console.WriteLine("[{0:X}] 0x{1:X}: " + instructionName, PC - 1, instruction.Opcode);
+            //Console.WriteLine();
         }
     }
 }
