@@ -44,13 +44,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CartridgeLoader.cs" />
-    <Compile Include="CPU.cs" />
+    <Compile Include="CPU\CPU.cs" />
+    <Compile Include="CPU\CPU.Registers.cs" />
     <Compile Include="MMU.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Compile Include="CPU\CPU.Instructions.cs" />
     <None Include="InternalRoms\DMG_ROM.bin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
