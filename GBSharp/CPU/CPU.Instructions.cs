@@ -119,6 +119,14 @@ namespace GBSharp
 
             AddInstruction(0x32, new Instruction("LD (HL-),A", Instruction_LDD_HL_A));
 
+            AddInstruction(0x06, new Instruction("LD B,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.B });
+            AddInstruction(0x0E, new Instruction("LD C,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.C });
+            AddInstruction(0x16, new Instruction("LD D,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.D });
+            AddInstruction(0x1E, new Instruction("LD E,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.E });
+            AddInstruction(0x26, new Instruction("LD H,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.H });
+            AddInstruction(0x2E, new Instruction("LD L,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.L });
+            AddInstruction(0x3E, new Instruction("LD A,n", Instruction_LDnn_n) { registers8bit = Registers8Bit.A });
+
             // LD n,nn
             AddInstruction(0x01, new Instruction("LD BC, nn", Instruction_LDn_nn) { registers16bit = Registers16Bit.BC, });
             AddInstruction(0x11, new Instruction("LD DE, nn", Instruction_LDn_nn) { registers16bit = Registers16Bit.DE, });
@@ -246,6 +254,12 @@ namespace GBSharp
         {
             SetRegister(instruction.registers16bit, ReadByte() | (ReadByte() << 8));
             return 3;
+        }
+
+        private int Instruction_LDnn_n(Instruction instruction)
+        {
+            SetRegister(instruction.registers8bit, ReadByte());
+            return 2;
         }
 
         private int Instruction_XOR_n(Instruction instruction)

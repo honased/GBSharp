@@ -16,19 +16,37 @@ namespace GBSharp
             _memoryBank = new int[MEMORY_SIZE];
         }
 
-        public void WriteBytes(int[] bytes, int position)
+        public void WriteBytes(int[] bytes, int address)
         {
-            Array.Copy(bytes, 0, _memoryBank, position, bytes.Length);
+            Array.Copy(bytes, 0, _memoryBank, address, bytes.Length);
         }
 
-        public void WriteByte(int value, int position)
+        public void WriteByte(int value, int address)
         {
-            _memoryBank[position] = value;
+            _memoryBank[address] = value;
         }
 
-        public int ReadByte(int position)
+        public int ReadByte(int address)
         {
-            return _memoryBank[position];
+            switch(address & 0xF000)
+            {
+                // Bios / Rom0
+                case 0x0000:
+                    return _memoryBank[address];
+
+                // Rom0
+                case 0x1000: case 0x2000: case 0x3000:
+                    return _memoryBank[address];
+
+                // Rom1 (16k)
+                case 0x4000: case 0x5000: case 0x6000: case 0x7000:
+                    return _memoryBank[address];
+
+                // VRAM (8k)
+                case 0x8000: case 0x9000:
+                    return _memoryBank[address];
+            }
+            return _memoryBank[address];
         }
     }
 }
