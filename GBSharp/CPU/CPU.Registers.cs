@@ -71,14 +71,14 @@ namespace GBSharp
             return IsFlagOn((int)flag);
         }
 
-        private int LoadRegister(Registers8Bit register)
+        public int LoadRegister(Registers8Bit register)
         {
             int index = ((int)register) / 2;
             if(((int)register) % 2 == 0) return (_registers[index] >> 8);
             return _registers[index];
         }
 
-        private int LoadRegister(Registers16Bit register)
+        public int LoadRegister(Registers16Bit register)
         {
             return _registers[((int)register)];
         }

@@ -252,7 +252,7 @@ namespace GBSharp
 
         private int Instruction_LDn_nn(Instruction instruction)
         {
-            SetRegister(instruction.registers16bit, ReadByte() | (ReadByte() << 8));
+            SetRegister(instruction.registers16bit, ReadWord());
             return 3;
         }
 

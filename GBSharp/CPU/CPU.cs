@@ -14,6 +14,7 @@ namespace GBSharp
         public CPU(MMU mmu)
         {
             _mmu = mmu;
+            mmu.SetCPU(this);
             PC = 0;
 
             RegisterInstructions();
@@ -23,6 +24,13 @@ namespace GBSharp
         private int ReadByte()
         {
             return _mmu.ReadByte(PC++);
+        }
+
+        private int ReadWord()
+        {
+            int word = _mmu.ReadWord(PC);
+            PC += 2;
+            return word;
         }
 
         public void ProcessInstructions()
