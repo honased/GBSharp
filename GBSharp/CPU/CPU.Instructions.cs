@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -121,6 +122,11 @@ namespace GBSharp
             AddInstruction(0xC5, new Instruction("PUSH BC", Instruction_Push) { registers16bit = Registers16Bit.BC });
             AddInstruction(0xD5, new Instruction("PUSH DE", Instruction_Push) { registers16bit = Registers16Bit.DE });
             AddInstruction(0xE5, new Instruction("PUSH HL", Instruction_Push) { registers16bit = Registers16Bit.HL });
+
+            AddInstruction(0xF1, new Instruction("POP AF", Instruction_Pop) { registers16bit = Registers16Bit.AF });
+            AddInstruction(0xC1, new Instruction("POP BC", Instruction_Pop) { registers16bit = Registers16Bit.BC });
+            AddInstruction(0xD1, new Instruction("POP DE", Instruction_Pop) { registers16bit = Registers16Bit.DE });
+            AddInstruction(0xE1, new Instruction("POP HL", Instruction_Pop) { registers16bit = Registers16Bit.HL });
 
             AddInstruction(0xCD, new Instruction("CALL nn", Instruction_Call));
             AddInstruction(0xC4, new Instruction("CALL NZ,nn", Instruction_Call) { flag = Flags.Z, shouldFlagBeSet = false });
@@ -248,6 +254,15 @@ namespace GBSharp
             for (int i = 0; i < 8; i++) AddCBInstruction(0x45 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("BIT " + i.ToString() + ",L", Instruction_Bit) { index = i, registers8bit = Registers8Bit.L });
             for (int i = 0; i < 8; i++) AddCBInstruction(0x46 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("BIT " + i.ToString() + ",(HL)", Instruction_Bit) { index = i, registers16bit = Registers16Bit.HL });
             for (int i = 0; i < 8; i++) AddCBInstruction(0x47 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("BIT " + i.ToString() + ",A", Instruction_Bit) { index = i, registers8bit = Registers8Bit.A });
+
+            AddCBInstruction(0x17, new Instruction("RL A", Instruction_RL) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x10, new Instruction("RL B", Instruction_RL) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x11, new Instruction("RL C", Instruction_RL) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x12, new Instruction("RL D", Instruction_RL) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x13, new Instruction("RL E", Instruction_RL) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x14, new Instruction("RL H", Instruction_RL) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x15, new Instruction("RL L", Instruction_RL) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x16, new Instruction("RL (HL)", Instruction_RL) { registers16bit = Registers16Bit.HL });
         }
 
         private void AddInstruction(int location, Instruction instruction)
@@ -473,13 +488,54 @@ namespace GBSharp
             {
                 Push(LoadRegister(Registers16Bit.PC) + 2);
                 SetRegister(Registers16Bit.PC, _mmu.ReadWord(LoadRegister(Registers16Bit.PC)));
-                return 6;
+                //return 6;
             }
             else
             {
                 SetRegister(Registers16Bit.PC, LoadRegister(Registers16Bit.PC) + 2);
-                return 3;
+                //return 3;
             }
+            return 12;
+        }
+
+        private int Instruction_RL(Instruction instruction)
+        {
+            SetFlag(Flags.N | Flags.H, false);
+
+            byte initialValue;
+
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            byte result = (byte)((initialValue << 1) | (IsFlagOn(Flags.C) ? 1 : 0));
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.C, (initialValue & 0x80) != 0);
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Pop()
+        {
+            int sp = LoadRegister(Registers16Bit.SP);
+            int val = _mmu.ReadWord(sp);
+            SetRegister(Registers16Bit.SP, sp + 2);
+            return val;
+        }
+
+        private int Instruction_Pop(Instruction instruction)
+        {
+            SetRegister(instruction.registers16bit, Pop());
+            return 3;
         }
 
         public int Instruction_Bit(Instruction instruction)

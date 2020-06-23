@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,11 +19,18 @@ namespace GBSharp
 
             CPU cpu = new CPU(mmu);
 
-            while (true)
+            int instructionCount = 0;
+
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            while (instructionCount < 1000000000)
             {
-                cpu.ProcessInstructions();
+                instructionCount += cpu.ProcessInstructions();
                 //Console.ReadKey();
             }
+            watch.Stop();
+            Console.WriteLine("Total time: " + watch.ElapsedMilliseconds);
+            Console.ReadKey();
         }
     }
 }
