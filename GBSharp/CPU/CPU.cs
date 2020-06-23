@@ -9,37 +9,39 @@ namespace GBSharp
     public partial class CPU
     {
         private MMU _mmu;
-        short PC;
 
         public CPU(MMU mmu)
         {
             _mmu = mmu;
             mmu.SetCPU(this);
-            PC = 0;
 
             RegisterInstructions();
             InitializeRegisters();
+            //SetRegister(Registers16Bit.PC, 0x100);
         }
 
         private int ReadByte()
         {
-            return _mmu.ReadByte(PC++);
+            int pc = LoadRegister(Registers16Bit.PC);
+            SetRegister(Registers16Bit.PC, pc + 1);
+            return _mmu.ReadByte(pc);
         }
 
         private int ReadWord()
         {
-            int word = _mmu.ReadWord(PC);
-            PC += 2;
+            int pc = LoadRegister(Registers16Bit.PC);
+            int word = _mmu.ReadWord(pc);
+            SetRegister(Registers16Bit.PC, pc + 2);
             return word;
         }
 
         public void ProcessInstructions()
         {
-            int pc = PC;
+            int pc = LoadRegister(Registers16Bit.PC);
             Instruction instruction = GetNextInstruction();
-            string instructionName = (instruction == null) ? "Unknown" : instruction.Name;
             instruction.Execute();
-            //Console.WriteLine("[{0:X}] 0x{1:X}: " + instructionName, PC - 1, instruction.Opcode);
+            Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc - 1, instruction.Opcode);
+            //Console.ReadKey();
             //Console.WriteLine();
         }
     }

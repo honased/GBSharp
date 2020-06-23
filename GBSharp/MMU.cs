@@ -110,7 +110,7 @@ namespace GBSharp
                     if(_inBios)
                     {
                         if (address < 0x100) return _bios[address];
-                        if(_cpu.LoadRegister(CPU.Registers16Bit.PC) >= 0x0100) _inBios = false;
+                        if(_cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0100) _inBios = false;
                     }
                     return _rom[0, address];
                 case int _ when address < 0x8000:
@@ -143,6 +143,12 @@ namespace GBSharp
         public int ReadWord(int address)
         {
             return ReadByte(address) | (ReadByte(address + 1) << 8);
+        }
+
+        public void WriteWord(int value, int address)
+        {
+            WriteByte(value & 0x00FF, address);
+            WriteByte(value >> 8, address);
         }
     }
 }

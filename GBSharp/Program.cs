@@ -12,8 +12,8 @@ namespace GBSharp
         {
             MMU mmu = new MMU();
 
-            Console.WriteLine("Done");
-            Console.ReadKey();
+            //Console.WriteLine("Done");
+            //Console.ReadKey();
             CartridgeLoader.LoadDataIntoMemory(mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
             CPU cpu = new CPU(mmu);
