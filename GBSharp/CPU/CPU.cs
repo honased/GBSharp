@@ -41,6 +41,7 @@ namespace GBSharp
             Instruction instruction = GetNextInstruction();
             instruction.Execute();
             //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc - 1, instruction.Opcode);
+            //Console.WriteLine("HL VAL:" + LoadRegister(Registers16Bit.HL));
             //Console.ReadKey();
             //Console.WriteLine();
         }

@@ -114,6 +114,35 @@ namespace GBSharp
             AddInstruction(0x2D, new Instruction("DEC L", Instruction_DEC8) { registers8bit = Registers8Bit.L });
             AddInstruction(0x35, new Instruction("DEC (HL)", Instruction_DEC8) { registers16bit = Registers16Bit.HL });
 
+            AddInstruction(0xBF, new Instruction("CP A", Instruction_CP) { registers8bit = Registers8Bit.A });
+            AddInstruction(0xB8, new Instruction("CP B", Instruction_CP) { registers8bit = Registers8Bit.B });
+            AddInstruction(0xB9, new Instruction("CP C", Instruction_CP) { registers8bit = Registers8Bit.C });
+            AddInstruction(0xBA, new Instruction("CP D", Instruction_CP) { registers8bit = Registers8Bit.D });
+            AddInstruction(0xBB, new Instruction("CP E", Instruction_CP) { registers8bit = Registers8Bit.E });
+            AddInstruction(0xBC, new Instruction("CP H", Instruction_CP) { registers8bit = Registers8Bit.H });
+            AddInstruction(0xBD, new Instruction("CP L", Instruction_CP) { registers8bit = Registers8Bit.L });
+            AddInstruction(0xBE, new Instruction("CP (HL)", Instruction_CP) { registers16bit = Registers16Bit.HL });
+            AddInstruction(0xFE, new Instruction("CP #", Instruction_CP));
+
+            AddInstruction(0x97, new Instruction("SUB A", Instruction_SUB) { registers8bit = Registers8Bit.A, shouldFlagBeSet = false });
+            AddInstruction(0x90, new Instruction("SUB B", Instruction_SUB) { registers8bit = Registers8Bit.B, shouldFlagBeSet = false });
+            AddInstruction(0x91, new Instruction("SUB C", Instruction_SUB) { registers8bit = Registers8Bit.C, shouldFlagBeSet = false });
+            AddInstruction(0x92, new Instruction("SUB D", Instruction_SUB) { registers8bit = Registers8Bit.D, shouldFlagBeSet = false });
+            AddInstruction(0x93, new Instruction("SUB E", Instruction_SUB) { registers8bit = Registers8Bit.E, shouldFlagBeSet = false });
+            AddInstruction(0x94, new Instruction("SUB H", Instruction_SUB) { registers8bit = Registers8Bit.H, shouldFlagBeSet = false });
+            AddInstruction(0x95, new Instruction("SUB L", Instruction_SUB) { registers8bit = Registers8Bit.L, shouldFlagBeSet = false });
+            AddInstruction(0x96, new Instruction("SUB (HL)", Instruction_SUB) { registers16bit = Registers16Bit.HL, shouldFlagBeSet = false });
+            AddInstruction(0xD6, new Instruction("SUB #", Instruction_SUB) { shouldFlagBeSet = false });
+
+            AddInstruction(0x9F, new Instruction("SBC A", Instruction_SUB) { registers8bit = Registers8Bit.A, shouldFlagBeSet = true });
+            AddInstruction(0x98, new Instruction("SBC B", Instruction_SUB) { registers8bit = Registers8Bit.B, shouldFlagBeSet = true });
+            AddInstruction(0x99, new Instruction("SBC C", Instruction_SUB) { registers8bit = Registers8Bit.C, shouldFlagBeSet = true });
+            AddInstruction(0x9A, new Instruction("SBC D", Instruction_SUB) { registers8bit = Registers8Bit.D, shouldFlagBeSet = true });
+            AddInstruction(0x9B, new Instruction("SBC E", Instruction_SUB) { registers8bit = Registers8Bit.E, shouldFlagBeSet = true });
+            AddInstruction(0x9C, new Instruction("SBC H", Instruction_SUB) { registers8bit = Registers8Bit.H, shouldFlagBeSet = true });
+            AddInstruction(0x9D, new Instruction("SBC L", Instruction_SUB) { registers8bit = Registers8Bit.L, shouldFlagBeSet = true });
+            AddInstruction(0x9E, new Instruction("SBC (HL)", Instruction_SUB) { registers16bit = Registers16Bit.HL, shouldFlagBeSet = true });
+
             AddInstruction(0x18, new Instruction("JR n", Instruction_JR));
             AddInstruction(0x20, new Instruction("JR NZ,n", Instruction_JR) { flag = Flags.Z, shouldFlagBeSet = false });
             AddInstruction(0x28, new Instruction("JR Z,n", Instruction_JR) { flag = Flags.Z, shouldFlagBeSet = true });
@@ -129,6 +158,13 @@ namespace GBSharp
             AddInstruction(0xC1, new Instruction("POP BC", Instruction_Pop) { registers16bit = Registers16Bit.BC });
             AddInstruction(0xD1, new Instruction("POP DE", Instruction_Pop) { registers16bit = Registers16Bit.DE });
             AddInstruction(0xE1, new Instruction("POP HL", Instruction_Pop) { registers16bit = Registers16Bit.HL });
+
+            AddInstruction(0xC9, new Instruction("RET", Instruction_RET));
+
+            AddInstruction(0xC0, new Instruction("RET NZ", Instruction_RET) { flag = Flags.Z, shouldFlagBeSet = false });
+            AddInstruction(0xC8, new Instruction("RET Z", Instruction_RET) { flag = Flags.Z, shouldFlagBeSet = true });
+            AddInstruction(0xD0, new Instruction("RET NC", Instruction_RET) { flag = Flags.C, shouldFlagBeSet = false });
+            AddInstruction(0xD8, new Instruction("RET C", Instruction_RET) { flag = Flags.C, shouldFlagBeSet = true });
 
             AddInstruction(0xCD, new Instruction("CALL nn", Instruction_Call));
             AddInstruction(0xC4, new Instruction("CALL NZ,nn", Instruction_Call) { flag = Flags.Z, shouldFlagBeSet = false });
@@ -483,6 +519,22 @@ namespace GBSharp
             }
         }
 
+        private int Instruction_RET(Instruction instruction)
+        {
+            SetRegister(Registers16Bit.PC, Pop());
+
+            return 2;
+        }
+
+        private int Instruction_RET_CC(Instruction instruction)
+        {
+            if(IsFlagOn(instruction.flag) == instruction.shouldFlagBeSet)
+            {
+                SetRegister(Registers16Bit.PC, Pop());
+            }    
+            return 2;
+        }
+
         private void Push(int value)
         {
             int sp = LoadRegister(Registers16Bit.SP) - 2;
@@ -557,6 +609,56 @@ namespace GBSharp
         {
             SetRegister(instruction.registers16bit, Pop());
             return 3;
+        }
+
+        private int Sub(int val, bool includeCarry)
+        {
+            int registerA = LoadRegister(Registers8Bit.A);
+            int cVal = (includeCarry && IsFlagOn(Flags.C)) ? 1 : 0;
+            SetFlag(Flags.N, true);
+            SetFlag(Flags.Z, registerA == val + cVal);
+            SetFlag(Flags.H, (registerA & 0x0F) < (val & 0x0F) + cVal);
+            SetFlag(Flags.C, registerA < val + cVal);
+
+            return ((registerA - (val + cVal)) + 255) % 255;
+        }
+
+        private int Instruction_CP(Instruction instruction)
+        {
+            if (instruction.registers8bit != Registers8Bit.None)
+            {
+                Sub(LoadRegister(instruction.registers8bit), false);
+                return 1;
+            }
+            else if(instruction.registers16bit != Registers16Bit.None)
+            {
+                Sub(_mmu.ReadByte(LoadRegister(instruction.registers16bit)), false);
+                return 2;
+            }
+            else
+            {
+                Sub(ReadByte(), false);
+                return 2;
+            }
+        }
+
+        private int Instruction_SUB(Instruction instruction)
+        {
+            if (instruction.registers8bit != Registers8Bit.None)
+            {
+                SetRegister(Registers8Bit.A, Sub(LoadRegister(instruction.registers8bit), instruction.shouldFlagBeSet));
+                return 1;
+            }
+            else if (instruction.registers16bit != Registers16Bit.None)
+            {
+                SetRegister(Registers8Bit.A, Sub(_mmu.ReadByte(LoadRegister(instruction.registers16bit)), instruction.shouldFlagBeSet));
+                return 2;
+            }
+            else
+            {
+                SetRegister(Registers8Bit.A, Sub(ReadByte(), instruction.shouldFlagBeSet));
+                return 2;
+            }
         }
 
         public int Instruction_Bit(Instruction instruction)

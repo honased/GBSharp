@@ -91,15 +91,15 @@ namespace GBSharp
         private void SetRegister(Registers8Bit register, int value)
         {
             int index = ((int)register) / 2;
-            short newValue = (short)value;
+            int newValue = value;
             if (((int)register) % 2 == 0)
             {
                 newValue <<= 8;
-                _registers[index] = (short)((_registers[index] & 0x00FF) | newValue);
+                _registers[index] = (_registers[index] & 0x00FF) | newValue;
             }
             else
             {
-                _registers[index] = (short)((_registers[index] & 0xFF00) | newValue);
+                _registers[index] = (_registers[index] & 0xFF00) | newValue;
             }
         }
 
