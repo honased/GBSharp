@@ -148,7 +148,7 @@ namespace GBSharp
         public void WriteWord(int value, int address)
         {
             WriteByte(value & 0x00FF, address);
-            WriteByte(value >> 8, address);
+            WriteByte(value >> 8, address + 1);
         }
     }
 }

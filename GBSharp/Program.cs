@@ -19,17 +19,11 @@ namespace GBSharp
 
             CPU cpu = new CPU(mmu);
 
-            int instructionCount = 0;
-
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-            while (instructionCount < 1000000000)
+            while(true)
             {
-                instructionCount += cpu.ProcessInstructions();
-                //Console.ReadKey();
+                cpu.ProcessInstructions();
             }
-            watch.Stop();
-            Console.WriteLine("Total time: " + watch.ElapsedMilliseconds);
+
             Console.ReadKey();
         }
     }

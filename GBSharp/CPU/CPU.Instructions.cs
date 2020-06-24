@@ -84,6 +84,8 @@ namespace GBSharp
 
             AddInstruction(0x00, new Instruction("NOP", Instruction_NOP));
 
+            AddInstruction(0x17, new Instruction("RLA", Instruction_RLA));
+
             AddInstruction(0x03, new Instruction("INC BC", Instruction_INC16) { registers16bit = Registers16Bit.BC });
             AddInstruction(0x13, new Instruction("INC DE", Instruction_INC16) { registers16bit = Registers16Bit.DE });
             AddInstruction(0x23, new Instruction("INC HL", Instruction_INC16) { registers16bit = Registers16Bit.HL });
@@ -320,6 +322,9 @@ namespace GBSharp
             SetFlag(Flags.Z, result == 0);
             SetFlag(Flags.H, (((add1 & 0xf) + (1 & 0xf)) & 0x10) == 0x10);
 
+            if (instruction.registers16bit == Registers16Bit.HL) _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+            else SetRegister(instruction.registers8bit, result);
+
             return (instruction.registers16bit == Registers16Bit.HL) ? 3 : 1;
         }
 
@@ -340,6 +345,9 @@ namespace GBSharp
 
             int result = dec1 - 1;
             if (result < 0) result = 255;
+
+            if (instruction.registers16bit == Registers16Bit.HL) _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+            else SetRegister(instruction.registers8bit, result);
 
             SetFlag(Flags.Z, result == 0);
             SetFlag(Flags.H, (dec1 & 0x0F) == 0);
@@ -524,11 +532,24 @@ namespace GBSharp
             }
         }
 
+        private int Instruction_RLA(Instruction instruction)
+        {
+            bool previousCFlag = IsFlagOn(Flags.C);
+            SetFlag(Flags.N | Flags.H, false);
+
+            byte result = (byte)LoadRegister(Registers8Bit.A);
+
+            SetFlag(Flags.C, (result & 0x80) != 0);
+            SetRegister(Registers8Bit.A, (byte)((result << 1) | (previousCFlag ? 1 : 0)));
+            return 1;
+        }
+
         private int Pop()
         {
             int sp = LoadRegister(Registers16Bit.SP);
             int val = _mmu.ReadWord(sp);
             SetRegister(Registers16Bit.SP, sp + 2);
+
             return val;
         }
 
