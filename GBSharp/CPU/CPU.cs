@@ -35,12 +35,12 @@ namespace GBSharp
             return word;
         }
 
-        public void ProcessInstructions()
+        public int ProcessInstructions()
         {
             int pc = LoadRegister(Registers16Bit.PC);
             Instruction instruction = GetNextInstruction();
-            instruction.Execute();
-            //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc - 1, instruction.Opcode);
+            Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+            return instruction.Execute();
             //Console.WriteLine("HL VAL:" + LoadRegister(Registers16Bit.HL));
             //Console.ReadKey();
             //Console.WriteLine();

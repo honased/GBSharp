@@ -30,7 +30,7 @@ namespace GBSharp
             E,
             H,
             L,
-            None
+            None = -1
         }
 
         public enum Registers16Bit
@@ -41,7 +41,7 @@ namespace GBSharp
             HL,
             SP,
             PC,
-            None
+            None = -1
         }
 
         public enum Flags

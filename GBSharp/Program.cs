@@ -15,13 +15,16 @@ namespace GBSharp
 
             //Console.WriteLine("Done");
             //Console.ReadKey();
-            CartridgeLoader.LoadDataIntoMemory(mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
+            int[] cart = CartridgeLoader.LoadCart("Roms/opus5.gb");
+            CartridgeLoader.LoadDataIntoMemory(mmu, cart, 0x00);
 
             CPU cpu = new CPU(mmu);
 
+            int count = 0;
+
             while(true)
             {
-                cpu.ProcessInstructions();
+                count += cpu.ProcessInstructions();
             }
 
             Console.ReadKey();

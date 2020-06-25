@@ -176,7 +176,7 @@ namespace GBSharp
             AddInstruction(0x22, new Instruction("LD (HL+),A", Instruction_LDD_HL_A) { index = 1 });
 
             AddInstruction(0x3A, new Instruction("LD A,(HL-)", Instruction_LDD_A_HL) { index = -1 });
-            AddInstruction(0x2A, new Instruction("LD A,(HL+)", Instruction_LDD_HL_A) { index = 1 });
+            AddInstruction(0x2A, new Instruction("LD A,(HL+)", Instruction_LDD_A_HL) { index = 1 });
 
             AddInstruction(0xF2, new Instruction("LD A,(C)", Instruction_LD_A_C) { registers8bit = Registers8Bit.A, registers8bit2 = Registers8Bit.C });
             AddInstruction(0xE2, new Instruction("LD (C),A", Instruction_LD_A_C) { registers8bit = Registers8Bit.C, registers8bit2 = Registers8Bit.A });
@@ -199,14 +199,14 @@ namespace GBSharp
             AddInstruction(0x7B, new Instruction("LD A,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x7C, new Instruction("LD A,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x7D, new Instruction("LD A,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x0A, new Instruction("LD A,(BC)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, registers16Bit2 = Registers16Bit.BC });
-            AddInstruction(0x1A, new Instruction("LD A,(DE)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, registers16Bit2 = Registers16Bit.DE });
-            AddInstruction(0x7E, new Instruction("LD A,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, registers16Bit2 = Registers16Bit.HL });
-            AddInstruction(0xFA, new Instruction("LD A,(nn)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.A, index = 1 });
-            AddInstruction(0x02, new Instruction("LD (BC),A", Instruction_LD_r1_r2) { registers8bit2 = Registers8Bit.A, registers16bit = Registers16Bit.BC });
-            AddInstruction(0x12, new Instruction("LD (DE),A", Instruction_LD_r1_r2) { registers8bit2 = Registers8Bit.A, registers16bit = Registers16Bit.DE });
-            AddInstruction(0x77, new Instruction("LD (HL),A", Instruction_LD_r1_r2) { registers8bit2 = Registers8Bit.A, registers16bit = Registers16Bit.HL });
-            AddInstruction(0xEA, new Instruction("LD (nn),A", Instruction_LD_r1_r2) { registers8bit2 = Registers8Bit.A, registers16bit = Registers16Bit.BC, index = 1 });
+            AddInstruction(0x0A, new Instruction("LD A,(BC)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.A, registers16Bit2 = Registers16Bit.BC });
+            AddInstruction(0x1A, new Instruction("LD A,(DE)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.A, registers16Bit2 = Registers16Bit.DE });
+            AddInstruction(0x7E, new Instruction("LD A,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.A, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0xFA, new Instruction("LD A,(nn)", Instruction_LD_r1_nn) { registers8bit = Registers8Bit.A });
+            AddInstruction(0x02, new Instruction("LD (BC),A", Instruction_LD_n_A) { registers16bit = Registers16Bit.BC, registers8bit2 = Registers8Bit.A });
+            AddInstruction(0x12, new Instruction("LD (DE),A", Instruction_LD_n_A) { registers16bit = Registers16Bit.DE, registers8bit2 = Registers8Bit.A });
+            AddInstruction(0x77, new Instruction("LD (HL),A", Instruction_LD_n_A) {registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.A });
+            AddInstruction(0xEA, new Instruction("LD (nn),A", Instruction_LD_nn_A));
 
             AddInstruction(0x47, new Instruction("LD B,A", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.B, registers8bit2 = Registers8Bit.A });
             AddInstruction(0x40, new Instruction("LD B,B", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.B, registers8bit2 = Registers8Bit.B });
@@ -215,7 +215,7 @@ namespace GBSharp
             AddInstruction(0x43, new Instruction("LD B,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.B, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x44, new Instruction("LD B,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.B, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x45, new Instruction("LD B,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.B, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x46, new Instruction("LD B,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.B, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x46, new Instruction("LD B,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.B, registers16Bit2 = Registers16Bit.HL });
 
             AddInstruction(0x4F, new Instruction("LD C,A", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.C, registers8bit2 = Registers8Bit.A });
             AddInstruction(0x48, new Instruction("LD C,B", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.C, registers8bit2 = Registers8Bit.B });
@@ -224,7 +224,7 @@ namespace GBSharp
             AddInstruction(0x4B, new Instruction("LD C,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.C, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x4C, new Instruction("LD C,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.C, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x4D, new Instruction("LD C,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.C, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x4E, new Instruction("LD C,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.C, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x4E, new Instruction("LD C,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.C, registers16Bit2 = Registers16Bit.HL });
 
             AddInstruction(0x50, new Instruction("LD D,B", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.D, registers8bit2 = Registers8Bit.B });
             AddInstruction(0x51, new Instruction("LD D,C", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.D, registers8bit2 = Registers8Bit.C });
@@ -232,7 +232,7 @@ namespace GBSharp
             AddInstruction(0x53, new Instruction("LD D,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.D, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x54, new Instruction("LD D,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.D, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x55, new Instruction("LD D,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.D, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x56, new Instruction("LD D,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.D, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x56, new Instruction("LD D,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.D, registers16Bit2 = Registers16Bit.HL });
 
             AddInstruction(0x58, new Instruction("LD E,B", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.E, registers8bit2 = Registers8Bit.B });
             AddInstruction(0x59, new Instruction("LD E,C", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.E, registers8bit2 = Registers8Bit.C });
@@ -240,7 +240,7 @@ namespace GBSharp
             AddInstruction(0x5B, new Instruction("LD E,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.E, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x5C, new Instruction("LD E,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.E, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x5D, new Instruction("LD E,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.E, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x5E, new Instruction("LD E,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.E, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x5E, new Instruction("LD E,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.E, registers16Bit2 = Registers16Bit.HL });
 
             AddInstruction(0x60, new Instruction("LD H,B", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.H, registers8bit2 = Registers8Bit.B });
             AddInstruction(0x61, new Instruction("LD H,C", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.H, registers8bit2 = Registers8Bit.C });
@@ -248,7 +248,7 @@ namespace GBSharp
             AddInstruction(0x63, new Instruction("LD H,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.H, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x64, new Instruction("LD H,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.H, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x65, new Instruction("LD H,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.H, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x66, new Instruction("LD H,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.H, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x66, new Instruction("LD H,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.H, registers16Bit2 = Registers16Bit.HL });
 
             AddInstruction(0x68, new Instruction("LD L,B", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.L, registers8bit2 = Registers8Bit.B });
             AddInstruction(0x69, new Instruction("LD L,C", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.L, registers8bit2 = Registers8Bit.C });
@@ -256,14 +256,14 @@ namespace GBSharp
             AddInstruction(0x6B, new Instruction("LD L,E", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.L, registers8bit2 = Registers8Bit.E });
             AddInstruction(0x6C, new Instruction("LD L,H", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.L, registers8bit2 = Registers8Bit.H });
             AddInstruction(0x6D, new Instruction("LD L,L", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.L, registers8bit2 = Registers8Bit.L });
-            AddInstruction(0x6E, new Instruction("LD L,(HL)", Instruction_LD_r1_r2) { registers8bit = Registers8Bit.L, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x6E, new Instruction("LD L,(HL)", Instruction_LD_r1_HL) { registers8bit = Registers8Bit.L, registers16Bit2 = Registers16Bit.HL });
 
-            AddInstruction(0x70, new Instruction("LD (HL),B", Instruction_LD_r1_r2) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.B });
-            AddInstruction(0x71, new Instruction("LD (HL),C", Instruction_LD_r1_r2) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.C });
-            AddInstruction(0x72, new Instruction("LD (HL),D", Instruction_LD_r1_r2) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.D });
-            AddInstruction(0x73, new Instruction("LD (HL),E", Instruction_LD_r1_r2) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.E });
-            AddInstruction(0x74, new Instruction("LD (HL),H", Instruction_LD_r1_r2) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.H });
-            AddInstruction(0x75, new Instruction("LD (HL),L", Instruction_LD_r1_r2) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.L });
+            AddInstruction(0x70, new Instruction("LD (HL),B", Instruction_LD_n_A) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.B });
+            AddInstruction(0x71, new Instruction("LD (HL),C", Instruction_LD_n_A) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.C });
+            AddInstruction(0x72, new Instruction("LD (HL),D", Instruction_LD_n_A) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.D });
+            AddInstruction(0x73, new Instruction("LD (HL),E", Instruction_LD_n_A) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.E });
+            AddInstruction(0x74, new Instruction("LD (HL),H", Instruction_LD_n_A) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.H });
+            AddInstruction(0x75, new Instruction("LD (HL),L", Instruction_LD_n_A) { registers16bit = Registers16Bit.HL, registers8bit2 = Registers8Bit.L });
             AddInstruction(0x36, new Instruction("LD (HL),n", Instruction_LD_HL_N));
 
             // LD n,nn
@@ -356,7 +356,7 @@ namespace GBSharp
             if (result > 255) result = 0;
 
             SetFlag(Flags.Z, result == 0);
-            SetFlag(Flags.H, (((add1 & 0xf) + (1 & 0xf)) & 0x10) == 0x10);
+            SetFlag(Flags.H, (add1 & 0x0F) + 1 > 0x0F);
 
             if (instruction.registers16bit == Registers16Bit.HL) _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
             else SetRegister(instruction.registers8bit, result);
@@ -366,7 +366,9 @@ namespace GBSharp
 
         private int Instruction_INC16(Instruction instruction)
         {
-            SetRegister(instruction.registers16bit, LoadRegister(instruction.registers16bit) + 1);
+            int result = LoadRegister(instruction.registers16bit) + 1;
+            if (result > 65535) result = 0;
+            SetRegister(instruction.registers16bit, result);
             return 2;
         }
 
@@ -393,7 +395,9 @@ namespace GBSharp
 
         private int Instruction_DEC16(Instruction instruction)
         {
-            SetRegister(instruction.registers16bit, LoadRegister(instruction.registers16bit) - 1);
+            int result = LoadRegister(instruction.registers16bit) - 1;
+            if (result < 0) result = 65535;
+            SetRegister(instruction.registers16bit, result);
             return 2;
         }
 
@@ -427,30 +431,44 @@ namespace GBSharp
 
         private int Instruction_LD_r1_r2(Instruction instruction)
         {
-            if(instruction.registers16bit != Registers16Bit.None)
-            {
-                if(instruction.index < 1) _mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(instruction.registers16bit));
-                else _mmu.WriteByte(ReadWord(), LoadRegister(instruction.registers16bit));
-            }
-            else
-            {
-                if (instruction.index < 1)
-                {
-                    if (instruction.registers16Bit2 == Registers16Bit.None) SetRegister(instruction.registers8bit, LoadRegister(instruction.registers8bit2));
-                    else SetRegister(instruction.registers8bit, _mmu.ReadByte(LoadRegister(instruction.registers16Bit2)));
-                }
-                else if(instruction.index == 1)
-                {
-                    SetRegister(instruction.registers8bit, _mmu.ReadByte(ReadWord()));
-                }
-                else
-                {
-                    SetRegister(instruction.registers8bit, ReadByte());
-                }
-            }
-            if (instruction.index == 1) return 4;
-            if (instruction.index == 2) return 2;
-            return (instruction.registers16bit != Registers16Bit.None || instruction.registers16Bit2 != Registers16Bit.None) ? 2 : 1;
+            SetRegister(instruction.registers8bit, LoadRegister(instruction.registers8bit2));
+            return 1;
+        }
+
+        private int Instruction_LD_r1_HL(Instruction instruction)
+        {
+            SetRegister(instruction.registers8bit, _mmu.ReadByte(LoadRegister(instruction.registers16Bit2)));
+            return 2;
+        }
+
+        private int Instruction_LD_r1_nn(Instruction instruction)
+        {
+            SetRegister(instruction.registers8bit, _mmu.ReadByte(ReadWord()));
+            return 4;
+        }
+
+        private int Instruction_LD_n_A(Instruction instruction)
+        {
+            _mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(instruction.registers16bit));
+            return 2;
+        }
+
+        private int Instruction_LD_nn_A(Instruction instruction)
+        {
+            _mmu.WriteByte(LoadRegister(Registers8Bit.A), ReadWord());
+            return 2;
+        }
+
+        private int Instruction_LD_HL_r2(Instruction instruction)
+        {
+            _mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(Registers16Bit.HL));
+            return 2;
+        }
+
+        private int Instruction_LD_HL_n(Instruction instruction)
+        {
+            _mmu.WriteByte(ReadByte(), LoadRegister(Registers16Bit.HL));
+            return 3;
         }
 
         private int Instruction_LD_A_C(Instruction instruction)
