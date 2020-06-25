@@ -14,6 +14,8 @@ namespace MonoGB
         SpriteBatch spriteBatch;
         CPU _cpu;
         MMU _mmu;
+        PPU _ppu;
+        Texture2D _frame;
 
         public Game1()
         {
@@ -32,6 +34,9 @@ namespace MonoGB
             // TODO: Add your initialization logic here
             _mmu = new MMU();
             _cpu = new CPU(_mmu);
+            _ppu = new PPU(_mmu);
+
+            _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
             IsFixedTimeStep = true;
 
@@ -72,6 +77,15 @@ namespace MonoGB
             // TODO: Add your update logic here
             _cpu.ExecuteFrame();
 
+            Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
+
+            for(int i = 0; i < _ppu.FrameBuffer.Length; i+=4)
+            {
+                colors[i / 4] = new Color(_ppu.FrameBuffer[i], _ppu.FrameBuffer[i + 1], _ppu.FrameBuffer[i + 2], _ppu.FrameBuffer[i + 3]);
+            }
+
+            _frame.SetData<Color>(colors);
+
             base.Update(gameTime);
         }
 
@@ -84,6 +98,10 @@ namespace MonoGB
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
+            Vector2 origin = new Vector2(PPU.SCREEN_WIDTH / 2, PPU.SCREEN_HEIGHT / 2);
+            spriteBatch.Draw(_frame, new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height/2), null, Color.White, 0, origin, 3, SpriteEffects.None, 0f);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }

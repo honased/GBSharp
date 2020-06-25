@@ -47,6 +47,7 @@
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPU.Registers.cs" />
     <Compile Include="MMU.cs" />
+    <Compile Include="PPU.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

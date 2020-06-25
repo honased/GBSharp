@@ -35,7 +35,7 @@ namespace GBSharp
                 }
             }
             Console.WriteLine("Total implemented: " + (_instructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         private int ReadByte()
