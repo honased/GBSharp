@@ -79,7 +79,7 @@ namespace GBSharp
 
         private void RegisterInstructions()
         {
-            _instructions = new Instruction[0xFF];
+            _instructions = new Instruction[0xFF + 1];
             _cbInstructions = new Instruction[0xFF];
 
             AddInstruction(0x00, new Instruction("NOP", Instruction_NOP));
@@ -164,6 +164,14 @@ namespace GBSharp
             AddInstruction(0x9E, new Instruction("SBC (HL)", Instruction_SUB) { registers16bit = Registers16Bit.HL, shouldFlagBeSet = true });
             AddInstruction(0xDE, new Instruction("SBC n", Instruction_SUB) { shouldFlagBeSet = true });
 
+            AddInstruction(0x09, new Instruction("ADD HL,BC", Instruction_ADD16) { registers16bit = Registers16Bit.HL, registers16Bit2 = Registers16Bit.BC });
+            AddInstruction(0x19, new Instruction("ADD HL,DE", Instruction_ADD16) { registers16bit = Registers16Bit.HL, registers16Bit2 = Registers16Bit.DE });
+            AddInstruction(0x29, new Instruction("ADD HL,HL", Instruction_ADD16) { registers16bit = Registers16Bit.HL, registers16Bit2 = Registers16Bit.HL });
+            AddInstruction(0x39, new Instruction("ADD HL,SP", Instruction_ADD16) { registers16bit = Registers16Bit.HL, registers16Bit2 = Registers16Bit.SP });
+
+            AddInstruction(0xE8, new Instruction("ADD SP,n", Instruction_ADDSPn));
+            AddInstruction(0xF8, new Instruction("LDHL SP,n", Instruction_ADDHLSPn));
+
             AddInstruction(0x18, new Instruction("JR n", Instruction_JR));
             AddInstruction(0x20, new Instruction("JR NZ,n", Instruction_JR) { flag = Flags.Z, shouldFlagBeSet = false });
             AddInstruction(0x28, new Instruction("JR Z,n", Instruction_JR) { flag = Flags.Z, shouldFlagBeSet = true });
@@ -186,6 +194,15 @@ namespace GBSharp
             AddInstruction(0xC8, new Instruction("RET Z", Instruction_RET_CC) { flag = Flags.Z, shouldFlagBeSet = true });
             AddInstruction(0xD0, new Instruction("RET NC", Instruction_RET_CC) { flag = Flags.C, shouldFlagBeSet = false });
             AddInstruction(0xD8, new Instruction("RET C", Instruction_RET_CC) { flag = Flags.C, shouldFlagBeSet = true });
+
+            AddInstruction(0xC7, new Instruction("RST 00H", Instruction_RET) { index = 0x00 });
+            AddInstruction(0xCF, new Instruction("RST 08H", Instruction_RET) { index = 0x08 });
+            AddInstruction(0xD7, new Instruction("RST 10H", Instruction_RET) { index = 0x10 });
+            AddInstruction(0xDF, new Instruction("RST 18H", Instruction_RET) { index = 0x18 });
+            AddInstruction(0xE7, new Instruction("RST 20H", Instruction_RET) { index = 0x20 });
+            AddInstruction(0xEF, new Instruction("RST 28H", Instruction_RET) { index = 0x28 });
+            AddInstruction(0xF7, new Instruction("RST 30H", Instruction_RET) { index = 0x30 });
+            AddInstruction(0xFF, new Instruction("RST 38H", Instruction_RET) { index = 0x38 });
 
             AddInstruction(0xC3, new Instruction("JP nn", Instruction_JP));
             AddInstruction(0xC2, new Instruction("JP NZ", Instruction_JP) { flag = Flags.Z, shouldFlagBeSet = false });
@@ -422,6 +439,30 @@ namespace GBSharp
             if (result > 65535) result = 0;
             SetRegister(instruction.registers16bit, result);
             return 2;
+        }
+
+        private int Instruction_ADDSPn(Instruction instruction)
+        {
+            int sp = LoadRegister(Registers16Bit.SP);
+            sbyte val = (sbyte)ReadByte();
+            SetRegister(Registers16Bit.SP, AddR8(sp, val));
+            return 4;
+        }
+
+        private int Instruction_ADDHLSPn(Instruction instruction)
+        {
+            int sp = LoadRegister(Registers16Bit.SP);
+            sbyte val = (sbyte)ReadByte();
+            SetRegister(Registers16Bit.HL, AddR8(sp, val));
+            return 3;
+        }
+
+        private int AddR8(int val1, int val2)
+        {
+            SetFlag(Flags.Z | Flags.N, false);
+            SetFlag(Flags.H, (val1 & 0x000F) + (val2 & 0x000F) > 0x000F);
+            SetFlag(Flags.C, (val1 & 0x00FF) + (val2 & 0x00FF) > 0x00FF);
+            return (val1 + val2 + 65535) % 65535;
         }
 
         private int Instruction_DEC8(Instruction instruction)
@@ -763,6 +804,13 @@ namespace GBSharp
             return 3;
         }
 
+        private int Instruction_RST(Instruction instruction)
+        {
+            Push(LoadRegister(Registers16Bit.PC));
+            SetRegister(Registers16Bit.PC, instruction.index);
+            return 8;
+        }
+
         private int Sub(int val, bool includeCarry)
         {
             int registerA = LoadRegister(Registers8Bit.A);
@@ -806,6 +854,20 @@ namespace GBSharp
                 SetRegister(Registers8Bit.A, Add(ReadByte(), instruction.shouldFlagBeSet));
                 return 2;
             }
+        }
+
+        private int Instruction_ADD16(Instruction instruction)
+        {
+            int val1 = LoadRegister(instruction.registers16bit);
+            int val2 = LoadRegister(instruction.registers16Bit2);
+            int result = (val1 + val2) % 65535;
+            SetRegister(instruction.registers16bit, result);
+
+            SetFlag(Flags.N, false);
+            SetFlag(Flags.C, val1 + val2 > 0xFFFF);
+            SetFlag(Flags.H, (val1 & 0x07FF) + (val2 & 0x07FF) > 0x07FF);
+
+            return 2;
         }
 
         private int Instruction_CP(Instruction instruction)
