@@ -149,7 +149,7 @@ namespace GBSharp
                     return _zram[address - 0xFF80];
 
                 default:
-                    Console.WriteLine("Out of memory bank");
+                    //Console.WriteLine("Out of memory bank");
                     return 0x00;
             }
         }

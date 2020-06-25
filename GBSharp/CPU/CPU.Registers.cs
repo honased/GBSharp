@@ -80,7 +80,7 @@ namespace GBSharp
         {
             int index = ((int)register) / 2;
             if(((int)register) % 2 == 0) return (_registers[index] >> 8);
-            return _registers[index];
+            return _registers[index] & 0x00FF;
         }
 
         public int LoadRegister(Registers16Bit register)
@@ -100,6 +100,10 @@ namespace GBSharp
             else
             {
                 _registers[index] = (_registers[index] & 0xFF00) | newValue;
+            }
+            if(LoadRegister(Registers8Bit.A) > 255)
+            {
+                Console.WriteLine("TEST");
             }
         }
 

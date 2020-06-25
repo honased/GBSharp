@@ -39,8 +39,13 @@ namespace GBSharp
         {
             int pc = LoadRegister(Registers16Bit.PC);
             Instruction instruction = GetNextInstruction();
-            Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
-            return instruction.Execute();
+            //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+            int result = instruction.Execute();
+            if(_mmu.ReadWord(LoadRegister(Registers16Bit.SP)) == 0xFF)
+            {
+                Console.WriteLine("HELLO WORLD");
+            }
+            return result;
             //Console.WriteLine("HL VAL:" + LoadRegister(Registers16Bit.HL));
             //Console.ReadKey();
             //Console.WriteLine();
