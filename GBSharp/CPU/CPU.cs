@@ -25,7 +25,7 @@ namespace GBSharp
                 if(_instructions[i] == null)
                 {
                     missingCount++;
-                    Console.WriteLine("Missing instruction {0:X}", i);
+                    Console.WriteLine("Missing instruction 0x{0:X}", i);
                 }
             }
             Console.WriteLine("Total implemented: " + (_instructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
