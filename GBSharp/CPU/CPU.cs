@@ -9,11 +9,17 @@ namespace GBSharp
     public partial class CPU
     {
         private MMU _mmu;
+        const int CPU_CYCLES = 17556;
+        private int currentCycles;
+        private bool IME;
+        private bool setIME = false;
 
         public CPU(MMU mmu)
         {
             _mmu = mmu;
             mmu.SetCPU(this);
+
+            currentCycles = 0;
 
             RegisterInstructions();
             InitializeRegisters();
@@ -47,20 +53,50 @@ namespace GBSharp
             return word;
         }
 
-        public int ProcessInstructions()
+        public void ExecuteFrame()
         {
-            int pc = LoadRegister(Registers16Bit.PC);
-            Instruction instruction = GetNextInstruction();
-            //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
-            int result = instruction.Execute();
-            if(_mmu.ReadWord(LoadRegister(Registers16Bit.SP)) == 0xFF)
+            while (currentCycles < CPU_CYCLES)
             {
-                Console.WriteLine("HELLO WORLD");
+                int pc = LoadRegister(Registers16Bit.PC);
+                Instruction instruction = GetNextInstruction();
+                //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+                int cycles = instruction.Execute();
+                currentCycles += cycles;
+
+                CheckInterrupts();
             }
-            return result;
-            //Console.WriteLine("HL VAL:" + LoadRegister(Registers16Bit.HL));
-            //Console.ReadKey();
-            //Console.WriteLine();
+            currentCycles -= CPU_CYCLES;
+        }
+
+        private void CheckInterrupts()
+        {
+            int IE = _mmu.IE;
+            int IF = _mmu.IF;
+
+            for(int i = 0; i < 5; i++)
+            {
+                if((IE & IF) >> i == 1)
+                {
+                    ExecuteInterrupt(i);
+                }
+            }
+
+            if(setIME)
+            {
+                setIME = false;
+                IME = true;
+            }
+        }
+
+        private void ExecuteInterrupt(int interrupt)
+        {
+            if(IME)
+            {
+                IME = false;
+                Push(LoadRegister(Registers16Bit.PC));
+                SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
+                _mmu.IF &= ~(0x1 << interrupt);
+            }
         }
     }
 }

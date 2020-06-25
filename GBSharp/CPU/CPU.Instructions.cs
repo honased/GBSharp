@@ -189,6 +189,7 @@ namespace GBSharp
             AddInstruction(0xE1, new Instruction("POP HL", Instruction_Pop) { registers16bit = Registers16Bit.HL });
 
             AddInstruction(0xC9, new Instruction("RET", Instruction_RET));
+            AddInstruction(0xD9, new Instruction("RETI", Instruction_RETI));
 
             AddInstruction(0xC0, new Instruction("RET NZ", Instruction_RET_CC) { flag = Flags.Z, shouldFlagBeSet = false });
             AddInstruction(0xC8, new Instruction("RET Z", Instruction_RET_CC) { flag = Flags.Z, shouldFlagBeSet = true });
@@ -216,6 +217,9 @@ namespace GBSharp
             AddInstruction(0xCC, new Instruction("CALL Z,nn", Instruction_Call) { flag = Flags.Z, shouldFlagBeSet = true });
             AddInstruction(0xD4, new Instruction("CALL NC,nn", Instruction_Call) { flag = Flags.C, shouldFlagBeSet = false });
             AddInstruction(0xDC, new Instruction("CALL C,nn", Instruction_Call) { flag = Flags.C, shouldFlagBeSet = true });
+
+            AddInstruction(0xFB, new Instruction("EI", Instruction_EI));
+            AddInstruction(0xF3, new Instruction("DI", Instruction_DI));
 
             AddInstruction(0x32, new Instruction("LD (HL-),A", Instruction_LDD_HL_A) { index = -1 });
             AddInstruction(0x22, new Instruction("LD (HL+),A", Instruction_LDD_HL_A) { index = 1 });
@@ -630,9 +634,29 @@ namespace GBSharp
             }
         }
 
+        private int Instruction_EI(Instruction instruction)
+        {
+            setIME = true;
+            return 1;
+        }
+
+        private int Instruction_DI(Instruction instruction)
+        {
+            IME = false;
+            return 1;
+        }
+
         private int Instruction_RET(Instruction instruction)
         {
             SetRegister(Registers16Bit.PC, Pop());
+
+            return 2;
+        }
+
+        private int Instruction_RETI(Instruction instruction)
+        {
+            SetRegister(Registers16Bit.PC, Pop());
+            IME = true;
 
             return 2;
         }

@@ -16,12 +16,32 @@ namespace GBSharp
         private int[] _zram;
         private int[] _oam;
         private int[] _io;
+        public int IE
+        {
+            get
+            {
+                return _zram[0x7F];
+            }
+            set
+            {
+                _zram[0x7F] = value;
+            }
+        }
+        public int IF
+        {
+            get
+            {
+                return _io[0x0F];
+            }
+            set
+            {
+                _io[0x0F] = value;
+            }
+        }
 
         private CPU _cpu;
 
         private bool _inBios;
-
-        public const int MEMORY_SIZE = 0xFFFF;
 
         public MMU()
         {
@@ -31,8 +51,8 @@ namespace GBSharp
             _eram = new int[0x2000];
             _wram = new int[0x2000];
             _oam = new int[0xA0];
-            _io = new int[0x4C];
-            _zram = new int[0x7F];
+            _io = new int[0x80];
+            _zram = new int[0x80];
 
             SetBios();
         }
@@ -101,14 +121,16 @@ namespace GBSharp
                     break;
                 case int _ when address < 0xFF00:
                     break;
-                case int _ when address < 0xFF4C:
-                    _io[address - 0xFF00] = value;
-                    break;
                 case int _ when address < 0xFF80:
+                    _io[address - 0xFF00] = value;
                     break;
                 case int _ when address < 0xFFFF:
                     _zram[address - 0xFF80] = value;
                     break;
+                case int _ when address == 0xFFFF:
+                    IE = value;
+                    break;
+
                 default:
                     Console.WriteLine("Out of memory bank");
                     break;
@@ -147,6 +169,8 @@ namespace GBSharp
                     return 0;
                 case int _ when address < 0xFFFF:
                     return _zram[address - 0xFF80];
+                case int _ when address == 0xFFFF:
+                    return IE;
 
                 default:
                     //Console.WriteLine("Out of memory bank");

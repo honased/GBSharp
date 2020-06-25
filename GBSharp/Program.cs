@@ -22,10 +22,13 @@ namespace GBSharp
 
             int count = 0;
 
+            //Console.WriteLine("VAlue at 0xFFFF:" + mmu.ReadByte(0xFFFF));
+            //Console.ReadKey();
+
 
             while(true)
             {
-                count += cpu.ProcessInstructions();
+                cpu.ExecuteFrame();
             }
 
             Console.ReadKey();

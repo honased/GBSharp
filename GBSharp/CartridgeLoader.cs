@@ -11,7 +11,7 @@ namespace GBSharp
     {
         public static void LoadDataIntoMemory(MMU mmu, int[] cart, int position)
         {
-            if(position >= 0 && position + cart.Length < MMU.MEMORY_SIZE)
+            if(position >= 0 && position + cart.Length <= 0xFFFF)
             {
                 mmu.WriteBytes(cart, position);
             }
