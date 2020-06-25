@@ -25,7 +25,7 @@ namespace GBSharp
 
         public MMU()
         {
-            _inBios = true;
+            _inBios = false;
             _rom = new int[2,0x4000];
             _vram = new int[0x2000];
             _eram = new int[0x2000];

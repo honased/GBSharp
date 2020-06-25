@@ -17,7 +17,19 @@ namespace GBSharp
 
             RegisterInstructions();
             InitializeRegisters();
-            //SetRegister(Registers16Bit.PC, 0x100);
+            SetRegister(Registers16Bit.PC, 0x100);
+
+            int missingCount = 0;
+            for(int i = 0; i < _instructions.Length; i++)
+            {
+                if(_instructions[i] == null)
+                {
+                    missingCount++;
+                    Console.WriteLine("Missing instruction {0:X}", i);
+                }
+            }
+            Console.WriteLine("Total implemented: " + (_instructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
+            Console.ReadKey();
         }
 
         private int ReadByte()

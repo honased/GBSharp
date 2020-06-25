@@ -22,6 +22,7 @@ namespace GBSharp
 
             int count = 0;
 
+
             while(true)
             {
                 count += cpu.ProcessInstructions();

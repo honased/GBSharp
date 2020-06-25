@@ -161,10 +161,17 @@ namespace GBSharp
 
             AddInstruction(0xC9, new Instruction("RET", Instruction_RET));
 
-            AddInstruction(0xC0, new Instruction("RET NZ", Instruction_RET) { flag = Flags.Z, shouldFlagBeSet = false });
-            AddInstruction(0xC8, new Instruction("RET Z", Instruction_RET) { flag = Flags.Z, shouldFlagBeSet = true });
-            AddInstruction(0xD0, new Instruction("RET NC", Instruction_RET) { flag = Flags.C, shouldFlagBeSet = false });
-            AddInstruction(0xD8, new Instruction("RET C", Instruction_RET) { flag = Flags.C, shouldFlagBeSet = true });
+            AddInstruction(0xC0, new Instruction("RET NZ", Instruction_RET_CC) { flag = Flags.Z, shouldFlagBeSet = false });
+            AddInstruction(0xC8, new Instruction("RET Z", Instruction_RET_CC) { flag = Flags.Z, shouldFlagBeSet = true });
+            AddInstruction(0xD0, new Instruction("RET NC", Instruction_RET_CC) { flag = Flags.C, shouldFlagBeSet = false });
+            AddInstruction(0xD8, new Instruction("RET C", Instruction_RET_CC) { flag = Flags.C, shouldFlagBeSet = true });
+
+            AddInstruction(0xC3, new Instruction("JP nn", Instruction_JP));
+            AddInstruction(0xC2, new Instruction("JP NZ", Instruction_JP) { flag = Flags.Z, shouldFlagBeSet = false });
+            AddInstruction(0xCA, new Instruction("JP Z", Instruction_JP) { flag = Flags.Z, shouldFlagBeSet = true });
+            AddInstruction(0xD2, new Instruction("JP NC", Instruction_JP) { flag = Flags.C, shouldFlagBeSet = false });
+            AddInstruction(0xDA, new Instruction("JP C", Instruction_JP) { flag = Flags.C, shouldFlagBeSet = true });
+            AddInstruction(0xE9, new Instruction("JP (HL)", Instruction_JP) { registers16bit = Registers16Bit.HL });
 
             AddInstruction(0xCD, new Instruction("CALL nn", Instruction_Call));
             AddInstruction(0xC4, new Instruction("CALL NZ,nn", Instruction_Call) { flag = Flags.Z, shouldFlagBeSet = false });
@@ -275,6 +282,26 @@ namespace GBSharp
             AddInstruction(0x11, new Instruction("LD DE, nn", Instruction_LDn_nn) { registers16bit = Registers16Bit.DE, });
             AddInstruction(0x21, new Instruction("LD HL, nn", Instruction_LDn_nn) { registers16bit = Registers16Bit.HL, });
             AddInstruction(0x31, new Instruction("LD SP, nn", Instruction_LDn_nn) { registers16bit = Registers16Bit.SP, });
+
+            AddInstruction(0xA7, new Instruction("AND A", Instruction_AND) { registers8bit = Registers8Bit.A, });
+            AddInstruction(0xA0, new Instruction("AND B", Instruction_AND) { registers8bit = Registers8Bit.B, });
+            AddInstruction(0xA1, new Instruction("AND C", Instruction_AND) { registers8bit = Registers8Bit.C, });
+            AddInstruction(0xA2, new Instruction("AND D", Instruction_AND) { registers8bit = Registers8Bit.D, });
+            AddInstruction(0xA3, new Instruction("AND E", Instruction_AND) { registers8bit = Registers8Bit.E, });
+            AddInstruction(0xA4, new Instruction("AND H", Instruction_AND) { registers8bit = Registers8Bit.H, });
+            AddInstruction(0xA5, new Instruction("AND L", Instruction_AND) { registers8bit = Registers8Bit.L, });
+            AddInstruction(0xA6, new Instruction("AND (HL)", Instruction_AND) { registers16bit = Registers16Bit.HL, });
+            AddInstruction(0xE6, new Instruction("AND n", Instruction_AND));
+
+            AddInstruction(0xB7, new Instruction("OR A", Instruction_OR) { registers8bit = Registers8Bit.A, });
+            AddInstruction(0xB0, new Instruction("OR B", Instruction_OR) { registers8bit = Registers8Bit.B, });
+            AddInstruction(0xB1, new Instruction("OR C", Instruction_OR) { registers8bit = Registers8Bit.C, });
+            AddInstruction(0xB2, new Instruction("OR D", Instruction_OR) { registers8bit = Registers8Bit.D, });
+            AddInstruction(0xB3, new Instruction("OR E", Instruction_OR) { registers8bit = Registers8Bit.E, });
+            AddInstruction(0xB4, new Instruction("OR H", Instruction_OR) { registers8bit = Registers8Bit.H, });
+            AddInstruction(0xB5, new Instruction("OR L", Instruction_OR) { registers8bit = Registers8Bit.L, });
+            AddInstruction(0xB6, new Instruction("OR (HL)", Instruction_OR) { registers16bit = Registers16Bit.HL, });
+            AddInstruction(0xF6, new Instruction("OR n", Instruction_OR));
 
             // XOR n
             AddInstruction(0xAF, new Instruction("XOR A", Instruction_XOR_n) { registers8bit = Registers8Bit.A, });
@@ -555,6 +582,87 @@ namespace GBSharp
                 SetRegister(Registers16Bit.PC, Pop());
             }    
             return 2;
+        }
+
+        private int Instruction_JP(Instruction instruction)
+        {
+            if(instruction.flag == Flags.None)
+            {
+                if(instruction.registers16bit != Registers16Bit.None)
+                {
+                    SetRegister(Registers16Bit.PC, LoadRegister(Registers16Bit.HL));
+                    return 1;
+                }
+                else
+                {
+                    SetRegister(Registers16Bit.PC, ReadWord());
+                    return 3;
+                }
+            }
+            else
+            {
+                int address = ReadWord();
+                if(IsFlagOn(instruction.flag) == instruction.shouldFlag2BeSet)
+                {
+                    SetRegister(Registers16Bit.PC, address);
+                }
+                return 3;
+            }
+        }
+
+        private int Instruction_AND(Instruction instruction)
+        {
+            int result = LoadRegister(Registers8Bit.A);
+            SetFlag(Flags.N | Flags.C, false);
+            SetFlag(Flags.H, true);
+            if(instruction.registers8bit != Registers8Bit.None)
+            {
+                result &= LoadRegister(instruction.registers8bit);
+                SetFlag(Flags.Z, result == 0);
+                SetRegister(Registers8Bit.A, result);
+                return 1;
+            }   
+            else if(instruction.registers16bit != Registers16Bit.None)
+            {
+                result &= _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+                SetFlag(Flags.Z, result == 0);
+                SetRegister(Registers8Bit.A, result);
+                return 2;
+            }
+            else
+            {
+                result &= ReadByte();
+                SetFlag(Flags.Z, result == 0);
+                SetRegister(Registers8Bit.A, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_OR(Instruction instruction)
+        {
+            int result = LoadRegister(Registers8Bit.A);
+            SetFlag(Flags.N | Flags.C | Flags.H, false);
+            if (instruction.registers8bit != Registers8Bit.None)
+            {
+                result |= LoadRegister(instruction.registers8bit);
+                SetFlag(Flags.Z, result == 0);
+                SetRegister(Registers8Bit.A, result);
+                return 1;
+            }
+            else if (instruction.registers16bit != Registers16Bit.None)
+            {
+                result |= _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+                SetFlag(Flags.Z, result == 0);
+                SetRegister(Registers8Bit.A, result);
+                return 2;
+            }
+            else
+            {
+                result |= ReadByte();
+                SetFlag(Flags.Z, result == 0);
+                SetRegister(Registers8Bit.A, result);
+                return 2;
+            }
         }
 
         private void Push(int value)
