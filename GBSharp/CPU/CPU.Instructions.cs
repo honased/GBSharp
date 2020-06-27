@@ -755,7 +755,7 @@ namespace GBSharp
 
         private int Instruction_CPL(Instruction instruction)
         {
-
+            SetFlag(Flags.N | Flags.H, true);
             SetRegister(Registers8Bit.A, ~LoadRegister(Registers8Bit.A));
             return 1;
         }
