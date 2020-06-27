@@ -223,9 +223,9 @@ namespace GBSharp
             WriteByte(value >> 8, address + 1);
         }
 
-        public byte LoadVRAM(int addr)
+        public int LoadVRAM(int addr)
         {
-            return (byte)_vram[addr & 0x1FFF];
+            return _vram[addr & 0x1FFF];
         }
     }
 }

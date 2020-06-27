@@ -141,12 +141,21 @@ namespace GBSharp
 
             int y = (((ly + sy) / 8) * 32 + 1024) % 1024;
 
+            int bgTileMapLocation = IsBitOn(lcdc, 3) ? 0x9C00 : 0x9800;
+
             int startingIndex = ly * SCREEN_WIDTH * 4;
+
+            bool shouldValueBeSigned = IsBitOn(lcdc, 4);
+            int tileInitLocation = shouldValueBeSigned ? 0 : 256 + 128;
+
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
                 int x = (((xx + sx) / 8) + 32) % 32;
 
-                int tile = _mmu.LoadVRAM(0x9800 + y + x);
+                int tile;// = _mmu.LoadVRAM(0x9800 + y + x);
+
+                if (shouldValueBeSigned) tile = (sbyte)_mmu.LoadVRAM(bgTileMapLocation + y + x);
+                else tile = (byte)_mmu.LoadVRAM(bgTileMapLocation + y + x);
 
                 int colorIndex = GetColorIndexFromPalette(_tileset[tile, (ly + sy) % 8, (xx + sx) % 8]);
                 Color color = colors[colorIndex];
