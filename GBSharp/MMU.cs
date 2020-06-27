@@ -16,6 +16,7 @@ namespace GBSharp
         private int[] _zram;
         private int[] _oam;
         private int[] _io;
+        private PPU _ppu;
         public int IE
         {
             get
@@ -39,13 +40,25 @@ namespace GBSharp
             }
         }
 
+        public int SCX { get { return _io[0x43]; } }
+        public int SCY { get { return _io[0x42]; } }
+        public int WX { get { return _io[0x4B]; } }
+        public int WY { get { return _io[0x4A]; } }
+
+        public int LCDC { get { return _io[0x40]; } }
+        public int LY { get { return _io[0x44]; } set { _io[0x44] = value; } }
+        public int LYC { get { return _io[0x45]; } }
+        public int STAT { get { return _io[0x41]; } set { _io[0x41] = value; } }
+
+        public int bgPalette { get { return _io[0x47]; } }
+
         private CPU _cpu;
 
         private bool _inBios;
 
         public MMU()
         {
-            _inBios = false;
+            _inBios = true;
             _rom = new int[2,0x4000];
             _vram = new int[0x2000];
             _eram = new int[0x2000];
@@ -60,6 +73,11 @@ namespace GBSharp
         public void SetCPU(CPU cpu)
         {
             _cpu = cpu;
+        }
+
+        public void SetPPU(PPU ppu)
+        {
+            _ppu = ppu;
         }
 
         public void WriteBytes(int[] bytes, int address)
@@ -106,6 +124,7 @@ namespace GBSharp
                     break;
                 case int _ when address < 0xA000:
                     _vram[address - 0x8000] = value;
+                    _ppu.UpdateTile(address, value);
                     break;
                 case int _ when address < 0xC000:
                     _eram[address - 0xA000] = value;
@@ -122,6 +141,21 @@ namespace GBSharp
                 case int _ when address < 0xFF00:
                     break;
                 case int _ when address < 0xFF80:
+                    switch(address)
+                    {
+                        case 0xFF0F: 
+                            value |= 0xE0;
+                            break;
+
+                        case 0xFF41:
+                            value = (value & ~0x03) | (_io[0x41] & 0x03);
+                            break;
+
+                        case 0xFF04: case 0xFF44:
+                            value = 0;
+                            break;
+
+                    }
                     _io[address - 0xFF00] = value;
                     break;
                 case int _ when address < 0xFFFF:
@@ -146,7 +180,7 @@ namespace GBSharp
                     if(_inBios)
                     {
                         if (address < 0x100) return _bios[address];
-                        if(_cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0100) _inBios = false;
+                        if(_cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0101) _inBios = false;
                     }
                     return _rom[0, address];
                 case int _ when address < 0x8000:
@@ -187,6 +221,11 @@ namespace GBSharp
         {
             WriteByte(value & 0x00FF, address);
             WriteByte(value >> 8, address + 1);
+        }
+
+        public byte LoadVRAM(int addr)
+        {
+            return (byte)_vram[addr & 0x1FFF];
         }
     }
 }

@@ -13,11 +13,11 @@ namespace GBSharp
         public void InitializeRegisters()
         {
             _registers = new int[6];
-            SetRegister(Registers16Bit.AF, 0x01B0);
-            SetRegister(Registers16Bit.BC, 0x0013);
-            SetRegister(Registers16Bit.DE, 0x00D8);
-            SetRegister(Registers16Bit.HL, 0x014D);
-            SetRegister(Registers16Bit.SP, 0xFFFE);
+            //SetRegister(Registers16Bit.AF, 0x01B0);
+            //SetRegister(Registers16Bit.BC, 0x0013);
+            //SetRegister(Registers16Bit.DE, 0x00D8);
+            //SetRegister(Registers16Bit.HL, 0x014D);
+            //SetRegister(Registers16Bit.SP, 0xFFFE);
         }
 
         public enum Registers8Bit

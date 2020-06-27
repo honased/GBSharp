@@ -9,21 +9,24 @@ namespace GBSharp
     public partial class CPU
     {
         private MMU _mmu;
+        private PPU _ppu;
         const int CPU_CYCLES = 17556;
         private int currentCycles;
         private bool IME;
         private bool setIME = false;
 
-        public CPU(MMU mmu)
+        public CPU(MMU mmu, PPU ppu)
         {
             _mmu = mmu;
+            _ppu = ppu;
             mmu.SetCPU(this);
+            mmu.SetPPU(_ppu);
 
             currentCycles = 0;
 
             RegisterInstructions();
             InitializeRegisters();
-            SetRegister(Registers16Bit.PC, 0x100);
+            SetRegister(Registers16Bit.PC, 0x000);
 
             int missingCount = 0;
             for(int i = 0; i < _instructions.Length; i++)
@@ -58,14 +61,28 @@ namespace GBSharp
             while (currentCycles < CPU_CYCLES)
             {
                 int pc = LoadRegister(Registers16Bit.PC);
+
+                if(pc == 0x5d)
+                {
+                    Console.WriteLine("HELLOI");
+                }
+
+                if(pc >= 0xFC)
+                {
+                    //Console.WriteLine("GT 0x100");
+                }
+
                 Instruction instruction = GetNextInstruction();
                 //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
                 int cycles = instruction.Execute();
                 currentCycles += cycles;
+                _ppu.Tick(cycles);
 
                 CheckInterrupts();
             }
             currentCycles -= CPU_CYCLES;
+            //Console.WriteLine("REnder frame: " + PPU.RenderCount);
+            PPU.RenderCount = 0;
         }
 
         private void CheckInterrupts()

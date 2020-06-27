@@ -54,9 +54,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="CPU\CPU.Instructions.cs" />
-    <None Include="InternalRoms\DMG_ROM.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Roms\opus5.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

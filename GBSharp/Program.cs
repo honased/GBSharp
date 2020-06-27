@@ -18,8 +18,8 @@ namespace GBSharp
             int[] cart = CartridgeLoader.LoadCart("Roms/opus5.gb");
             CartridgeLoader.LoadDataIntoMemory(mmu, cart, 0x00);
 
-            CPU cpu = new CPU(mmu);
             PPU ppu = new PPU(mmu);
+            CPU cpu = new CPU(mmu, ppu);
 
             int count = 0;
 

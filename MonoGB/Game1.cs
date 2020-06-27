@@ -33,10 +33,13 @@ namespace MonoGB
         {
             // TODO: Add your initialization logic here
             _mmu = new MMU();
-            _cpu = new CPU(_mmu);
             _ppu = new PPU(_mmu);
+            _cpu = new CPU(_mmu, _ppu);
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
+
+            int[] cart = CartridgeLoader.LoadCart("Roms/opus5.gb");
+            CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0x00);
 
             IsFixedTimeStep = true;
 
