@@ -43,9 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bitwise.cs" />
     <Compile Include="CartridgeLoader.cs" />
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPU.Registers.cs" />
+    <Compile Include="Input.cs" />
     <Compile Include="MMU.cs" />
     <Compile Include="PPU.cs" />
     <Compile Include="Program.cs" />
@@ -58,6 +60,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Tetris.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\ttt.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

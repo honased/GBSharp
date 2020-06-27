@@ -10,15 +10,17 @@ namespace GBSharp
     {
         private MMU _mmu;
         private PPU _ppu;
+        private Input _input;
         const int CPU_CYCLES = 17556;
         private int currentCycles;
         private bool IME;
         private bool setIME = false;
 
-        public CPU(MMU mmu, PPU ppu)
+        public CPU(MMU mmu, PPU ppu, Input input)
         {
             _mmu = mmu;
             _ppu = ppu;
+            _input = input;
             mmu.SetCPU(this);
             mmu.SetPPU(_ppu);
 
@@ -77,6 +79,7 @@ namespace GBSharp
                 int cycles = instruction.Execute();
                 currentCycles += cycles;
                 _ppu.Tick(cycles);
+                _input.Tick();
 
                 CheckInterrupts();
             }

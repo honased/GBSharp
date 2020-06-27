@@ -15,6 +15,7 @@ namespace MonoGB
         CPU _cpu;
         MMU _mmu;
         PPU _ppu;
+        Input _input;
         Texture2D _frame;
 
         public Game1()
@@ -34,11 +35,12 @@ namespace MonoGB
             // TODO: Add your initialization logic here
             _mmu = new MMU();
             _ppu = new PPU(_mmu);
-            _cpu = new CPU(_mmu, _ppu);
+            _input = new Input(_mmu);
+            _cpu = new CPU(_mmu, _ppu, _input);
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            int[] cart = CartridgeLoader.LoadCart("Roms/opus5.gb");
+            int[] cart = CartridgeLoader.LoadCart("Roms/ttt.gb");
             CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0x00);
 
             IsFixedTimeStep = true;
@@ -78,6 +80,18 @@ namespace MonoGB
                 Exit();
 
             // TODO: Add your update logic here
+
+            var _keyState = Keyboard.GetState();
+
+            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.W));
+            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.S));
+            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.A));
+            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.D));
+            _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A));
+            _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S));
+            _input.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space));
+            _input.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift));
+
             _cpu.ExecuteFrame();
 
             Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];

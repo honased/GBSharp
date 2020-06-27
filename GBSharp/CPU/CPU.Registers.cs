@@ -95,11 +95,11 @@ namespace GBSharp
             if (((int)register) % 2 == 0)
             {
                 newValue <<= 8;
-                _registers[index] = (_registers[index] & 0x00FF) | newValue;
+                _registers[index] = (_registers[index] & 0x00FF) | (newValue & 0xFF00);
             }
             else
             {
-                _registers[index] = (_registers[index] & 0xFF00) | newValue;
+                _registers[index] = (_registers[index] & 0xFF00) | (newValue & 0x00FF);
             }
             if(LoadRegister(Registers8Bit.A) > 255)
             {

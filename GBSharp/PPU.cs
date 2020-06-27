@@ -126,7 +126,7 @@ namespace GBSharp
         private void RenderLine()
         {
             RenderCount++;
-            if(IsBitOn(_mmu.LCDC, 7) && IsBitOn(_mmu.LCDC, 0))
+            if(Bitwise.IsBitOn(_mmu.LCDC, 7) && Bitwise.IsBitOn(_mmu.LCDC, 0))
             {
                 RenderBackground();
             }
@@ -141,11 +141,11 @@ namespace GBSharp
 
             int y = (((ly + sy) / 8) * 32 + 1024) % 1024;
 
-            int bgTileMapLocation = IsBitOn(lcdc, 3) ? 0x9C00 : 0x9800;
+            int bgTileMapLocation = Bitwise.IsBitOn(lcdc, 3) ? 0x9C00 : 0x9800;
 
             int startingIndex = ly * SCREEN_WIDTH * 4;
 
-            bool shouldValueBeSigned = IsBitOn(lcdc, 4);
+            bool shouldValueBeSigned = Bitwise.IsBitOn(lcdc, 4);
             int tileInitLocation = shouldValueBeSigned ? 0 : 256 + 128;
 
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
@@ -206,11 +206,6 @@ namespace GBSharp
         private void ChangeMode(int mode)
         {
             _mmu.STAT = (_mmu.LCDC & ~0x03) | (mode & 0x03);
-        }
-
-        private bool IsBitOn(int value, int bit)
-        {
-            return ((value >> bit) & 0x01) == 0x01;
         }
     }
 }

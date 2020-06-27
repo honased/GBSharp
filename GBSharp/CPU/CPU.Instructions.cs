@@ -356,6 +356,8 @@ namespace GBSharp
             AddInstruction(0xAE, new Instruction("XOR (HL)", Instruction_XOR_n) { registers16bit = Registers16Bit.HL, });
             AddInstruction(0xEE, new Instruction("XOR *", Instruction_XOR_n));
 
+            AddInstruction(0x2F, new Instruction("CPL", Instruction_CPL));
+
             // CB Instructions
             for (int i = 0; i < 8; i++) AddCBInstruction(0x40 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("BIT " + i.ToString() + ",B", Instruction_Bit) { index = i, registers8bit = Registers8Bit.B });
             for (int i = 0; i < 8; i++) AddCBInstruction(0x41 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("BIT " + i.ToString() + ",C", Instruction_Bit) { index = i, registers8bit = Registers8Bit.C });
@@ -749,6 +751,13 @@ namespace GBSharp
                 SetRegister(Registers8Bit.A, result);
                 return 2;
             }
+        }
+
+        private int Instruction_CPL(Instruction instruction)
+        {
+
+            SetRegister(Registers8Bit.A, ~LoadRegister(Registers8Bit.A));
+            return 1;
         }
 
         private void Push(int value)

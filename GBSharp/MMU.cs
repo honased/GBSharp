@@ -50,6 +50,8 @@ namespace GBSharp
         public int LYC { get { return _io[0x45]; } }
         public int STAT { get { return _io[0x41]; } set { _io[0x41] = value; } }
 
+        public int Joypad { get { return _io[0x00]; } set { _io[0x00] = value; } }
+
         public int bgPalette { get { return _io[0x47]; } }
 
         private CPU _cpu;
@@ -226,6 +228,11 @@ namespace GBSharp
         public int LoadVRAM(int addr)
         {
             return _vram[addr & 0x1FFF];
+        }
+
+        public void SetInterrupt(int interrupt)
+        {
+            IF = Bitwise.SetBit(IF, interrupt);
         }
     }
 }

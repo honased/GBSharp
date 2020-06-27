@@ -19,7 +19,8 @@ namespace GBSharp
             CartridgeLoader.LoadDataIntoMemory(mmu, cart, 0x00);
 
             PPU ppu = new PPU(mmu);
-            CPU cpu = new CPU(mmu, ppu);
+            Input input = new Input(mmu);
+            CPU cpu = new CPU(mmu, ppu, input);
 
             int count = 0;
 
