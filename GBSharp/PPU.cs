@@ -126,7 +126,7 @@ namespace GBSharp
         private void RenderLine()
         {
             RenderCount++;
-            if(IsBitOn(_mmu.LCDC, 0))
+            if(IsBitOn(_mmu.LCDC, 7) && IsBitOn(_mmu.LCDC, 0))
             {
                 RenderBackground();
             }
@@ -138,66 +138,40 @@ namespace GBSharp
             int sy = _mmu.SCY;
             int lcdc = _mmu.LCDC;
             int ly = _mmu.LY;
-            int backgroundPalette = _mmu.bgPalette;
 
-            int mapOffs = IsBitOn(lcdc, 3) ? 0x1C00 : 0x1800;
+            int y = (((ly + sy) / 8) * 32 + 1024) % 1024;
 
-            mapOffs += ((ly + sy) & 255) >> 3;
-
-            int lineOffs = (sx >> 3);
-
-            int y = (ly + sy) & 7;
-
-            int x = sx & 7;
-
-            int canvasOffs = ly * SCREEN_WIDTH * 4;
-
-            Color color;
-            int tile = _mmu.LoadVRAM(mapOffs + lineOffs);
-
-            //if (IsBitOn(lcdc, 4) && tile < 128) tile += 256;
-
-            for(var i = 0; i < SCREEN_WIDTH; i++)
+            int startingIndex = ly * SCREEN_WIDTH * 4;
+            for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
-                if (tile > 0)
-                {
-                    //Console.WriteLine("It's a miracle");
-                }
-                if(_tileset[tile, y, x] != 0)
-                {
-                    Console.WriteLine(_tileset[tile, y, x]);
-                }
-                color = colors[_tileset[tile, y, x]];
+                int x = (((xx + sx) / 8) + 32) % 32;
 
-                FrameBuffer[canvasOffs] = color.R;
-                FrameBuffer[canvasOffs + 1] = (i / 16) * 20;
-                FrameBuffer[canvasOffs + 2] = color.B;
-                FrameBuffer[canvasOffs + 3] = 255;
-                canvasOffs += 4;
+                int tile = _mmu.LoadVRAM(0x9800 + y + x);
 
-                x++;
-                if(x == 8)
-                {
-                    x = 0;
-                    lineOffs = (lineOffs + 1) & 31;
-                    tile = _mmu.LoadVRAM(mapOffs + lineOffs);
-                    //if (IsBitOn(lcdc, 4) && tile < 128) tile += 256;
-                }
+                int colorIndex = GetColorIndexFromPalette(_tileset[tile, (ly + sy) % 8, (xx + sx) % 8]);
+                Color color = colors[colorIndex];
+                FrameBuffer[startingIndex] = color.R;
+                FrameBuffer[startingIndex + 1] = color.G;
+                FrameBuffer[startingIndex + 2] = color.B;
+                FrameBuffer[startingIndex + 3] = 255;
+                startingIndex += 4;
             }
+            
 
-            int count = 0;
+            /*int count = 0;
             for(int yy = 0; yy < 32; yy++)
             {
                 for (int xx = 0; xx < SCREEN_WIDTH; xx++)
                 {
-                    Color color2 = colors[_tileset[xx / 8 + ((yy / 8) * (SCREEN_WIDTH/8)), yy % 8, xx % 8]];
+                    int colorIndex = GetColorIndexFromPalette(_tileset[xx / 8 + ((yy / 8) * (SCREEN_WIDTH / 8)), yy % 8, xx % 8]);
+                    Color color2 = colors[colorIndex];
                     FrameBuffer[count] = color2.R;
                     FrameBuffer[count + 1] = color2.G;
                     FrameBuffer[count + 2] = color2.B;
                     FrameBuffer[count + 3] = 255;
                     count += 4;
                 }
-            }
+            }*/
         }
 
         public void UpdateTile(int address, int value)
@@ -213,6 +187,11 @@ namespace GBSharp
 
                 _tileset[tile, y, x] = (((_mmu.LoadVRAM(address) & sx) != 0) ? 1 : 0) + (((_mmu.LoadVRAM(address + 1) & sx) != 0) ? 2 : 0);
             }
+        }
+
+        private int GetColorIndexFromPalette(int pixel)
+        {
+            return (_mmu.bgPalette >> (2 * pixel)) & 0x03;
         }
 
         private void ChangeMode(int mode)
