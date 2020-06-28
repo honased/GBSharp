@@ -76,16 +76,6 @@ namespace GBSharp
             {
                 int pc = LoadRegister(Registers16Bit.PC);
 
-                if(pc == 0x5d)
-                {
-                    Console.WriteLine("HELLOI");
-                }
-
-                if(pc >= 0xFC)
-                {
-                    //Console.WriteLine("GT 0x100");
-                }
-
                 Instruction instruction = GetNextInstruction();
                 //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
                 int cycles = instruction.Execute();

@@ -84,10 +84,10 @@ namespace MonoGB
 
             var _keyState = Keyboard.GetState();
 
-            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.W));
-            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.S));
-            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.A));
-            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.D));
+            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up));
+            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down));
+            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left));
+            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right));
             _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A));
             _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S));
             _input.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space));

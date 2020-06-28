@@ -13,7 +13,6 @@ namespace GBSharp
         private const int MASK_DIRECTION = 0x10, MASK_BUTTON = 0x20;
 
         private int directionInput = 0xF, buttonInput = 0xF;
-        private int tick = 0;
 
         bool setButtonInterrupt = false, setDirectionInterrupt = false;
 
@@ -32,7 +31,6 @@ namespace GBSharp
         public Input(MMU mmu)
         {
             _mmu = mmu;
-            tick = 0;
         }
 
         public void Tick()
@@ -46,12 +44,6 @@ namespace GBSharp
             {
                 _mmu.Joypad = (_mmu.Joypad & 0xF0) | (buttonInput);
                 if (setButtonInterrupt) _mmu.SetInterrupt(Interrupts.Joypad);
-            }
-
-            if (tick++ > 12000)
-            {
-                Console.WriteLine("{0:X}", directionInput);
-                tick = 0;
             }
 
             setButtonInterrupt = false;
