@@ -19,14 +19,14 @@ namespace GBSharp
 
         public enum Button
         {
-            Right = 0x11,
-            A = 0x21,
-            Left = 0x12,
-            B = 0x22,
-            Up = 0x14,
-            Select = 0x24,
-            Down = 0x18,
-            Start = 0x28
+            Right = 0,
+            Left = 1,
+            Up = 2,
+            Down = 3,
+            A = 4,
+            B = 5,
+            Select = 6,
+            Start = 7,
         }
 
         public Input(MMU mmu)
@@ -58,24 +58,11 @@ namespace GBSharp
             setDirectionInterrupt = false;
         }
 
-        private int ConvertButtonToBitIndex(Button button)
-        {
-            int buttonVal = ((int)button) & 0xF;
-            switch(buttonVal)
-            {
-                case 0x01: return 0;
-                case 0x02: return 1;
-                case 0x04: return 2;
-                case 0x08: return 3;
-                default: return -1;
-            }
-        }
-
         public void SetInput(Button button, bool Pressed)
         {
             int buttonVal = (int)button;
-            int bitIndex = ConvertButtonToBitIndex(button);
-            if((buttonVal & MASK_BUTTON) > 0xF)
+            int bitIndex = buttonVal % 4;
+            if(buttonVal > 3)
             {
                 if (Pressed)
                 {
