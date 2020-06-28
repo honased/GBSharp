@@ -120,6 +120,7 @@ namespace GBSharp
 
         public void WriteByte(int value, int address)
         {
+            value &= 0xFF; // Ensure that it doesn't go out of bounds of being a byte (0-255)
             switch (address & 0xF000)
             {
                 // Bios / Rom0

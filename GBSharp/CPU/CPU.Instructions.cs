@@ -386,6 +386,24 @@ namespace GBSharp
             for (int i = 0; i < 8; i++) AddCBInstruction(0xC6 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("SET " + i.ToString() + ",(HL)", Instruction_Set) { index = i, registers16bit = Registers16Bit.HL });
             for (int i = 0; i < 8; i++) AddCBInstruction(0xC7 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("SET " + i.ToString() + ",A", Instruction_Set) { index = i, registers8bit = Registers8Bit.A });
 
+            AddCBInstruction(0x07, new Instruction("RLC A", Instruction_RLC) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x00, new Instruction("RLC B", Instruction_RLC) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x01, new Instruction("RLC C", Instruction_RLC) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x02, new Instruction("RLC D", Instruction_RLC) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x03, new Instruction("RLC E", Instruction_RLC) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x04, new Instruction("RLC H", Instruction_RLC) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x05, new Instruction("RLC L", Instruction_RLC) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x06, new Instruction("RLC (HL)", Instruction_RLC) { registers16bit = Registers16Bit.HL });
+
+            AddCBInstruction(0x0F, new Instruction("RRC A", Instruction_RRC) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x08, new Instruction("RRC B", Instruction_RRC) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x09, new Instruction("RRC C", Instruction_RRC) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x0A, new Instruction("RRC D", Instruction_RRC) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x0B, new Instruction("RRC E", Instruction_RRC) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x0C, new Instruction("RRC H", Instruction_RRC) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x0D, new Instruction("RRC L", Instruction_RRC) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x0E, new Instruction("RRC (HL)", Instruction_RRC) { registers16bit = Registers16Bit.HL });
+
             AddCBInstruction(0x17, new Instruction("RL A", Instruction_RL) { registers8bit = Registers8Bit.A });
             AddCBInstruction(0x10, new Instruction("RL B", Instruction_RL) { registers8bit = Registers8Bit.B });
             AddCBInstruction(0x11, new Instruction("RL C", Instruction_RL) { registers8bit = Registers8Bit.C });
@@ -394,6 +412,42 @@ namespace GBSharp
             AddCBInstruction(0x14, new Instruction("RL H", Instruction_RL) { registers8bit = Registers8Bit.H });
             AddCBInstruction(0x15, new Instruction("RL L", Instruction_RL) { registers8bit = Registers8Bit.L });
             AddCBInstruction(0x16, new Instruction("RL (HL)", Instruction_RL) { registers16bit = Registers16Bit.HL });
+
+            AddCBInstruction(0x1F, new Instruction("RR A", Instruction_RR) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x18, new Instruction("RR B", Instruction_RR) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x19, new Instruction("RR C", Instruction_RR) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x1A, new Instruction("RR D", Instruction_RR) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x1B, new Instruction("RR E", Instruction_RR) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x1C, new Instruction("RR H", Instruction_RR) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x1D, new Instruction("RR L", Instruction_RR) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x1E, new Instruction("RR (HL)", Instruction_RR) { registers16bit = Registers16Bit.HL });
+
+            AddCBInstruction(0x27, new Instruction("SLA A", Instruction_SLA) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x20, new Instruction("SLA B", Instruction_SLA) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x21, new Instruction("SLA C", Instruction_SLA) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x22, new Instruction("SLA D", Instruction_SLA) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x23, new Instruction("SLA E", Instruction_SLA) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x24, new Instruction("SLA H", Instruction_SLA) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x25, new Instruction("SLA L", Instruction_SLA) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x26, new Instruction("SLA (HL)", Instruction_SLA) { registers16bit = Registers16Bit.HL });
+
+            AddCBInstruction(0x2F, new Instruction("SRA A", Instruction_SRA) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x28, new Instruction("SRA B", Instruction_SRA) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x29, new Instruction("SRA C", Instruction_SRA) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x2A, new Instruction("SRA D", Instruction_SRA) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x2B, new Instruction("SRA E", Instruction_SRA) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x2C, new Instruction("SRA H", Instruction_SRA) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x2D, new Instruction("SRA L", Instruction_SRA) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x2E, new Instruction("SRA (HL)", Instruction_SRA) { registers16bit = Registers16Bit.HL });
+
+            AddCBInstruction(0x3F, new Instruction("SRL A", Instruction_SRL) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x38, new Instruction("SRL B", Instruction_SRL) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x39, new Instruction("SRL C", Instruction_SRL) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x3A, new Instruction("SRL D", Instruction_SRL) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x3B, new Instruction("SRL E", Instruction_SRL) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x3C, new Instruction("SRL H", Instruction_SRL) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x3D, new Instruction("SRL L", Instruction_SRL) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x3E, new Instruction("SRL (HL)", Instruction_SRL) { registers16bit = Registers16Bit.HL });
 
             AddCBInstruction(0x37, new Instruction("SWAP A", Instruction_Swap) { registers8bit = Registers8Bit.A });
             AddCBInstruction(0x30, new Instruction("SWAP B", Instruction_Swap) { registers8bit = Registers8Bit.B });
@@ -840,7 +894,160 @@ namespace GBSharp
             byte result = (byte)((initialValue << 1) | (IsFlagOn(Flags.C) ? 1 : 0));
 
             SetFlag(Flags.Z, result == 0);
-            SetFlag(Flags.C, (initialValue & 0x80) != 0);
+            SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 7));
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_RR(Instruction instruction)
+        {
+            SetFlag(Flags.N | Flags.H, false);
+
+            byte initialValue;
+
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            byte result = (byte)((initialValue >> 1) | (IsFlagOn(Flags.C) ? 0x80 : 0));
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 0));
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_RLC(Instruction instruction)
+        {
+            int initialValue;
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            bool oldBit7 = Bitwise.IsBitOn(initialValue, 7);
+            SetFlag(Flags.C, oldBit7);
+
+            int result = ((initialValue << 1) & 0xFF) | (oldBit7 ? 1 : 0);
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.N | Flags.H, false);
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_RRC(Instruction instruction)
+        {
+            int initialValue;
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            bool oldBit0 = Bitwise.IsBitOn(initialValue, 0);
+            SetFlag(Flags.C, oldBit0);
+
+            int result = ((initialValue >> 1) & 0xFF) | (oldBit0 ? 0x80 : 0);
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.N | Flags.H, false);
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_SLA(Instruction instruction)
+        {
+            int initialValue;
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 7));
+
+            int result = ((initialValue << 1) & 0xFF);
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.N | Flags.H, false);
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_SRA(Instruction instruction)
+        {
+            int initialValue;
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 0));
+
+            int result = ((initialValue >> 1) | (initialValue & 0x80));
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.N | Flags.H, false);
+
+            if (instruction.registers16bit == Registers16Bit.HL)
+            {
+                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                return 4;
+            }
+            else
+            {
+                SetRegister(instruction.registers8bit, result);
+                return 2;
+            }
+        }
+
+        private int Instruction_SRL(Instruction instruction)
+        {
+            int initialValue;
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            else initialValue = (byte)LoadRegister(instruction.registers8bit);
+
+            SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 0));
+
+            int result = initialValue >> 1;
+
+            SetFlag(Flags.Z, result == 0);
+            SetFlag(Flags.N | Flags.H, false);
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {

@@ -31,6 +31,7 @@ namespace GBSharp
             SetRegister(Registers16Bit.PC, 0x100);
 
             int missingCount = 0;
+            Console.WriteLine("Regular Instructions\n--------------------");
             for(int i = 0; i < _instructions.Length; i++)
             {
                 if(_instructions[i] == null)
@@ -40,6 +41,18 @@ namespace GBSharp
                 }
             }
             Console.WriteLine("Total implemented: " + (_instructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
+
+            missingCount = 0;
+            Console.WriteLine("CB Instructions\n---------------");
+            for (int i = 0; i < _cbInstructions.Length; i++)
+            {
+                if (_cbInstructions[i] == null)
+                {
+                    missingCount++;
+                    Console.WriteLine("Missing CB instruction 0x{0:X}", i);
+                }
+            }
+            Console.WriteLine("Total CB implemented: " + (_cbInstructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
             //Console.ReadKey();
         }
 
