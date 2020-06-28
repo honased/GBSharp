@@ -103,7 +103,11 @@ namespace GBSharp
                     {
                         clocksCount -= HBLANK_CLOCK_COUNT;
 
-                        if (++_mmu.LY == 144) ChangeMode(1);
+                        if (++_mmu.LY == 144)
+                        {
+                            ChangeMode(1);
+                            _mmu.SetInterrupt(Interrupts.VBlank);
+                        }
                         else ChangeMode(2);
                     }
                     break;
@@ -121,6 +125,13 @@ namespace GBSharp
                     }
                     break;
             }
+
+            if(_mmu.LY == _mmu.LYC)
+            {
+                _mmu.STAT = Bitwise.SetBit(_mmu.STAT, 2);
+                if (Bitwise.IsBitOn(_mmu.STAT, 6)) _mmu.SetInterrupt(Interrupts.LCDStat);
+            }
+            else _mmu.STAT = Bitwise.ClearBit(_mmu.STAT, 2);
         }
 
         private void RenderLine()
@@ -205,7 +216,23 @@ namespace GBSharp
 
         private void ChangeMode(int mode)
         {
-            _mmu.STAT = (_mmu.LCDC & ~0x03) | (mode & 0x03);
+            _mmu.STAT = (_mmu.STAT & ~0x03) | (mode & 0x03);
+
+            // Handle Interrupts
+            switch(mode)
+            {
+                case 0:
+                    if (Bitwise.IsBitOn(_mmu.STAT, 3)) _mmu.SetInterrupt(Interrupts.LCDStat);
+                    break;
+
+                case 1:
+                    if (Bitwise.IsBitOn(_mmu.STAT, 4)) _mmu.SetInterrupt(Interrupts.LCDStat);
+                    break;
+
+                case 2:
+                    if (Bitwise.IsBitOn(_mmu.STAT, 5)) _mmu.SetInterrupt(Interrupts.LCDStat);
+                    break;
+            }
         }
     }
 }

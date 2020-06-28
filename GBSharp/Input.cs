@@ -40,12 +40,12 @@ namespace GBSharp
             if(!Bitwise.IsBitOn(_mmu.Joypad, 4)) // Direction Keys
             {
                 _mmu.Joypad = (_mmu.Joypad & 0xF0) | (directionInput);
-                if (setDirectionInterrupt) _mmu.SetInterrupt(4);
+                if (setDirectionInterrupt) _mmu.SetInterrupt(Interrupts.Joypad);
             }
             if (!Bitwise.IsBitOn(_mmu.Joypad, 5)) // Button Keys
             {
                 _mmu.Joypad = (_mmu.Joypad & 0xF0) | (buttonInput);
-                if (setButtonInterrupt) _mmu.SetInterrupt(4);
+                if (setButtonInterrupt) _mmu.SetInterrupt(Interrupts.Joypad);
             }
 
             if (tick++ > 12000)

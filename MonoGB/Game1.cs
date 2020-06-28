@@ -37,6 +37,7 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
+            _cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 

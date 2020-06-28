@@ -60,7 +60,7 @@ namespace GBSharp
 
         public MMU()
         {
-            _inBios = true;
+            _inBios = false;
             _rom = new int[2,0x4000];
             _vram = new int[0x2000];
             _eram = new int[0x2000];
@@ -70,6 +70,11 @@ namespace GBSharp
             _zram = new int[0x80];
 
             SetBios();
+        }
+
+        public void StartInBios()
+        {
+            _inBios = true;
         }
 
         public void SetCPU(CPU cpu)
@@ -230,9 +235,9 @@ namespace GBSharp
             return _vram[addr & 0x1FFF];
         }
 
-        public void SetInterrupt(int interrupt)
+        public void SetInterrupt(Interrupts interrupt)
         {
-            IF = Bitwise.SetBit(IF, interrupt);
+            IF = Bitwise.SetBit(IF, (int)interrupt);
         }
     }
 }

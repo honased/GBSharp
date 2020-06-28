@@ -28,7 +28,7 @@ namespace GBSharp
 
             RegisterInstructions();
             InitializeRegisters();
-            SetRegister(Registers16Bit.PC, 0x000);
+            SetRegister(Registers16Bit.PC, 0x100);
 
             int missingCount = 0;
             for(int i = 0; i < _instructions.Length; i++)
@@ -41,6 +41,18 @@ namespace GBSharp
             }
             Console.WriteLine("Total implemented: " + (_instructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
             //Console.ReadKey();
+        }
+
+        public void StartInBios()
+        {
+            SetRegister(Registers16Bit.AF, 0);
+            SetRegister(Registers16Bit.BC, 0);
+            SetRegister(Registers16Bit.DE, 0);
+            SetRegister(Registers16Bit.HL, 0);
+            SetRegister(Registers16Bit.PC, 0);
+            SetRegister(Registers16Bit.SP, 0);
+
+            _mmu.StartInBios();
         }
 
         private int ReadByte()
@@ -119,4 +131,13 @@ namespace GBSharp
             }
         }
     }
+}
+
+public enum Interrupts
+{
+    VBlank,
+    LCDStat,
+    Timer,
+    Serial,
+    Joypad
 }

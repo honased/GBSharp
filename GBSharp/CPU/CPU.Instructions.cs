@@ -376,6 +376,15 @@ namespace GBSharp
             AddCBInstruction(0x14, new Instruction("RL H", Instruction_RL) { registers8bit = Registers8Bit.H });
             AddCBInstruction(0x15, new Instruction("RL L", Instruction_RL) { registers8bit = Registers8Bit.L });
             AddCBInstruction(0x16, new Instruction("RL (HL)", Instruction_RL) { registers16bit = Registers16Bit.HL });
+
+            AddCBInstruction(0x37, new Instruction("SWAP A", Instruction_Swap) { registers8bit = Registers8Bit.A });
+            AddCBInstruction(0x30, new Instruction("SWAP B", Instruction_Swap) { registers8bit = Registers8Bit.B });
+            AddCBInstruction(0x31, new Instruction("SWAP C", Instruction_Swap) { registers8bit = Registers8Bit.C });
+            AddCBInstruction(0x32, new Instruction("SWAP D", Instruction_Swap) { registers8bit = Registers8Bit.D });
+            AddCBInstruction(0x33, new Instruction("SWAP E", Instruction_Swap) { registers8bit = Registers8Bit.E });
+            AddCBInstruction(0x34, new Instruction("SWAP H", Instruction_Swap) { registers8bit = Registers8Bit.H });
+            AddCBInstruction(0x35, new Instruction("SWAP L", Instruction_Swap) { registers8bit = Registers8Bit.L });
+            AddCBInstruction(0x36, new Instruction("SWAP (HL)", Instruction_Swap) { registers16bit = Registers16Bit.HL });
         }
 
         private void AddInstruction(int location, Instruction instruction)
@@ -782,6 +791,23 @@ namespace GBSharp
                 //return 3;
             }
             return 6;
+        }
+
+        private int Instruction_Swap(Instruction instruction)
+        {
+            if(instruction.registers16bit == Registers16Bit.None)
+            {
+                // 8bit register
+                int value = LoadRegister(instruction.registers8bit);
+                SetRegister(instruction.registers8bit, ((value & 0xF) << 4) | ((value & 0xF0) >> 4));
+                return 2;
+            }
+            else
+            {
+                int value = _mmu.ReadByte(LoadRegister(instruction.registers16bit));
+                _mmu.WriteByte(((value & 0xF) << 4) | ((value & 0xF0) >> 4), LoadRegister(instruction.registers16bit));
+                return 4;
+            }
         }
 
         private int Instruction_RL(Instruction instruction)
