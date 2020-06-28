@@ -18,6 +18,7 @@ namespace GBSharp
             SetRegister(Registers16Bit.DE, 0x00D8);
             SetRegister(Registers16Bit.HL, 0x014D);
             SetRegister(Registers16Bit.SP, 0xFFFE);
+            SetRegister(Registers16Bit.PC, 0x100);
         }
 
         public enum Registers8Bit

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GBSharp;
+using System.IO;
 
 namespace MonoGB
 {
@@ -17,6 +18,9 @@ namespace MonoGB
         PPU _ppu;
         Input _input;
         Texture2D _frame;
+        int _currentTestRom;
+
+        KeyboardState oldState;
 
         public Game1()
         {
@@ -41,10 +45,11 @@ namespace MonoGB
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            int[] cart = CartridgeLoader.LoadCart("Roms/ttt.gb");
-            CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0x00);
+            CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/ttt.gb"), 0x00);
 
             IsFixedTimeStep = true;
+
+            oldState = Keyboard.GetState();
 
             base.Initialize();
         }
@@ -68,6 +73,14 @@ namespace MonoGB
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
+        }
+
+        private int[] GetNextTestRom()
+        {
+            string[] files = Directory.GetFiles("Blargs");
+            int[] cart = CartridgeLoader.LoadCart(files[_currentTestRom++]);
+            if (_currentTestRom >= files.Length) _currentTestRom = 0;
+            return cart;
         }
 
         /// <summary>
@@ -103,6 +116,13 @@ namespace MonoGB
             }
 
             _frame.SetData<Color>(colors);
+
+            if(_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
+            {
+                _cpu.Reset(false, GetNextTestRom());
+            }
+
+            oldState = _keyState;
 
             base.Update(gameTime);
         }

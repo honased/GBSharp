@@ -20,8 +20,6 @@ namespace GBSharp
         private const int HBLANK_CLOCK_COUNT = 51;
         private const int VBLANK_CLOCK_COUNT = 114;
 
-        public static int RenderCount = 0;
-
         private int[, ,] _tileset;
 
         private Color[] colors;
@@ -40,40 +38,14 @@ namespace GBSharp
             }
         }
 
-        int testCount = 0;
-
         public PPU(MMU mmu)
         {
             _mmu = mmu;
             // Create a new framebuffer with 4 colors
-            FrameBuffer = new int[SCREEN_WIDTH * SCREEN_HEIGHT * 4];
-
-            colors = new Color[] { new Color(255, 255, 255), new Color(192, 192, 192), new Color(96, 96, 96), new Color(0, 0, 0) };
-            
-            // Initialize it to white
-            for(int i = 0; i < FrameBuffer.Length; i++)
-            {
-                FrameBuffer[i] = 255;
-            }
-            clocksCount = 0;
-
-            ChangeMode(2);
-
-            _tileset = new int[512, 8, 8];
-
-            for(int i = 0; i < 512; i++)
-            {
-                for(int j = 0; j < 8; j++)
-                {
-                    for(int x = 0; x < 8; x++)
-                    {
-                        _tileset[i, j, x] = 0;
-                    }
-                }
-            }
+            Reset();
         }
 
-        public void Tick(int clocks)
+        internal void Tick(int clocks)
         {
             clocksCount += clocks;
 
@@ -134,9 +106,37 @@ namespace GBSharp
             else _mmu.STAT = Bitwise.ClearBit(_mmu.STAT, 2);
         }
 
+        internal void Reset()
+        {
+            FrameBuffer = new int[SCREEN_WIDTH * SCREEN_HEIGHT * 4];
+
+            colors = new Color[] { new Color(255, 255, 255), new Color(192, 192, 192), new Color(96, 96, 96), new Color(0, 0, 0) };
+
+            // Initialize it to white
+            for (int i = 0; i < FrameBuffer.Length; i++)
+            {
+                FrameBuffer[i] = 255;
+            }
+            clocksCount = 0;
+
+            ChangeMode(2);
+
+            _tileset = new int[512, 8, 8];
+
+            for (int i = 0; i < 512; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int x = 0; x < 8; x++)
+                    {
+                        _tileset[i, j, x] = 0;
+                    }
+                }
+            }
+        }
+
         private void RenderLine()
         {
-            RenderCount++;
             if(Bitwise.IsBitOn(_mmu.LCDC, 7) && Bitwise.IsBitOn(_mmu.LCDC, 0))
             {
                 RenderBackground();
@@ -194,7 +194,7 @@ namespace GBSharp
             }*/
         }
 
-        public void UpdateTile(int address, int value)
+        internal void UpdateTile(int address, int value)
         {
             address &= 0x1FFE;
 

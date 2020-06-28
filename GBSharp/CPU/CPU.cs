@@ -28,7 +28,6 @@ namespace GBSharp
 
             RegisterInstructions();
             InitializeRegisters();
-            SetRegister(Registers16Bit.PC, 0x100);
 
             int missingCount = 0;
             Console.WriteLine("Regular Instructions\n--------------------");
@@ -68,6 +67,21 @@ namespace GBSharp
             _mmu.StartInBios();
         }
 
+        public void Reset(bool inBios=false, int[] cart = null)
+        {
+            InitializeRegisters();
+
+            IME = false;
+            setIME = false;
+
+            _mmu.Reset();
+            _ppu.Reset();
+
+            if(cart != null) CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0);
+
+            if (inBios) StartInBios();
+        }
+
         private int ReadByte()
         {
             int pc = LoadRegister(Registers16Bit.PC);
@@ -100,7 +114,6 @@ namespace GBSharp
             }
             currentCycles -= CPU_CYCLES;
             //Console.WriteLine("REnder frame: " + PPU.RenderCount);
-            PPU.RenderCount = 0;
         }
 
         private void CheckInterrupts()

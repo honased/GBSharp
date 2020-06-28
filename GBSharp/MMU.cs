@@ -72,17 +72,27 @@ namespace GBSharp
             SetBios();
         }
 
-        public void StartInBios()
+        internal void Reset()
+        {
+            for (int i = 0; i < _vram.Length; i++) _vram[i] = 0;
+            for (int i = 0; i < _eram.Length; i++) _eram[i] = 0;
+            for (int i = 0; i < _wram.Length; i++) _wram[i] = 0;
+            for (int i = 0; i < _oam.Length; i++) _oam[i] = 0;
+            for (int i = 0; i < _io.Length; i++) _io[i] = 0;
+            for (int i = 0; i < _zram.Length; i++) _zram[i] = 0;
+        }
+
+        internal void StartInBios()
         {
             _inBios = true;
         }
 
-        public void SetCPU(CPU cpu)
+        internal void SetCPU(CPU cpu)
         {
             _cpu = cpu;
         }
 
-        public void SetPPU(PPU ppu)
+        internal void SetPPU(PPU ppu)
         {
             _ppu = ppu;
         }
@@ -96,7 +106,7 @@ namespace GBSharp
             }
         }
 
-        public void SetBios()
+        private void SetBios()
         {
             _bios = new int[]{
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
@@ -166,11 +176,8 @@ namespace GBSharp
                     }
                     _io[address - 0xFF00] = value;
                     break;
-                case int _ when address < 0xFFFF:
+                case int _ when address <= 0xFFFF:
                     _zram[address - 0xFF80] = value;
-                    break;
-                case int _ when address == 0xFFFF:
-                    IE = value;
                     break;
 
                 default:
@@ -209,13 +216,11 @@ namespace GBSharp
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
                     return 0;
-                case int _ when address < 0xFFFF:
+                case int _ when address <= 0xFFFF:
                     return _zram[address - 0xFF80];
-                case int _ when address == 0xFFFF:
-                    return IE;
 
                 default:
-                    //Console.WriteLine("Out of memory bank");
+                    Console.WriteLine("Out of memory bank");
                     return 0x00;
             }
         }
@@ -236,7 +241,7 @@ namespace GBSharp
             return _vram[addr & 0x1FFF];
         }
 
-        public void SetInterrupt(Interrupts interrupt)
+        internal void SetInterrupt(Interrupts interrupt)
         {
             IF = Bitwise.SetBit(IF, (int)interrupt);
         }
