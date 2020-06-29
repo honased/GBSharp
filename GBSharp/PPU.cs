@@ -160,7 +160,7 @@ namespace GBSharp
 
             int startingIndex = ly * SCREEN_WIDTH * 4;
 
-            bool shouldValueBeSigned = Bitwise.IsBitOn(lcdc, 4);
+            bool shouldValueBeSigned = !Bitwise.IsBitOn(lcdc, 4);
             int tileInitLocation = shouldValueBeSigned ? 256 + 128 : 0;
 
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)

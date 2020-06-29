@@ -50,6 +50,11 @@ namespace GBSharp
         {
             return method.Invoke(this);
         }
+
+        public override string ToString()
+        {
+            return "[0x" + String.Format("{0:X}", Opcode) + "]:\t" + Name;
+        }
     }
 
     public partial class CPU
@@ -615,7 +620,12 @@ namespace GBSharp
 
         private int Instruction_LDn_nn(Instruction instruction)
         {
-            SetRegister(instruction.registers16bit, ReadWord());
+            int val = ReadWord();
+            if(instruction.registers16bit == Registers16Bit.DE && val == 0)
+            {
+                int debug = 0;
+            }
+            SetRegister(instruction.registers16bit, val);
             return 3;
         }
 
@@ -720,6 +730,8 @@ namespace GBSharp
             }
 
             SetFlag(Flags.Z, result == 0);
+
+            SetRegister(Registers8Bit.A, result);
 
             return cycles;
         }
