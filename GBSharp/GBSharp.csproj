@@ -62,7 +62,7 @@
     <None Include="Blargs\02-interrupts.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\03-op sp,hl.gb">
+    <None Include="Blargs\00-op sp,hl.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Blargs\04-op r,imm.gb">

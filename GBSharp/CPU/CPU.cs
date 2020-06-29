@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,10 @@ namespace GBSharp
         private bool IME;
         private int setIME = 0;
         private int clearIME = 0;
+
+        public bool DebugMode { get; set; }
+
+        bool debugging = true;
 
         public CPU(MMU mmu, PPU ppu, Input input)
         {
@@ -109,8 +114,30 @@ namespace GBSharp
                 {
                     int pc = LoadRegister(Registers16Bit.PC);
 
+                    if(pc == 0xC221)
+                    {
+                        int debug = 0;
+                    }
+
                     Instruction instruction = GetNextInstruction();
                     //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+
+                    if(DebugMode)
+                    {
+                        if(debugging)
+                        {
+                            Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", LoadRegister(Registers16Bit.AF), LoadRegister(Registers16Bit.BC), LoadRegister(Registers16Bit.DE), LoadRegister(Registers16Bit.HL), LoadRegister(Registers16Bit.SP));
+                            Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+
+                            bool successful = false;
+                            while(!successful)
+                            {
+                                Console.Write(">> ");
+                                successful = ProcessCommands(Console.ReadLine().Trim());
+                            }
+                        }
+                    }
+
                     cycles = instruction.Execute();
                 }
                 
@@ -120,6 +147,49 @@ namespace GBSharp
             }
             currentCycles -= CPU_CYCLES;
             //Console.WriteLine("REnder frame: " + PPU.RenderCount);
+        }
+
+        private bool ProcessCommands(string input)
+        {
+            string[] tokens = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length == 0) return true;
+
+            int memLocation;
+
+            switch(tokens[0])
+            {
+                case "chk":
+                    if (tokens.Length == 1) Console.WriteLine("Not enough arguments!");
+                    switch(tokens[1])
+                    {
+                        case "mem":
+                            if (tokens.Length == 2) Console.WriteLine("Not enough arguments!");
+                            if (TryParseHex(tokens[2], out memLocation)) Console.WriteLine("Memory at 0x{0:X4}:" + _mmu.ReadByte(memLocation), memLocation);
+                            else Console.WriteLine("Bad location given!");
+                            break;
+                    }
+                    break;
+
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            return false;
+        }
+
+        private bool TryParseHex(string hex, out int result)
+        {
+            result = 0;
+            try
+            {
+                result = Convert.ToInt32(hex, 16);
+                return true;
+            }
+            catch(FormatException e)
+            {
+                return false;
+            }
         }
 
         private int CheckInterrupts()

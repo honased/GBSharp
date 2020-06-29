@@ -54,7 +54,7 @@ namespace GBSharp
             None = 0
         }
 
-        private void SetFlag(int flags, bool on)
+        public void SetFlag(int flags, bool on)
         {
             int currentFlag = LoadRegister(Registers8Bit.F);
 
@@ -62,17 +62,17 @@ namespace GBSharp
             else SetRegister(Registers8Bit.F, currentFlag & (~flags));
         }
 
-        private void SetFlag(Flags flag, bool on)
+        public void SetFlag(Flags flag, bool on)
         {
             SetFlag((int)flag, on);
         }
 
-        private bool IsFlagOn(int flags)
+        public bool IsFlagOn(int flags)
         {
             return (LoadRegister(Registers8Bit.F) & flags) > 0;
         }
 
-        private bool IsFlagOn(Flags flag)
+        public bool IsFlagOn(Flags flag)
         {
             return IsFlagOn((int)flag);
         }
@@ -89,26 +89,24 @@ namespace GBSharp
             return _registers[((int)register)];
         }
 
-        private void SetRegister(Registers8Bit register, int value)
+        public void SetRegister(Registers8Bit register, int value)
         {
             int index = ((int)register) / 2;
-            int newValue = value;
+
+            if (register == Registers8Bit.F) value &= 0xF0;
+
             if (((int)register) % 2 == 0)
             {
-                newValue <<= 8;
-                _registers[index] = (_registers[index] & 0x00FF) | (newValue & 0xFF00);
+                value <<= 8;
+                _registers[index] = (_registers[index] & 0x00FF) | (value & 0xFF00);
             }
             else
             {
-                _registers[index] = (_registers[index] & 0xFF00) | (newValue & 0x00FF);
-            }
-            if(LoadRegister(Registers8Bit.A) > 255)
-            {
-                Console.WriteLine("TEST");
+                _registers[index] = (_registers[index] & 0xFF00) | (value & 0x00FF);
             }
         }
 
-        private void SetRegister(Registers16Bit register, int value)
+        public void SetRegister(Registers16Bit register, int value)
         {
             if (register == Registers16Bit.AF) value &= 0xFFF0;
             _registers[((int)register)] = value;
