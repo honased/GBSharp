@@ -741,13 +741,13 @@ namespace GBSharp
 
         private int Instruction_EI(Instruction instruction)
         {
-            setIME = true;
+            setIME = 2;
             return 1;
         }
 
         private int Instruction_DI(Instruction instruction)
         {
-            IME = false;
+            clearIME = 2;
             return 1;
         }
 
@@ -793,7 +793,7 @@ namespace GBSharp
             else
             {
                 int address = ReadWord();
-                if(IsFlagOn(instruction.flag) == instruction.shouldFlag2BeSet)
+                if(IsFlagOn(instruction.flag) == instruction.shouldFlagBeSet)
                 {
                     SetRegister(Registers16Bit.PC, address);
                 }
@@ -822,7 +822,8 @@ namespace GBSharp
             }
             else
             {
-                result &= ReadByte();
+                int val = ReadByte();
+                result &= val;
                 SetFlag(Flags.Z, result == 0);
                 SetRegister(Registers8Bit.A, result);
                 return 2;
@@ -1133,12 +1134,15 @@ namespace GBSharp
         {
             int registerA = LoadRegister(Registers8Bit.A);
             int cVal = (includeCarry && IsFlagOn(Flags.C)) ? 1 : 0;
+
+            int result = ((registerA - (val + cVal)) + 256) % 256;
+
             SetFlag(Flags.N, true);
-            SetFlag(Flags.Z, registerA == val + cVal);
+            SetFlag(Flags.Z, result == 0);
             SetFlag(Flags.H, (registerA & 0x0F) < (val & 0x0F) + cVal);
             SetFlag(Flags.C, registerA < val + cVal);
 
-            return ((registerA - (val + cVal)) + 256) % 256;
+            return result;
         }
 
         private int Add(int val, bool includeCarry)
@@ -1291,21 +1295,23 @@ namespace GBSharp
         private int Instruction_DAA(Instruction instruction)
         {
             int a = LoadRegister(Registers8Bit.A);
-            int adj = IsFlagOn(Flags.C) ? 0x60 : 0x00;
 
-            if (IsFlagOn(Flags.H)) adj |= 0x06;
-            if(!IsFlagOn(Flags.N))
+            SetFlag(Flags.C, false);
+
+            if (!IsFlagOn(Flags.N))
             {
-                if ((a & 0x0F) > 0x09) adj |= 0x06;
-                if (a > 0x99) adj |= 0x60;
-                a = (a + adj) % 256;
+                if (IsFlagOn(Flags.C) || a > 0x99)
+                {
+                    SetFlag(Flags.C, true);
+                    a += 0x60;
+                }
+                if (IsFlagOn(Flags.H) || (a & 0x0F) > 0x09) a += 0x06;
             }
             else
             {
-                a = ((a - adj) + 256) % 256;
+                if (IsFlagOn(Flags.C)) a -= 0x60;
+                if (IsFlagOn(Flags.H)) a -= 0x06;
             }
-
-            SetFlag(Flags.C, adj >= 0x60);
             SetFlag(Flags.H, false);
             SetFlag(Flags.Z, a == 0);
             SetRegister(Registers8Bit.A, a);

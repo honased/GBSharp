@@ -110,6 +110,7 @@ namespace GBSharp
 
         private void SetRegister(Registers16Bit register, int value)
         {
+            if (register == Registers16Bit.AF) value &= 0xFFF0;
             _registers[((int)register)] = value;
         }
     }

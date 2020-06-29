@@ -14,7 +14,8 @@ namespace GBSharp
         const int CPU_CYCLES = 17556;
         private int currentCycles;
         private bool IME;
-        private bool setIME = false;
+        private int setIME = 0;
+        private int clearIME = 0;
 
         public CPU(MMU mmu, PPU ppu, Input input)
         {
@@ -72,7 +73,8 @@ namespace GBSharp
             InitializeRegisters();
 
             IME = false;
-            setIME = false;
+            setIME = 0;
+            clearIME = 0;
 
             _mmu.Reset();
             _ppu.Reset();
@@ -101,50 +103,65 @@ namespace GBSharp
         {
             while (currentCycles < CPU_CYCLES)
             {
-                int pc = LoadRegister(Registers16Bit.PC);
+                int cycles = CheckInterrupts();
 
-                Instruction instruction = GetNextInstruction();
-                //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
-                int cycles = instruction.Execute();
+                if(cycles == 0)
+                {
+                    int pc = LoadRegister(Registers16Bit.PC);
+
+                    Instruction instruction = GetNextInstruction();
+                    //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+                    cycles = instruction.Execute();
+                }
+                
                 currentCycles += cycles;
                 _ppu.Tick(cycles);
                 _input.Tick();
-
-                CheckInterrupts();
             }
             currentCycles -= CPU_CYCLES;
             //Console.WriteLine("REnder frame: " + PPU.RenderCount);
         }
 
-        private void CheckInterrupts()
+        private int CheckInterrupts()
         {
             int IE = _mmu.IE;
             int IF = _mmu.IF;
 
-            for(int i = 0; i < 5; i++)
+            switch(setIME)
             {
-                if((IE & IF) >> i == 1)
+                case 2: setIME = 1; break;
+                case 1: setIME = 0;  IME = true; break;
+                default: setIME = 0; break;
+            }
+
+            switch (clearIME)
+            {
+                case 2: clearIME = 1; break;
+                case 1: clearIME = 0; IME = false; break;
+                default: setIME = 0; break;
+            }
+
+            if (IME)
+            {
+                for (int i = 0; i < 5; i++)
                 {
-                    ExecuteInterrupt(i);
+                    if ((IE & IF) >> i == 1)
+                    {
+                        ExecuteInterrupt(i);
+                        return 1;
+                    }
                 }
             }
 
-            if(setIME)
-            {
-                setIME = false;
-                IME = true;
-            }
+            return 0;
         }
 
         private void ExecuteInterrupt(int interrupt)
         {
-            if(IME)
-            {
-                IME = false;
-                Push(LoadRegister(Registers16Bit.PC));
-                SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
-                _mmu.IF &= ~(0x1 << interrupt);
-            }
+            IME = false;
+            Push(LoadRegister(Registers16Bit.PC));
+            SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
+            _mmu.IF &= ~(0x1 << interrupt);
         }
     }
 }

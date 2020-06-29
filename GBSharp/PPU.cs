@@ -20,6 +20,9 @@ namespace GBSharp
         private const int HBLANK_CLOCK_COUNT = 51;
         private const int VBLANK_CLOCK_COUNT = 114;
 
+        private const int OAM_SIZE = 0xA0;
+        private const int SPRITE_SIZE = 0x04;
+
         private int[, ,] _tileset;
 
         private Color[] colors;
@@ -137,13 +140,14 @@ namespace GBSharp
 
         private void RenderLine()
         {
-            if(Bitwise.IsBitOn(_mmu.LCDC, 7) && Bitwise.IsBitOn(_mmu.LCDC, 0))
+            if(Bitwise.IsBitOn(_mmu.LCDC, 7))
             {
-                RenderBackground();
+                if(Bitwise.IsBitOn(_mmu.LCDC, 0)) DrawBackground();
+                if(Bitwise.IsBitOn(_mmu.LCDC, 1)) DrawSprites();
             }
         }
 
-        private void RenderBackground()
+        private void DrawBackground()
         {
             int sx = _mmu.SCX;
             int sy = _mmu.SCY;
@@ -157,7 +161,7 @@ namespace GBSharp
             int startingIndex = ly * SCREEN_WIDTH * 4;
 
             bool shouldValueBeSigned = Bitwise.IsBitOn(lcdc, 4);
-            int tileInitLocation = shouldValueBeSigned ? 0 : 256 + 128;
+            int tileInitLocation = shouldValueBeSigned ? 256 + 128 : 0;
 
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
@@ -168,7 +172,7 @@ namespace GBSharp
                 if (shouldValueBeSigned) tile = (sbyte)_mmu.LoadVRAM(bgTileMapLocation + y + x);
                 else tile = (byte)_mmu.LoadVRAM(bgTileMapLocation + y + x);
 
-                int colorIndex = GetColorIndexFromPalette(_tileset[tile, (ly + sy) % 8, (xx + sx) % 8]);
+                int colorIndex = GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8]);
                 Color color = colors[colorIndex];
                 FrameBuffer[startingIndex] = color.R;
                 FrameBuffer[startingIndex + 1] = color.G;
@@ -194,6 +198,50 @@ namespace GBSharp
             }*/
         }
 
+        private void DrawSprites()
+        {
+            int ly = _mmu.LY;
+            int lcdc = _mmu.LCDC;
+            bool isSpriteHeight16 = Bitwise.IsBitOn(lcdc, 2);
+            int spriteHeight = isSpriteHeight16 ? 16 : 8;
+            for(int i = OAM_SIZE - SPRITE_SIZE; i >= 0; i -= SPRITE_SIZE)
+            {
+                int spriteY = _mmu.LoadOAM(i) - 16;
+                int spriteX = _mmu.LoadOAM(i + 1) - 8;
+                int tileNumber = _mmu.LoadOAM(i + 2);
+                int attribs = _mmu.LoadOAM(i + 3);
+                bool objAboveBg = !Bitwise.IsBitOn(attribs, 7);
+                bool yFlip = Bitwise.IsBitOn(attribs, 6);
+                bool xFlip = Bitwise.IsBitOn(attribs, 5);
+                int paletteNumber = Bitwise.IsBitOn(attribs, 4) ? 1 : 0;
+
+                if(ly >= spriteY && ly < spriteY + spriteHeight)
+                {
+                    int writePosition = (ly * SCREEN_WIDTH * 4) + (spriteX * 4);
+                    for(int x = 0; x < 8; x++)
+                    {
+                        int drawY = yFlip ? spriteHeight - 1 - (ly - spriteY) : ly - spriteY;
+                        int drawX = xFlip ? 7 - x : x;
+                        int pixel = _tileset[tileNumber, drawY, drawX];
+
+                        int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
+                        if (colorIndex != 0)
+                        {
+                            if(objAboveBg || FrameBuffer[writePosition] == 255)
+                            {
+                                Color color = colors[colorIndex];
+                                FrameBuffer[writePosition] = color.R;
+                                FrameBuffer[writePosition + 1] = color.G;
+                                FrameBuffer[writePosition + 2] = color.B;
+                                FrameBuffer[writePosition + 3] = 255;
+                            }
+                        }
+                        writePosition += 4;
+                    }
+                }
+            }
+        }
+
         internal void UpdateTile(int address, int value)
         {
             address &= 0x1FFE;
@@ -212,6 +260,11 @@ namespace GBSharp
         private int GetColorIndexFromPalette(int pixel)
         {
             return (_mmu.bgPalette >> (2 * pixel)) & 0x03;
+        }
+
+        private int GetSpriteColorIndexFromPalette(int pixel, int palette)
+        {
+            return (_mmu.GetObjPalette(palette) >> (2 * pixel)) & 0x03;
         }
 
         private void ChangeMode(int mode)

@@ -54,6 +54,11 @@ namespace GBSharp
 
         public int bgPalette { get { return _io[0x47]; } }
 
+        public int GetObjPalette(int palette)
+        {
+            return _io[0x48 + palette];
+        }
+
         private CPU _cpu;
 
         private bool _inBios;
@@ -163,6 +168,10 @@ namespace GBSharp
                     {
                         case 0xFF0F: 
                             value |= 0xE0;
+                            if((value & 0x04) == 0x04)
+                            {
+                                int val = 0;
+                            }
                             break;
 
                         case 0xFF41:
@@ -171,6 +180,14 @@ namespace GBSharp
 
                         case 0xFF04: case 0xFF44:
                             value = 0;
+                            break;
+
+                        case 0xFF46:
+                            int addr = value << 8;
+                            for(int i = 0; i < _oam.Length; i++)
+                            {
+                                _oam[i] = ReadByte(addr + i);
+                            }
                             break;
 
                     }
@@ -239,6 +256,11 @@ namespace GBSharp
         public int LoadVRAM(int addr)
         {
             return _vram[addr & 0x1FFF];
+        }
+
+        public int LoadOAM(int addr)
+        {
+            return _oam[addr & 0x1FFF];
         }
 
         internal void SetInterrupt(Interrupts interrupt)
