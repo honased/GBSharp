@@ -48,8 +48,8 @@ namespace MonoGB
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Blargs/01-special.gb"), 0x00);
-            //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
+            //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/Tetris.gb"), 0x00);
+            CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
 
             IsFixedTimeStep = true;
 
