@@ -570,7 +570,7 @@ namespace GBSharp
             SetFlag(Flags.Z | Flags.N, false);
             SetFlag(Flags.H, (val1 & 0x000F) + (val2 & 0x000F) > 0x000F);
             SetFlag(Flags.C, (val1 & 0x00FF) + (val2 & 0x00FF) > 0x00FF);
-            return (val1 + val2 + 65535) % 65535;
+            return (val1 + val2 + 65536) % 65536;
         }
 
         private int Instruction_DEC8(Instruction instruction)
@@ -1194,11 +1194,11 @@ namespace GBSharp
         {
             int val1 = LoadRegister(instruction.registers16bit);
             int val2 = LoadRegister(instruction.registers16Bit2);
-            int result = (val1 + val2) % 65535;
+            int result = (val1 + val2) % 65536;
             SetRegister(instruction.registers16bit, result);
 
             SetFlag(Flags.N, false);
-            SetFlag(Flags.C, val1 + val2 > 0xFFFF);
+            SetFlag(Flags.C, val1 > 0xFFFF - val2);
             SetFlag(Flags.H, (val1 & 0x07FF) + (val2 & 0x07FF) > 0x07FF);
 
             return 2;

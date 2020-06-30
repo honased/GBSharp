@@ -17,6 +17,8 @@ namespace GBSharp
         private int[] _oam;
         private int[] _io;
         private PPU _ppu;
+        private Timer _timer;
+
         public int IE
         {
             get
@@ -51,6 +53,14 @@ namespace GBSharp
         public int STAT { get { return _io[0x41]; } set { _io[0x41] = value; } }
 
         public int Joypad { get { return _io[0x00]; } set { _io[0x00] = value; } }
+
+        public int DIV { get { return _io[0x04]; } set { _io[0x04] = value; } }
+
+        public int TIMA { get { return _io[0x05]; } set { _io[0x05] = value; } }
+
+        public int TMA { get { return _io[0x06]; } set { _io[0x06] = value; } }
+
+        public int TAC { get { return _io[0x07]; } set { _io[0x07] = value; } }
 
         public int bgPalette { get { return _io[0x47]; } }
 
@@ -100,6 +110,11 @@ namespace GBSharp
         internal void SetPPU(PPU ppu)
         {
             _ppu = ppu;
+        }
+
+        internal void SetTimer(Timer timer)
+        {
+            _timer = timer;
         }
 
         public void WriteBytes(int[] bytes, int address)
@@ -192,6 +207,12 @@ namespace GBSharp
 
                     }
                     _io[address - 0xFF00] = value;
+
+                    if(address >= 0xFF04 && address <= 0xFF07)
+                    {
+                        _timer.Update();
+                    }
+
                     break;
                 case int _ when address <= 0xFFFF:
                     _zram[address - 0xFF80] = value;

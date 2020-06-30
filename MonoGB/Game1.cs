@@ -43,13 +43,13 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            _cpu.DebugMode = true;
+            //_cpu.DebugMode = true;
             //_cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Blargs/jp_timing.gb"), 0x00);
-            CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
+            CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Gekkio/push_timing.gb"), 0x00);
+            //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
 
             IsFixedTimeStep = true;
 

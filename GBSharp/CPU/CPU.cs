@@ -12,6 +12,7 @@ namespace GBSharp
         private MMU _mmu;
         private PPU _ppu;
         private Input _input;
+        private Timer _timer;
         const int CPU_CYCLES = 17556;
         private int currentCycles;
         private bool IME;
@@ -27,8 +28,10 @@ namespace GBSharp
             _mmu = mmu;
             _ppu = ppu;
             _input = input;
+            _timer = new Timer(_mmu);
             mmu.SetCPU(this);
             mmu.SetPPU(_ppu);
+            mmu.SetTimer(_timer);
 
             currentCycles = 0;
 
@@ -81,6 +84,8 @@ namespace GBSharp
             setIME = 0;
             clearIME = 0;
 
+            debugging = true;
+
             _mmu.Reset();
             _ppu.Reset();
 
@@ -127,7 +132,7 @@ namespace GBSharp
                         if(debugging)
                         {
                             Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", LoadRegister(Registers16Bit.AF), LoadRegister(Registers16Bit.BC), LoadRegister(Registers16Bit.DE), LoadRegister(Registers16Bit.HL), LoadRegister(Registers16Bit.SP));
-                            Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
+                            Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instruction.Name, pc, instruction.Opcode);
 
                             bool successful = false;
                             while(!successful)
@@ -142,6 +147,7 @@ namespace GBSharp
                 }
                 
                 currentCycles += cycles;
+                _timer.Tick(cycles);
                 _ppu.Tick(cycles);
                 _input.Tick();
             }
@@ -168,6 +174,17 @@ namespace GBSharp
                             else Console.WriteLine("Bad location given!");
                             break;
                     }
+                    break;
+
+                case "run":
+                    debugging = false;
+                    return true;
+
+                case "jp":
+                    if (tokens.Length == 1) Console.WriteLine("Not enough arguments!");
+                    
+                    
+
                     break;
 
                 default:
