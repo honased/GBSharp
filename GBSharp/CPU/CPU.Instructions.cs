@@ -370,7 +370,7 @@ namespace GBSharp
             AddInstruction(0x2F, new Instruction("CPL", Instruction_CPL));
             AddInstruction(0x3F, new Instruction("CCF", Instruction_CCF));
             AddInstruction(0x37, new Instruction("SCF", Instruction_SCF));
-            //AddInstruction(0x27, new Instruction("DAA", Instruction_DAA));
+            AddInstruction(0x27, new Instruction("DAA", Instruction_DAA));
             //
             //// CB Instructions
             for (int i = 0; i < 8; i++) AddCBInstruction(0x40 + (i / 2) * 16 + (8 * ((i % 2 == 1) ? 1 : 0)), new Instruction("BIT " + i.ToString() + ",B", Instruction_Bit) { index = i, registers8bit = Registers8Bit.B });
@@ -1309,29 +1309,63 @@ namespace GBSharp
 
         private int Instruction_DAA(Instruction instruction)
         {
+            int correction = 0;
             int a = LoadRegister(Registers8Bit.A);
 
-            SetFlag(Flags.C, false);
+            bool setFlagC = false;
+
+            if(IsFlagOn(Flags.H) || (!IsFlagOn(Flags.N) && (a & 0xF) > 9))
+            {
+                correction |= 0x6;
+            }
+
+            if (IsFlagOn(Flags.C) || (!IsFlagOn(Flags.N) && a > 0x99))
+            {
+                correction |= 0x60;
+                setFlagC = true;
+            }
+
+            a += (IsFlagOn(Flags.N)) ? -correction : correction;
+
+            a &= 0xFF;
+
+            SetFlag(Flags.H, false);
+            SetFlag(Flags.Z, a == 0);
+            SetFlag(Flags.C, setFlagC);
+
+            SetRegister(Registers8Bit.A, a);
+
+            return 1;
+            /*int a = LoadRegister(Registers8Bit.A);
+
+            if(a == 0x9a && LoadRegister(Registers8Bit.F) == 0x00)
+            {
+                int debug = 0;
+            }
 
             if (!IsFlagOn(Flags.N))
             {
                 if (IsFlagOn(Flags.C) || a > 0x99)
                 {
-                    SetFlag(Flags.C, true);
+                    //SetFlag(Flags.C, true);
                     a += 0x60;
                 }
                 if (IsFlagOn(Flags.H) || (a & 0x0F) > 0x09) a += 0x06;
             }
             else
             {
-                if (IsFlagOn(Flags.C)) a -= 0x60;
+                if (IsFlagOn(Flags.C))
+                {
+                    a -= 0x60;
+                   // SetFlag(Flags.C, true);
+                }
                 if (IsFlagOn(Flags.H)) a -= 0x06;
             }
             SetFlag(Flags.H, false);
             SetFlag(Flags.Z, a == 0);
             SetRegister(Registers8Bit.A, a);
 
-            return 1;
+            return 1;*/
         }
     }
 }
