@@ -64,6 +64,8 @@ namespace GBSharp
 
         private Instruction GetNextInstruction()
         {
+            if (Halt) return _instructions[0x00]; // Return noop
+            
             int instruction = ReadByte();
             if(instruction != 0xCB)
             {
@@ -88,6 +90,8 @@ namespace GBSharp
             _cbInstructions = new Instruction[0x100];
 
             AddInstruction(0x00, new Instruction("NOP", Instruction_NOP));
+
+            AddInstruction(0x76, new Instruction("HALT", Instruction_Halt));
             
             AddInstruction(0x17, new Instruction("RLA", Instruction_RLA) { registers8bit = Registers8Bit.A });
             AddInstruction(0x1F, new Instruction("RRA", Instruction_RRA) { registers8bit = Registers8Bit.A });
@@ -644,6 +648,12 @@ namespace GBSharp
         {
             SetRegister(instruction.registers8bit, _mmu.ReadByte(LoadRegister(instruction.registers16Bit2)));
             return 2;
+        }
+
+        private int Instruction_Halt(Instruction instruction)
+        {
+            Halt = true;
+            return 1;
         }
 
         private int Instruction_LD_r1_nn(Instruction instruction)

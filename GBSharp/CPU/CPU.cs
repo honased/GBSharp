@@ -19,6 +19,9 @@ namespace GBSharp
         private int setIME = 0;
         private int clearIME = 0;
         private int debugTime = 0;
+        private int debugOp = -1;
+        private bool Halt { get; set; }
+        private bool HaltBug { get; set; }
 
         public bool DebugMode { get; set; }
 
@@ -33,6 +36,8 @@ namespace GBSharp
             mmu.SetCPU(this);
             mmu.SetPPU(_ppu);
             mmu.SetTimer(_timer);
+            Halt = false;
+            HaltBug = false;
 
             currentCycles = 0;
 
@@ -90,6 +95,8 @@ namespace GBSharp
             _mmu.Reset();
             _ppu.Reset();
             _timer.Reset();
+            Halt = false;
+            HaltBug = false;
 
             if(cart != null) CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0);
 
@@ -135,11 +142,22 @@ namespace GBSharp
                                     debugging = true;
                                 }
                             }
+                            if(debugOp >= 0)
+                            {
+                                if(instruction.Opcode.Equals(debugOp))
+                                {
+                                    debugging = true;
+                                    debugOp = -1;
+                                }
+                            }
                         }
                         if(debugging)
                         {
                             Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", LoadRegister(Registers16Bit.AF), LoadRegister(Registers16Bit.BC), LoadRegister(Registers16Bit.DE), LoadRegister(Registers16Bit.HL), LoadRegister(Registers16Bit.SP));
                             Console.WriteLine(_timer.ToString());
+                            Console.WriteLine("IME:" + IME + "\tIE:{0:X2}\tIF:{1:X2}", _mmu.IE, _mmu.IF);
+
+                            Console.WriteLine("LCDC:{0:X2}\tSTAT:{1:X2}\tLY:{2:X2}", _mmu.LCDC, _mmu.STAT, _mmu.LY);
                             Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instruction.Name, pc, instruction.Opcode);
 
                             bool successful = false;
@@ -191,13 +209,31 @@ namespace GBSharp
                         debugging = false;
                         debugTime = waitTime;
                     }
-                    else Console.WriteLine("Bad location given");
+                    else { Console.WriteLine("Bad location given"); return false; }
                     return true;
 
                 case "jp":
                     if (tokens.Length == 1) Console.WriteLine("Not enough arguments!");
-                    
-                    
+                    else
+                    {
+                        switch(tokens[1])
+                        {
+                            case "op":
+                                if (tokens.Length == 2) Console.WriteLine("Not enough arguments!");
+                                else if (TryParseHex(tokens[2], out waitTime))
+                                {
+                                    debugging = false;
+                                    debugOp = waitTime;
+                                    return true;
+                                }
+                                else Console.WriteLine("Bad opcode given");
+                                break;
+
+                            default:
+                                Console.WriteLine("That command does not exist!");
+                                return false;
+                        }
+                    }
 
                     break;
 
@@ -249,30 +285,34 @@ namespace GBSharp
             {
                 case 2: clearIME = 1; break;
                 case 1: clearIME = 0; IME = false; break;
-                default: setIME = 0; break;
+                default: clearIME = 0; break;
             }
 
-            if (IME)
+            for (int i = 0; i < 5; i++)
             {
-                for (int i = 0; i < 5; i++)
+                if ((IE & IF) >> i == 1)
                 {
-                    if ((IE & IF) >> i == 1)
-                    {
-                        ExecuteInterrupt(i);
-                        return 1;
-                    }
+                    return ExecuteInterrupt(i);
                 }
             }
 
             return 0;
         }
 
-        private void ExecuteInterrupt(int interrupt)
+        private int ExecuteInterrupt(int interrupt)
         {
-            IME = false;
-            Push(LoadRegister(Registers16Bit.PC));
-            SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
-            _mmu.IF &= ~(0x1 << interrupt);
+            if (Halt) Halt = false;
+
+            if (IME)
+            {
+                IME = false;
+                Push(LoadRegister(Registers16Bit.PC));
+                SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
+                _mmu.IF &= ~(0x1 << interrupt);
+                return 1;
+            }
+
+            return 0;
         }
 
         public int TestInstruction(int opcode, bool cb=false)
