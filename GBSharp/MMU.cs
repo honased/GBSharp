@@ -181,20 +181,17 @@ namespace GBSharp
                 case int _ when address < 0xFF80:
                     switch(address)
                     {
-                        case 0xFF0F: 
-                            value |= 0xE0;
-                            if((value & 0x04) == 0x04)
-                            {
-                                int val = 0;
-                            }
-                            break;
-
                         case 0xFF41:
                             value = (value & ~0x03) | (_io[0x41] & 0x03);
                             break;
 
                         case 0xFF04: case 0xFF44:
+                            //_timer.UpdateDiv();
                             value = 0;
+                            break;
+
+                        case 0xFF0F:
+                            value |= 0xE0;
                             break;
 
                         case 0xFF46:
@@ -215,7 +212,7 @@ namespace GBSharp
 
                     break;
                 case int _ when address <= 0xFFFF:
-                    _zram[address - 0xFF80] = value;
+                    _zram[address - 0xFF80] = value; 
                     break;
 
                 default:

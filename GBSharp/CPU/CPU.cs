@@ -18,6 +18,7 @@ namespace GBSharp
         private bool IME;
         private int setIME = 0;
         private int clearIME = 0;
+        private int debugTime = 0;
 
         public bool DebugMode { get; set; }
 
@@ -88,6 +89,7 @@ namespace GBSharp
 
             _mmu.Reset();
             _ppu.Reset();
+            _timer.Reset();
 
             if(cart != null) CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0);
 
@@ -119,19 +121,25 @@ namespace GBSharp
                 {
                     int pc = LoadRegister(Registers16Bit.PC);
 
-                    if(pc == 0xC221)
-                    {
-                        int debug = 0;
-                    }
-
                     Instruction instruction = GetNextInstruction();
                     //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
 
                     if(DebugMode)
                     {
+                        if(!debugging)
+                        {
+                            if (debugTime > 0)
+                            {
+                                if (--debugTime == 0)
+                                {
+                                    debugging = true;
+                                }
+                            }
+                        }
                         if(debugging)
                         {
                             Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", LoadRegister(Registers16Bit.AF), LoadRegister(Registers16Bit.BC), LoadRegister(Registers16Bit.DE), LoadRegister(Registers16Bit.HL), LoadRegister(Registers16Bit.SP));
+                            Console.WriteLine(_timer.ToString());
                             Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instruction.Name, pc, instruction.Opcode);
 
                             bool successful = false;
@@ -160,7 +168,7 @@ namespace GBSharp
             string[] tokens = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length == 0) return true;
 
-            int memLocation;
+            int memLocation, waitTime;
 
             switch(tokens[0])
             {
@@ -177,7 +185,13 @@ namespace GBSharp
                     break;
 
                 case "run":
-                    debugging = false;
+                    if (tokens.Length == 1) debugging = false;
+                    else if (TryParseHex(tokens[1], out waitTime))
+                    {
+                        debugging = false;
+                        debugTime = waitTime;
+                    }
+                    else Console.WriteLine("Bad location given");
                     return true;
 
                 case "jp":
@@ -198,12 +212,22 @@ namespace GBSharp
         private bool TryParseHex(string hex, out int result)
         {
             result = 0;
+
             try
             {
-                result = Convert.ToInt32(hex, 16);
-                return true;
+                if (hex.Length > 2 && hex[0] == '0' && hex[1] == 'x')
+                {
+                    result = Convert.ToInt32(hex, 16);
+                    return true;
+                }
+                else
+                {
+                    result = Convert.ToInt32(hex);
+                    return true;
+                }
+                
             }
-            catch(FormatException e)
+            catch (FormatException e)
             {
                 return false;
             }
@@ -249,6 +273,15 @@ namespace GBSharp
             Push(LoadRegister(Registers16Bit.PC));
             SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
             _mmu.IF &= ~(0x1 << interrupt);
+        }
+
+        public int TestInstruction(int opcode, bool cb=false)
+        {
+            Instruction instruction = cb ? _cbInstructions[opcode] : _instructions[opcode];
+            if (instruction == null) return -1;
+            int cycles = instruction.Execute();
+            Reset();
+            return cycles;
         }
     }
 }

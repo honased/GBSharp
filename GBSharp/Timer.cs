@@ -21,20 +21,20 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
-            divClocks += clocks;
+            divClocks += clocks*4;
             while(divClocks >= 256)
             {
                 divClocks -= 256;
-                _mmu.DIV = (_mmu.DIV + 1) % 256;
+                _mmu.DIV = Bitwise.Wrap8(_mmu.DIV + 1);
             }
 
             if(timerEnabled)
             {
-                timerClocks += clocks;
+                timerClocks += clocks*4;
                 while(timerClocks >= timerClockGoal)
                 {
                     timerClocks -= timerClockGoal;
-                    _mmu.TIMA = (_mmu.TIMA + 1) % 256;
+                    _mmu.TIMA = Bitwise.Wrap8(_mmu.TIMA + 1);
                     if(_mmu.TIMA == 0)
                     {
                         _mmu.TIMA = _mmu.TMA;
@@ -42,6 +42,21 @@ namespace GBSharp
                     }
                 }
             }
+        }
+
+        internal void Reset()
+        {
+            timerEnabled = false;
+            timerClockGoal = 1024;
+            divClocks = 0;
+            timerClocks = 0;
+            timerEnabled = false;
+        }
+
+        public override string ToString()
+        {
+            return "DIV:" + _mmu.DIV.ToString() + "\tTimer Enabled:" + Bitwise.IsBitOn(_mmu.TAC, 2).ToString() + "\tTimer:" + _mmu.TIMA.ToString()
+                + "\tTimer Clocks:" + timerClocks.ToString() + "\tGoal:" + timerClockGoal.ToString();
         }
 
         internal void Update()

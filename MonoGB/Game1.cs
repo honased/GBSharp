@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GBSharp;
 using System.IO;
+using System;
 
 namespace MonoGB
 {
@@ -48,7 +49,7 @@ namespace MonoGB
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/Tetris.gb"), 0x00);
+            //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Blargs/instr_timing.gb"), 0x00);
             CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
 
             IsFixedTimeStep = true;
@@ -82,6 +83,7 @@ namespace MonoGB
         private int[] GetNextTestRom()
         {
             string[] files = Directory.GetFiles("Blargs");
+            Console.WriteLine("Loading Rom " + files[_currentTestRom] + "...");
             int[] cart = CartridgeLoader.LoadCart(files[_currentTestRom++]);
             if (_currentTestRom >= files.Length) _currentTestRom = 0;
             return cart;
