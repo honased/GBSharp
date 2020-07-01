@@ -161,7 +161,7 @@ namespace GBSharp
             int startingIndex = ly * SCREEN_WIDTH * 4;
 
             bool shouldValueBeSigned = !Bitwise.IsBitOn(lcdc, 4);
-            int tileInitLocation = shouldValueBeSigned ? 256 + 128 : 0;
+            int tileInitLocation = shouldValueBeSigned ? 256 : 0;
 
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
@@ -183,7 +183,7 @@ namespace GBSharp
             
 
             /*int count = 0;
-            for(int yy = 0; yy < 32; yy++)
+            for(int yy = 0; yy < SCREEN_HEIGHT; yy++)
             {
                 for (int xx = 0; xx < SCREEN_WIDTH; xx++)
                 {
@@ -225,7 +225,7 @@ namespace GBSharp
                         int pixel = _tileset[tileNumber, drawY, drawX];
 
                         int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
-                        if (colorIndex != 0)
+                        if (pixel != 0)
                         {
                             if(objAboveBg || FrameBuffer[writePosition] == 255)
                             {
