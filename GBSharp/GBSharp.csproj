@@ -59,94 +59,97 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="CPU\CPU.Instructions.cs" />
-    <None Include="Blargg\01-special.gb">
+    <None Include="Roms\Blargg\01-special.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\02-interrupts.gb">
+    <None Include="Roms\Blargg\02-interrupts.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\03-op sp,hl.gb">
+    <None Include="Roms\Blargg\03-op sp,hl.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\04-op r,imm.gb">
+    <None Include="Roms\Blargg\04-op r,imm.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\05-op rp.gb">
+    <None Include="Roms\Blargg\05-op rp.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\06-ld r,r.gb">
+    <None Include="Roms\Blargg\06-ld r,r.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\07-jr,jp,call,ret,rst.gb">
+    <None Include="Roms\Blargg\07-jr,jp,call,ret,rst.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\08-misc-instrs.gb">
+    <None Include="Roms\Blargg\08-misc-instrs.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\09-op r,r.gb">
+    <None Include="Roms\Blargg\09-op r,r.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\10-bit ops.gb">
+    <None Include="Roms\Blargg\10-bit ops.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\11-op a,%28hl%29.gb">
+    <None Include="Roms\Blargg\11-op a,%28hl%29.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\daa.gb">
+    <None Include="Roms\Blargg\daa.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\halt_bug.gb">
+    <None Include="Roms\Blargg\halt_bug.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\instr_timing.gb">
+    <None Include="Roms\Blargg\instr_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargg\interrupt_time.gb">
+    <None Include="Roms\Blargg\interrupt_time.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\ie_push.gb">
+    <None Include="Roms\Gekkio\ie_push.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\pop_timing.gb">
+    <None Include="Roms\Gekkio\pop_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\push_timing.gb">
+    <None Include="Roms\Gekkio\push_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\reg_f.gb">
+    <None Include="Roms\Gekkio\reg_f.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\div_timing.gb">
+    <None Include="Roms\Gekkio\Timer\div_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\tim00.gb">
+    <None Include="Roms\Gekkio\Timer\tim00.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\tim00_div_trigger.gb">
+    <None Include="Roms\Gekkio\Timer\tim00_div_trigger.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\tim01.gb">
+    <None Include="Roms\Gekkio\Timer\tim01.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\tim01_div_trigger.gb">
+    <None Include="Roms\Gekkio\Timer\tim01_div_trigger.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\tim10.gb">
+    <None Include="Roms\Gekkio\Timer\tim10.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Gekkio\Timer\tim10_div_trigger.gb">
+    <None Include="Roms\Gekkio\Timer\tim10_div_trigger.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\Dr. Mario %28World%29.gb">
+    <None Include="Roms\Games\Dr. Mario %28World%29.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\opus5.gb">
+    <None Include="Roms\Games\Links Awakening.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\Tetris.gb">
+    <None Include="Roms\Games\opus5.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\ttt.gb">
+    <None Include="Roms\Games\Tetris.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Games\ttt.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
