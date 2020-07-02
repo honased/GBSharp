@@ -15,7 +15,7 @@ namespace GBSharp
 
             //Console.WriteLine("Done");
             //Console.ReadKey();
-            int[] cart = CartridgeLoader.LoadCart("Roms/opus5.gb");
+            /*int[] cart = CartridgeLoader.LoadCart("Roms/opus5.gb");
             CartridgeLoader.LoadDataIntoMemory(mmu, cart, 0x00);
 
             PPU ppu = new PPU(mmu);
@@ -33,7 +33,7 @@ namespace GBSharp
                 cpu.ExecuteFrame();
             }
 
-            Console.ReadKey();
+            Console.ReadKey();*/
         }
     }
 }

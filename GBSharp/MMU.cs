@@ -73,6 +73,8 @@ namespace GBSharp
 
         private bool _inBios;
 
+        private Cartridge _cartridge;
+
         public MMU()
         {
             _inBios = false;
@@ -126,6 +128,11 @@ namespace GBSharp
             }
         }
 
+        public void LoadCartridge(Cartridge cartridge)
+        {
+            _cartridge = cartridge;
+        }
+
         private void SetBios()
         {
             _bios = new int[]{
@@ -151,21 +158,21 @@ namespace GBSharp
         public void WriteByte(int value, int address)
         {
             value &= 0xFF; // Ensure that it doesn't go out of bounds of being a byte (0-255)
+
             switch (address & 0xF000)
             {
                 // Bios / Rom0
-                case int _ when address < 0x4000:
-                    _rom[0, address] = value;
-                    break;
                 case int _ when address < 0x8000:
-                    _rom[1, address - 0x4000] = value;
+                    //_rom[1, address - 0x4000] = value;
+                    _cartridge.WriteRom(address, value);
                     break;
                 case int _ when address < 0xA000:
                     _vram[address - 0x8000] = value;
                     _ppu.UpdateTile(address, value);
                     break;
                 case int _ when address < 0xC000:
-                    _eram[address - 0xA000] = value;
+                    //_eram[address - 0xA000] = value;
+                    _cartridge.WriteERam(address, value);
                     break;
                 case int _ when address < 0xE000:
                     _wram[address - 0xC000] = value;
@@ -216,7 +223,7 @@ namespace GBSharp
                     break;
 
                 default:
-                    Console.WriteLine("Out of memory bank");
+                    //Console.WriteLine("Out of memory bank");
                     break;
             }
         }
@@ -232,13 +239,13 @@ namespace GBSharp
                         if (address < 0x100) return _bios[address];
                         if(_cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0101) _inBios = false;
                     }
-                    return _rom[0, address];
+                    return _cartridge.ReadLowRom(address); //_rom[0, address];
                 case int _ when address < 0x8000:
-                    return _rom[1, address - 0x4000];
+                    return _cartridge.ReadLowRom(address); //_rom[1, address - 0x4000];
                 case int _ when address < 0xA000:
                     return _vram[address - 0x8000];
                 case int _ when address < 0xC000:
-                    return _eram[address - 0xA000];
+                    return _cartridge.ReadERam(address - 0xA000); //_eram[address - 0xA000];
                 case int _ when address < 0xE000:
                     return _wram[address - 0xC000];
                 case int _ when address < 0xFE00:
@@ -255,7 +262,7 @@ namespace GBSharp
                     return _zram[address - 0xFF80];
 
                 default:
-                    Console.WriteLine("Out of memory bank");
+                    //Console.WriteLine("Out of memory bank");
                     return 0x00;
             }
         }

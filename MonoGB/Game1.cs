@@ -44,13 +44,17 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            _cpu.Debug();
-            //_cpu.StartInBios();
+            //_cpu.Debug();
+            _cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/Tetris.gb"), 0x00);
+            //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
+            Cartridge cartridge = Cartridge.Load("Roms/Dr. Mario (World).gb");
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
+            _mmu.LoadCartridge(cartridge);
+
+            this.Window.Title = cartridge.Name;
 
             IsFixedTimeStep = true;
 
@@ -80,14 +84,14 @@ namespace MonoGB
             // TODO: Unload any non ContentManager content here
         }
 
-        private int[] GetNextTestRom()
+        /*private int[] GetNextTestRom()
         {
             string[] files = Directory.GetFiles("Blargs");
             Console.WriteLine("Loading Rom " + files[_currentTestRom] + "...");
-            int[] cart = CartridgeLoader.LoadCart(files[_currentTestRom++]);
+            //int[] cart = CartridgeLoader.LoadCart(files[_currentTestRom++]);
             if (_currentTestRom >= files.Length) _currentTestRom = 0;
             return cart;
-        }
+        }*/
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -125,7 +129,7 @@ namespace MonoGB
 
             if(_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
             {
-                _cpu.Reset(false, GetNextTestRom());
+                //_cpu.Reset(false, GetNextTestRom());
             }
 
             oldState = _keyState;

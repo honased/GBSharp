@@ -73,7 +73,7 @@ namespace GBSharp
             Halt = false;
             HaltBug = false;
 
-            if(cart != null) CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0);
+            //if(cart != null) CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0);
 
             if (inBios) StartInBios();
         }

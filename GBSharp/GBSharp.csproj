@@ -44,7 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bitwise.cs" />
-    <Compile Include="CartridgeLoader.cs" />
+    <Compile Include="Cartridges\CartidgeMBC0.cs" />
+    <Compile Include="Cartridges\Cartridge.cs" />
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPU.Registers.cs" />
     <Compile Include="Debugger.cs" />
@@ -58,46 +59,49 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="CPU\CPU.Instructions.cs" />
-    <None Include="Blargs\01-special.gb">
+    <None Include="Blargg\01-special.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\02-interrupts.gb">
+    <None Include="Blargg\02-interrupts.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\03-op sp,hl.gb">
+    <None Include="Blargg\03-op sp,hl.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\04-op r,imm.gb">
+    <None Include="Blargg\04-op r,imm.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\05-op rp.gb">
+    <None Include="Blargg\05-op rp.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\06-ld r,r.gb">
+    <None Include="Blargg\06-ld r,r.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\07-jr,jp,call,ret,rst.gb">
+    <None Include="Blargg\07-jr,jp,call,ret,rst.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\08-misc-instrs.gb">
+    <None Include="Blargg\08-misc-instrs.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\09-op r,r.gb">
+    <None Include="Blargg\09-op r,r.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\10-bit ops.gb">
+    <None Include="Blargg\10-bit ops.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\11-op a,%28hl%29.gb">
+    <None Include="Blargg\11-op a,%28hl%29.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\daa.gb">
+    <None Include="Blargg\daa.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\instr_timing.gb">
+    <None Include="Blargg\halt_bug.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\interrupt_time.gb">
+    <None Include="Blargg\instr_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Blargg\interrupt_time.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Gekkio\ie_push.gb">
