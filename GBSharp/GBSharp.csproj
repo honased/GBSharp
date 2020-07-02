@@ -47,6 +47,7 @@
     <Compile Include="CartridgeLoader.cs" />
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPU.Registers.cs" />
+    <Compile Include="Debugger.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="MMU.cs" />
     <Compile Include="PPU.cs" />
@@ -96,7 +97,7 @@
     <None Include="Blargs\instr_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Blargs\jp_timing.gb">
+    <None Include="Blargs\interrupt_time.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Gekkio\ie_push.gb">

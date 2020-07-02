@@ -15,17 +15,12 @@ namespace GBSharp
         private Timer _timer;
         const int CPU_CYCLES = 17556;
         private int currentCycles;
-        private bool IME;
+        internal bool IME;
         private int setIME = 0;
         private int clearIME = 0;
-        private int debugTime = 0;
-        private int debugOp = -1;
         private bool Halt { get; set; }
         private bool HaltBug { get; set; }
-
-        public bool DebugMode { get; set; }
-
-        bool debugging = true;
+        private Debugger _debugger;
 
         public CPU(MMU mmu, PPU ppu, Input input)
         {
@@ -33,6 +28,7 @@ namespace GBSharp
             _ppu = ppu;
             _input = input;
             _timer = new Timer(_mmu);
+            _debugger = new Debugger(this, mmu, ppu, _timer);
             mmu.SetCPU(this);
             mmu.SetPPU(_ppu);
             mmu.SetTimer(_timer);
@@ -43,31 +39,11 @@ namespace GBSharp
 
             RegisterInstructions();
             InitializeRegisters();
+        }
 
-            int missingCount = 0;
-            Console.WriteLine("Regular Instructions\n--------------------");
-            for(int i = 0; i < _instructions.Length; i++)
-            {
-                if(_instructions[i] == null)
-                {
-                    missingCount++;
-                    Console.WriteLine("Missing instruction 0x{0:X}", i);
-                }
-            }
-            Console.WriteLine("Total implemented: " + (_instructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
-
-            missingCount = 0;
-            Console.WriteLine("CB Instructions\n---------------");
-            for (int i = 0; i < _cbInstructions.Length; i++)
-            {
-                if (_cbInstructions[i] == null)
-                {
-                    missingCount++;
-                    Console.WriteLine("Missing CB instruction 0x{0:X}", i);
-                }
-            }
-            Console.WriteLine("Total CB implemented: " + (_cbInstructions.Length - missingCount) + ".\nTotal missing: " + missingCount);
-            //Console.ReadKey();
+        public void Debug()
+        {
+            _debugger.DebugMode = true;
         }
 
         public void StartInBios()
@@ -90,11 +66,10 @@ namespace GBSharp
             setIME = 0;
             clearIME = 0;
 
-            debugging = true;
-
             _mmu.Reset();
             _ppu.Reset();
             _timer.Reset();
+            
             Halt = false;
             HaltBug = false;
 
@@ -120,6 +95,7 @@ namespace GBSharp
 
         public void ExecuteFrame()
         {
+            // 1FFE - Tetris
             while (currentCycles < CPU_CYCLES)
             {
                 int cycles = CheckInterrupts();
@@ -129,45 +105,8 @@ namespace GBSharp
                     int pc = LoadRegister(Registers16Bit.PC);
 
                     Instruction instruction = GetNextInstruction();
-                    //Console.WriteLine("[{0:X}] 0x{1:X}: " + instruction.Name, pc, instruction.Opcode);
 
-                    if(DebugMode)
-                    {
-                        if(!debugging)
-                        {
-                            if (debugTime > 0)
-                            {
-                                if (--debugTime == 0)
-                                {
-                                    debugging = true;
-                                }
-                            }
-                            if(debugOp >= 0)
-                            {
-                                if(instruction.Opcode.Equals(debugOp))
-                                {
-                                    debugging = true;
-                                    debugOp = -1;
-                                }
-                            }
-                        }
-                        if(debugging)
-                        {
-                            Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", LoadRegister(Registers16Bit.AF), LoadRegister(Registers16Bit.BC), LoadRegister(Registers16Bit.DE), LoadRegister(Registers16Bit.HL), LoadRegister(Registers16Bit.SP));
-                            Console.WriteLine(_timer.ToString());
-                            Console.WriteLine("IME:" + IME + "\tIE:{0:X2}\tIF:{1:X2}", _mmu.IE, _mmu.IF);
-
-                            Console.WriteLine("LCDC:{0:X2}\tSTAT:{1:X2}\tLY:{2:X2}", _mmu.LCDC, _mmu.STAT, _mmu.LY);
-                            Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instruction.Name, pc, instruction.Opcode);
-
-                            bool successful = false;
-                            while(!successful)
-                            {
-                                Console.Write(">> ");
-                                successful = ProcessCommands(Console.ReadLine().Trim());
-                            }
-                        }
-                    }
+                    _debugger.Debug(instruction, pc);
 
                     cycles = instruction.Execute();
                 }
@@ -178,95 +117,6 @@ namespace GBSharp
                 _input.Tick();
             }
             currentCycles -= CPU_CYCLES;
-            //Console.WriteLine("REnder frame: " + PPU.RenderCount);
-        }
-
-        private bool ProcessCommands(string input)
-        {
-            string[] tokens = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (tokens.Length == 0) return true;
-
-            int memLocation, waitTime;
-
-            switch(tokens[0])
-            {
-                case "chk":
-                    if (tokens.Length == 1) Console.WriteLine("Not enough arguments!");
-                    switch(tokens[1])
-                    {
-                        case "mem":
-                            if (tokens.Length == 2) Console.WriteLine("Not enough arguments!");
-                            if (TryParseHex(tokens[2], out memLocation)) Console.WriteLine("Memory at 0x{0:X4}:" + _mmu.ReadByte(memLocation), memLocation);
-                            else Console.WriteLine("Bad location given!");
-                            break;
-                    }
-                    break;
-
-                case "run":
-                    if (tokens.Length == 1) debugging = false;
-                    else if (TryParseHex(tokens[1], out waitTime))
-                    {
-                        debugging = false;
-                        debugTime = waitTime;
-                    }
-                    else { Console.WriteLine("Bad location given"); return false; }
-                    return true;
-
-                case "jp":
-                    if (tokens.Length == 1) Console.WriteLine("Not enough arguments!");
-                    else
-                    {
-                        switch(tokens[1])
-                        {
-                            case "op":
-                                if (tokens.Length == 2) Console.WriteLine("Not enough arguments!");
-                                else if (TryParseHex(tokens[2], out waitTime))
-                                {
-                                    debugging = false;
-                                    debugOp = waitTime;
-                                    return true;
-                                }
-                                else Console.WriteLine("Bad opcode given");
-                                break;
-
-                            default:
-                                Console.WriteLine("That command does not exist!");
-                                return false;
-                        }
-                    }
-
-                    break;
-
-                default:
-                    Console.WriteLine("Unknown command");
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool TryParseHex(string hex, out int result)
-        {
-            result = 0;
-
-            try
-            {
-                if (hex.Length > 2 && hex[0] == '0' && hex[1] == 'x')
-                {
-                    result = Convert.ToInt32(hex, 16);
-                    return true;
-                }
-                else
-                {
-                    result = Convert.ToInt32(hex);
-                    return true;
-                }
-                
-            }
-            catch (FormatException e)
-            {
-                return false;
-            }
         }
 
         private int CheckInterrupts()
