@@ -44,13 +44,13 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            //_cpu.Debug();
-            _cpu.StartInBios();
+            _cpu.Debug();
+            //_cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
-            Cartridge cartridge = Cartridge.Load("Roms/Dr. Mario (World).gb");
+            Cartridge cartridge = Cartridge.Load("Roms/Games/Kirbys Dream Land.gb");
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _mmu.LoadCartridge(cartridge);
 

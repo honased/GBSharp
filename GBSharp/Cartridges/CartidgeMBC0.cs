@@ -8,7 +8,10 @@ namespace GBSharp.Cartridges
 {
     class CartidgeMBC0 : Cartridge
     {
-        public int[] rom { get; private set; } = new int[0x8000];
+        protected override void CustomInit()
+        {
+            // Do nothing
+        }
 
         public override int ReadERam(int address)
         {
@@ -17,12 +20,12 @@ namespace GBSharp.Cartridges
 
         public override int ReadLowRom(int address)
         {
-            return rom[address];
+            return Rom[address];
         }
 
         public override int ReadHighRom(int address)
         {
-            return rom[address];
+            return Rom[address];
         }
 
         public override void WriteERam(int address, int value)

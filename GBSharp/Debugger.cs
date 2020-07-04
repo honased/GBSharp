@@ -75,7 +75,11 @@ namespace GBSharp
                     Console.WriteLine("IME:" + _cpu.IME + "\tIE:{0:X2}\tIF:{1:X2}", _mmu.IE, _mmu.IF);
 
                     Console.WriteLine("LCDC:{0:X2}\tSTAT:{1:X2}\tLY:{2:X2}", _mmu.LCDC, _mmu.STAT, _mmu.LY);
-                    Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instruction.Name, pc, instruction.Opcode);
+                    Console.WriteLine(_mmu._cartridge.ToString());
+
+                    string instructionName = instruction.Name.Replace("nn", "0x" + String.Format("{0:X4}", _mmu.ReadWord(pc + 1))).Replace("n", "0x" + String.Format("{0:X2}", _mmu.ReadByte(pc + 1)));
+                    
+                    Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instructionName, pc, instruction.Opcode);
 
                     bool successful = false;
                     while (!successful)
@@ -138,6 +142,7 @@ namespace GBSharp
                             case "pc":
                                 if (tokens.Length == 2) Console.WriteLine("Not enough arguments!");
                                 else if (TryParseHex(tokens[2], out waitTime))
+
                                 {
                                     Debugging = false;
                                     DebugPC = waitTime;

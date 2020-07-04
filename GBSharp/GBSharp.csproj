@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bitwise.cs" />
+    <Compile Include="Cartridges\CartidgeMBC1.cs" />
     <Compile Include="Cartridges\CartidgeMBC0.cs" />
     <Compile Include="Cartridges\Cartridge.cs" />
     <Compile Include="CPU\CPU.cs" />
@@ -92,6 +93,9 @@
     <None Include="Roms\Blargg\11-op a,%28hl%29.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Roms\Blargg\cpu_instrs.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Roms\Blargg\daa.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -104,7 +108,19 @@
     <None Include="Roms\Blargg\interrupt_time.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Roms\Games\Kirbys Dream Land.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Roms\Gekkio\ie_push.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Gekkio\MBC1\bits_bank1.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Gekkio\MBC1\bits_bank2.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Gekkio\MBC1\bits_mode.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Gekkio\pop_timing.gb">

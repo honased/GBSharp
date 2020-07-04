@@ -72,6 +72,7 @@ namespace GBSharp
                 if(_instructions[instruction] != null) return _instructions[instruction];
                 Instruction unknownInstruction = new Instruction("Unknown?", Instruction_Unknown);
                 unknownInstruction.Opcode = instruction;
+                _debugger.DebugMode = true;
                 return unknownInstruction;
             }
             else
@@ -80,6 +81,7 @@ namespace GBSharp
                 if (_cbInstructions[instruction] != null) return _cbInstructions[instruction];
                 Instruction unknownInstruction = new Instruction("[CB] Unknown?", Instruction_Unknown);
                 unknownInstruction.Opcode = instruction;
+                _debugger.DebugMode = true;
                 return unknownInstruction;
             }
         }

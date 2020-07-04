@@ -9,7 +9,6 @@ namespace GBSharp
     public class MMU
     {
         private int[] _bios;
-        private int[,] _rom;
         private int[] _vram;
         private int[] _wram;
         private int[] _eram;
@@ -73,12 +72,11 @@ namespace GBSharp
 
         private bool _inBios;
 
-        private Cartridge _cartridge;
+        internal Cartridge _cartridge;
 
         public MMU()
         {
             _inBios = false;
-            _rom = new int[2,0x4000];
             _vram = new int[0x2000];
             _eram = new int[0x2000];
             _wram = new int[0x2000];
@@ -163,7 +161,6 @@ namespace GBSharp
             {
                 // Bios / Rom0
                 case int _ when address < 0x8000:
-                    //_rom[1, address - 0x4000] = value;
                     _cartridge.WriteRom(address, value);
                     break;
                 case int _ when address < 0xA000:
@@ -171,7 +168,6 @@ namespace GBSharp
                     _ppu.UpdateTile(address, value);
                     break;
                 case int _ when address < 0xC000:
-                    //_eram[address - 0xA000] = value;
                     _cartridge.WriteERam(address, value);
                     break;
                 case int _ when address < 0xE000:
@@ -239,13 +235,13 @@ namespace GBSharp
                         if (address < 0x100) return _bios[address];
                         if(_cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0101) _inBios = false;
                     }
-                    return _cartridge.ReadLowRom(address); //_rom[0, address];
+                    return _cartridge.ReadLowRom(address);
                 case int _ when address < 0x8000:
-                    return _cartridge.ReadLowRom(address); //_rom[1, address - 0x4000];
+                    return _cartridge.ReadHighRom(address);
                 case int _ when address < 0xA000:
                     return _vram[address - 0x8000];
                 case int _ when address < 0xC000:
-                    return _cartridge.ReadERam(address - 0xA000); //_eram[address - 0xA000];
+                    return _cartridge.ReadERam(address);
                 case int _ when address < 0xE000:
                     return _wram[address - 0xC000];
                 case int _ when address < 0xFE00:

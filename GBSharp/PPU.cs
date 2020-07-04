@@ -209,6 +209,8 @@ namespace GBSharp
                 int spriteY = _mmu.LoadOAM(i) - 16;
                 int spriteX = _mmu.LoadOAM(i + 1) - 8;
                 int tileNumber = _mmu.LoadOAM(i + 2);
+                int upperTile = tileNumber & 0xFE;
+                int lowerTile = tileNumber | 0x01;
                 int attribs = _mmu.LoadOAM(i + 3);
                 bool objAboveBg = !Bitwise.IsBitOn(attribs, 7);
                 bool yFlip = Bitwise.IsBitOn(attribs, 6);
@@ -222,7 +224,9 @@ namespace GBSharp
                     {
                         int drawY = yFlip ? spriteHeight - 1 - (ly - spriteY) : ly - spriteY;
                         int drawX = xFlip ? 7 - x : x;
-                        int pixel = _tileset[tileNumber, drawY, drawX];
+                        if (drawY < 8) tileNumber = upperTile;
+                        else tileNumber = lowerTile;
+                        int pixel = _tileset[tileNumber, drawY % 8, drawX];
 
                         int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
                         if (pixel != 0)
