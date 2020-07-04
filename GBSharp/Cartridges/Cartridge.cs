@@ -13,6 +13,8 @@ namespace GBSharp
         public string Name { get; private set; }
         public int CartridgeType { get; private set; }
 
+        protected int Checksum { get; private set; }
+
         protected int[] Rom { get; set; }
         protected int[] ERam { get; set; }
 
@@ -66,6 +68,7 @@ namespace GBSharp
             Name = namebuilder.ToString();
 
             CartridgeType = Rom[0x0147];
+            Checksum = (Rom[0x14E] << 8) | Rom[0x14F];
 
             CustomInit();
         }
