@@ -111,15 +111,16 @@ namespace MonoGB
             // TODO: Add your update logic here
 
             var _keyState = Keyboard.GetState();
+            var _padState = GamePad.GetState(0);
 
-            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up));
-            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down));
-            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left));
-            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right));
-            _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A));
-            _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S));
-            _input.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space));
-            _input.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift));
+            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up) || _padState.DPad.Up == ButtonState.Pressed);
+            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down) || _padState.DPad.Down == ButtonState.Pressed);
+            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left) || _padState.DPad.Left == ButtonState.Pressed);
+            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right) || _padState.DPad.Right == ButtonState.Pressed);
+            _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A) || _padState.Buttons.A == ButtonState.Pressed);
+            _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S) || _padState.Buttons.B == ButtonState.Pressed);
+            _input.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space) || _padState.Buttons.Start == ButtonState.Pressed);
+            _input.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift) || _padState.Buttons.Back == ButtonState.Pressed);
 
             _cpu.ExecuteFrame();
 
