@@ -12,6 +12,31 @@ namespace GBSharp
         public const int SCREEN_WIDTH = 160, SCREEN_HEIGHT = 144;
         public int[] FrameBuffer { get; private set; }
 
+        public int[] Tiles
+        {
+            get
+            {
+                int[] tiles = new int[384 * 8 * 8 * 4];
+
+                int count = 0;
+                for (int yy = 0; yy < 192; yy++)
+                {
+                    for (int xx = 0; xx < 128; xx++)
+                    {
+                        int colorIndex = GetColorIndexFromPalette(_tileset[xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
+                        Color color2 = colors[colorIndex];
+                        tiles[count] = color2.R;
+                        tiles[count + 1] = color2.G;
+                        tiles[count + 2] = color2.B;
+                        tiles[count + 3] = 255;
+                        count += 4;
+                    }
+                }
+
+                return tiles;
+            }
+        }
+
         private MMU _mmu;
         private int clocksCount;
 
@@ -124,9 +149,9 @@ namespace GBSharp
 
             ChangeMode(2);
 
-            _tileset = new int[512, 8, 8];
+            _tileset = new int[384, 8, 8];
 
-            for (int i = 0; i < 512; i++)
+            for (int i = 0; i < 384; i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
@@ -158,9 +183,13 @@ namespace GBSharp
 
             bool windowEnabled = Bitwise.IsBitOn(lcdc, 5);
 
+            bool inWindowY = windowEnabled && ly >= wy;
+
             int y = (((ly + sy) / 8) * 32 + 1024) % 1024;
+            int windowY = (((ly - wy) / 8) * 32 + 1024) % 1024;
 
             int bgTileMapLocation = Bitwise.IsBitOn(lcdc, 3) ? 0x9C00 : 0x9800;
+            int windowTileMapLocation = Bitwise.IsBitOn(lcdc, 6) ? 0x9C00 : 0x9800;
 
             int startingIndex = ly * SCREEN_WIDTH * 4;
 
@@ -169,14 +198,18 @@ namespace GBSharp
 
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
-                int x = (((xx + sx) / 8) + 32) % 32;
+                bool isInWindow = (inWindowY && xx >= wx);
+                int x = isInWindow ? (((xx) / 8) + 32) % 32 : (((xx + sx) / 8) + 32) % 32;
+                int actualY = isInWindow ? windowY : y;
 
                 int tile;// = _mmu.LoadVRAM(0x9800 + y + x);
+                int mapLocation = isInWindow ? windowTileMapLocation : bgTileMapLocation;
 
-                if (shouldValueBeSigned) tile = (sbyte)_mmu.LoadVRAM(bgTileMapLocation + y + x);
-                else tile = (byte)_mmu.LoadVRAM(bgTileMapLocation + y + x);
+                if (shouldValueBeSigned) tile = (sbyte)_mmu.LoadVRAM(mapLocation + actualY + x);
+                else tile = (byte)_mmu.LoadVRAM(mapLocation + actualY + x);
 
-                int colorIndex = GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8]);
+                int colorIndex = isInWindow ? GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly) % 8, (xx) % 8])
+                    : GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8]);
                 Color color = colors[colorIndex];
                 FrameBuffer[startingIndex] = color.R;
                 FrameBuffer[startingIndex + 1] = color.G;

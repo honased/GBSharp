@@ -50,6 +50,7 @@
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPU.Registers.cs" />
     <Compile Include="Debugger.cs" />
+    <Compile Include="Filemanager.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="MMU.cs" />
     <Compile Include="PPU.cs" />
@@ -109,6 +110,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Games\Kirbys Dream Land.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Games\Pokemon Blue.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Gekkio\ie_push.gb">

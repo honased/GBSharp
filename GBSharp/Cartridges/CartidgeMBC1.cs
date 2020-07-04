@@ -21,6 +21,10 @@ namespace GBSharp.Cartridges
             BANK_ROM = 1;
             BANK_RAM = 0;
             CartridgeMode = 0;
+            if (CartridgeType == 3)
+            {
+
+            }
         }
 
         public override int ReadERam(int address)

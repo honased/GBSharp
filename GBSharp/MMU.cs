@@ -165,7 +165,7 @@ namespace GBSharp
                     break;
                 case int _ when address < 0xA000:
                     _vram[address - 0x8000] = value;
-                    _ppu.UpdateTile(address, value);
+                    if(address < 0x9800) _ppu.UpdateTile(address, value);
                     break;
                 case int _ when address < 0xC000:
                     _cartridge.WriteERam(address, value);
