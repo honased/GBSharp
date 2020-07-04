@@ -8,7 +8,20 @@ namespace GBSharp
 {
     internal class Debugger
     {
-        public bool DebugMode { get; set; }
+        private bool _dbMode;
+        
+        public bool DebugMode
+        {
+            get
+            {
+                return _dbMode;
+            }
+            set
+            {
+                _dbMode = value;
+                Debugging = _dbMode;
+            }
+        }
 
         private bool Debugging { get; set; }
 

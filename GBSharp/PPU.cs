@@ -153,6 +153,10 @@ namespace GBSharp
             int sy = _mmu.SCY;
             int lcdc = _mmu.LCDC;
             int ly = _mmu.LY;
+            int wx = _mmu.WX - 7;
+            int wy = _mmu.WY;
+
+            bool windowEnabled = Bitwise.IsBitOn(lcdc, 5);
 
             int y = (((ly + sy) / 8) * 32 + 1024) % 1024;
 
@@ -222,22 +226,29 @@ namespace GBSharp
                     int writePosition = (ly * SCREEN_WIDTH * 4) + (spriteX * 4);
                     for(int x = 0; x < 8; x++)
                     {
-                        int drawY = yFlip ? spriteHeight - 1 - (ly - spriteY) : ly - spriteY;
-                        int drawX = xFlip ? 7 - x : x;
-                        if (drawY < 8) tileNumber = upperTile;
-                        else tileNumber = lowerTile;
-                        int pixel = _tileset[tileNumber, drawY % 8, drawX];
-
-                        int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
-                        if (pixel != 0)
+                        if (spriteX + x >= 0 && spriteX + x < SCREEN_WIDTH)
                         {
-                            if(objAboveBg || FrameBuffer[writePosition] == 255)
+                            int drawY = yFlip ? spriteHeight - 1 - (ly - spriteY) : ly - spriteY;
+                            int drawX = xFlip ? 7 - x : x;
+
+                            if (isSpriteHeight16)
                             {
-                                Color color = colors[colorIndex];
-                                FrameBuffer[writePosition] = color.R;
-                                FrameBuffer[writePosition + 1] = color.G;
-                                FrameBuffer[writePosition + 2] = color.B;
-                                FrameBuffer[writePosition + 3] = 255;
+                                if (drawY < 8) tileNumber = upperTile;
+                                else tileNumber = lowerTile;
+                            }
+                            int pixel = _tileset[tileNumber, drawY % 8, drawX];
+
+                            int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
+                            if (pixel != 0)
+                            {
+                                if (objAboveBg || FrameBuffer[writePosition] == 255)
+                                {
+                                    Color color = colors[colorIndex];
+                                    FrameBuffer[writePosition] = color.R;
+                                    FrameBuffer[writePosition + 1] = color.G;
+                                    FrameBuffer[writePosition + 2] = color.B;
+                                    FrameBuffer[writePosition + 3] = 255;
+                                }
                             }
                         }
                         writePosition += 4;

@@ -44,7 +44,7 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            _cpu.Debug();
+            //_cpu.Debug();
             //_cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
@@ -130,6 +130,11 @@ namespace MonoGB
             if(_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
             {
                 //_cpu.Reset(false, GetNextTestRom());
+            }
+
+            if(_keyState.IsKeyDown(Keys.Tab) && !oldState.IsKeyDown(Keys.Tab))
+            {
+                _cpu.Debug();
             }
 
             oldState = _keyState;
