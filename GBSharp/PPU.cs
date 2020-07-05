@@ -185,7 +185,7 @@ namespace GBSharp
 
             bool inWindowY = windowEnabled && ly >= wy;
 
-            int y = (((ly + sy) / 8) * 32 + 1024) % 1024;
+            int y = (Bitwise.Wrap8(ly + sy) / 8) * 32;
             int windowY = (((ly - wy) / 8) * 32 + 1024) % 1024;
 
             int bgTileMapLocation = Bitwise.IsBitOn(lcdc, 3) ? 0x9C00 : 0x9800;
@@ -199,7 +199,7 @@ namespace GBSharp
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
                 bool isInWindow = (inWindowY && xx >= wx);
-                int x = isInWindow ? (((xx) / 8) + 32) % 32 : (((xx + sx) / 8) + 32) % 32;
+                int x = isInWindow ? (((xx) / 8) + 32) % 32 : Bitwise.Wrap8(xx + sx) / 8;
                 int actualY = isInWindow ? windowY : y;
 
                 int tile;// = _mmu.LoadVRAM(0x9800 + y + x);
@@ -207,6 +207,11 @@ namespace GBSharp
 
                 if (shouldValueBeSigned) tile = (sbyte)_mmu.LoadVRAM(mapLocation + actualY + x);
                 else tile = (byte)_mmu.LoadVRAM(mapLocation + actualY + x);
+
+                if(tile == 0x7C)
+                {
+                    int debug = 0;
+                }
 
                 int colorIndex = isInWindow ? GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly) % 8, (xx) % 8])
                     : GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8]);

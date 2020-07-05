@@ -188,8 +188,12 @@ namespace GBSharp
                             value = (value & ~0x03) | (_io[0x41] & 0x03);
                             break;
 
-                        case 0xFF04: case 0xFF44:
-                            //_timer.UpdateDiv();
+                        case 0xFF04:
+                            _timer.UpdateDiv();
+                            value = 0;
+                            break;
+
+                        case 0xFF44:
                             value = 0;
                             break;
 
@@ -208,7 +212,7 @@ namespace GBSharp
                     }
                     _io[address - 0xFF00] = value;
 
-                    if(address >= 0xFF04 && address <= 0xFF07)
+                    if(address == 0xFF07)
                     {
                         _timer.Update();
                     }

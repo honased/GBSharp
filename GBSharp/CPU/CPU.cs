@@ -58,7 +58,7 @@ namespace GBSharp
             _mmu.StartInBios();
         }
 
-        public void Reset(bool inBios=false, int[] cart = null)
+        public void Reset(bool inBios=false, Cartridge cart = null)
         {
             InitializeRegisters();
 
@@ -73,7 +73,10 @@ namespace GBSharp
             Halt = false;
             HaltBug = false;
 
-            //if(cart != null) CartridgeLoader.LoadDataIntoMemory(_mmu, cart, 0);
+            if(cart != null)
+            {
+                _mmu.LoadCartridge(cart);
+            }
 
             if (inBios) StartInBios();
         }

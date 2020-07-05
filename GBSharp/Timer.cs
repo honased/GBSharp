@@ -21,7 +21,8 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
-            divClocks += clocks*4;
+            clocks *= 4;
+            divClocks += clocks;
             while(divClocks >= 256)
             {
                 divClocks -= 256;
@@ -30,7 +31,7 @@ namespace GBSharp
 
             if(timerEnabled)
             {
-                timerClocks += clocks*4;
+                timerClocks += clocks;
                 while(timerClocks >= timerClockGoal)
                 {
                     timerClocks -= timerClockGoal;
@@ -72,6 +73,13 @@ namespace GBSharp
 
                 default: throw new Exception("Invalid timer setting!");
             }
+        }
+
+        internal void UpdateDiv()
+        {
+            //_mmu.TIMA = 0;
+            timerClocks = 0;
+            divClocks = 0;
         }
     }
 }

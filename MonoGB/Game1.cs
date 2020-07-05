@@ -23,6 +23,7 @@ namespace MonoGB
         Texture2D _frame;
         Texture2D _tiles;
         int _currentTestRom;
+        float gameScale;
 
         KeyboardState oldState;
 
@@ -47,7 +48,25 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            _debugMode = true;
+            _debugMode = false;
+
+            if(!_debugMode)
+            {
+                graphics.IsFullScreen = true;
+                graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
+                graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+                graphics.ApplyChanges();
+            }
+
+            gameScale = 2f;
+
+            while(PPU.SCREEN_WIDTH * gameScale < graphics.PreferredBackBufferWidth && PPU.SCREEN_HEIGHT * gameScale < graphics.PreferredBackBufferHeight)
+            {
+                gameScale++;
+            }
+
+            gameScale -= 1;
+
             //_cpu.Debug();
             //_cpu.StartInBios();
 
@@ -55,7 +74,8 @@ namespace MonoGB
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
-            Cartridge cartridge = Cartridge.Load("Roms/Games/Links Awakening.gb");
+            Cartridge cartridge = Cartridge.Load("Roms/Games/Kirbys Dream Land.gb");
+            //Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _mmu.LoadCartridge(cartridge);
 
@@ -89,14 +109,14 @@ namespace MonoGB
             // TODO: Unload any non ContentManager content here
         }
 
-        /*private int[] GetNextTestRom()
+        private Cartridge GetNextTestRom()
         {
-            string[] files = Directory.GetFiles("Blargs");
+            string[] files = Directory.GetFiles("Roms/Gekkio");
             Console.WriteLine("Loading Rom " + files[_currentTestRom] + "...");
-            //int[] cart = CartridgeLoader.LoadCart(files[_currentTestRom++]);
+            Cartridge cart = Cartridge.Load(files[_currentTestRom++]);
             if (_currentTestRom >= files.Length) _currentTestRom = 0;
             return cart;
-        }*/
+        }
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -105,7 +125,7 @@ namespace MonoGB
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             // TODO: Add your update logic here
@@ -113,12 +133,13 @@ namespace MonoGB
             var _keyState = Keyboard.GetState();
             var _padState = GamePad.GetState(0);
 
-            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up) || _padState.DPad.Up == ButtonState.Pressed);
-            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down) || _padState.DPad.Down == ButtonState.Pressed);
-            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left) || _padState.DPad.Left == ButtonState.Pressed);
-            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right) || _padState.DPad.Right == ButtonState.Pressed);
-            _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A) || _padState.Buttons.A == ButtonState.Pressed);
-            _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S) || _padState.Buttons.B == ButtonState.Pressed);
+            float deadzone = .15f; ;
+            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up) || _padState.DPad.Up == ButtonState.Pressed || _padState.ThumbSticks.Left.Y > deadzone);
+            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down) || _padState.DPad.Down == ButtonState.Pressed || _padState.ThumbSticks.Left.Y < -deadzone);
+            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left) || _padState.DPad.Left == ButtonState.Pressed || _padState.ThumbSticks.Left.X < -deadzone);
+            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right) || _padState.DPad.Right == ButtonState.Pressed || _padState.ThumbSticks.Left.X > deadzone);
+            _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A) || _padState.Buttons.X == ButtonState.Pressed);
+            _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S) || _padState.Buttons.A == ButtonState.Pressed);
             _input.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space) || _padState.Buttons.Start == ButtonState.Pressed);
             _input.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift) || _padState.Buttons.Back == ButtonState.Pressed);
 
@@ -148,7 +169,8 @@ namespace MonoGB
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
             {
-                //_cpu.Reset(false, GetNextTestRom());
+                _cpu.Reset(false, GetNextTestRom());
+                //_cpu.Debug();
             }
 
             if(_keyState.IsKeyDown(Keys.Tab) && !oldState.IsKeyDown(Keys.Tab))
@@ -167,14 +189,14 @@ namespace MonoGB
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
             if(!_debugMode)
             {
                 Vector2 origin = new Vector2(PPU.SCREEN_WIDTH / 2, PPU.SCREEN_HEIGHT / 2);
-                spriteBatch.Draw(_frame, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2), null, Color.White, 0, origin, 3, SpriteEffects.None, 0f);
+                spriteBatch.Draw(_frame, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2), null, Color.White, 0, origin, gameScale, SpriteEffects.None, 0f);
             }
             else
             {
