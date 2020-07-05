@@ -79,7 +79,7 @@ namespace GBSharp.Cartridges
                     break;
                 case int _ when address < 0x4000:
                     BankRom = value & 0x1F;
-                    if ((BankRom & 0x0F) == 0x00) BankRom |= 0x01;
+                    if (BankRom == 0x00 || BankRom == 0x20 || BankRom == 0x40 || BankRom == 0x60) BankRom++;
                     break;
                 case int _ when address < 0x6000:
                     if(CartridgeMode == 0)

@@ -253,7 +253,7 @@ namespace GBSharp
                 case int _ when address < 0xFF4C:
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
-                    return 0;
+                    return 0xFF;
                 case int _ when address <= 0xFFFF:
                     return _zram[address - 0xFF80];
 

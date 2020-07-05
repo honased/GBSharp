@@ -61,6 +61,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="CPU\CPU.Instructions.cs" />
+    <None Include="Roms\Blargg\01-read_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Roms\Blargg\01-special.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -109,6 +112,9 @@
     <None Include="Roms\Blargg\interrupt_time.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Roms\Blargg\mem_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Roms\Games\Kirbys Dream Land.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -125,6 +131,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Gekkio\MBC1\bits_mode.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Gekkio\MBC1\rom_1Mb.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Gekkio\pop_timing.gb">
