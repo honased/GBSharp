@@ -50,7 +50,9 @@ namespace MonoGB
             _cpu = new CPU(_mmu, _ppu, _input);
             _debugMode = false;
 
-            if(!_debugMode)
+            _cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
+
+            if (!_debugMode)
             {
                 graphics.IsFullScreen = true;
                 graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;

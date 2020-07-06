@@ -52,19 +52,10 @@ namespace GBSharp
 
         private Color[] colors;
 
-        private struct Color
-        {
-            public int R;
-            public int G;
-            public int B;
-
-            public Color(int r, int g, int b)
-            {
-                R = r;
-                G = g;
-                B = b;
-            }
-        }
+        public Color Color0 { get; set; }
+        public Color Color1 { get; set; }
+        public Color Color2 { get; set; }
+        public Color Color3 { get; set; }
 
         public PPU(MMU mmu)
         {
@@ -145,7 +136,7 @@ namespace GBSharp
         {
             FrameBuffer = new int[SCREEN_WIDTH * SCREEN_HEIGHT * 4];
 
-            colors = new Color[] { new Color(255, 255, 255), new Color(192, 192, 192), new Color(96, 96, 96), new Color(0, 0, 0) };
+            colors = new Color[] { Color3, Color2, Color1, Color0 }; //{ new Color(255, 255, 255), new Color(192, 192, 192), new Color(96, 96, 96), new Color(0, 0, 0) };
 
             // Initialize it to white
             for (int i = 0; i < FrameBuffer.Length; i++)
@@ -345,6 +336,28 @@ namespace GBSharp
                 case 2:
                     if (Bitwise.IsBitOn(_mmu.STAT, 5)) _mmu.SetInterrupt(Interrupts.LCDStat);
                     break;
+            }
+        }
+
+        internal void UpdateColors()
+        {
+            colors[0] = Color3;
+            colors[1] = Color2;
+            colors[2] = Color1;
+            colors[3] = Color0;
+        }
+
+        public struct Color
+        {
+            public int R;
+            public int G;
+            public int B;
+
+            public Color(int r, int g, int b)
+            {
+                R = r;
+                G = g;
+                B = b;
             }
         }
     }
