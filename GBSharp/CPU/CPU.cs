@@ -15,7 +15,7 @@ namespace GBSharp
         private Timer _timer;
         const int CPU_CYCLES = 17556;
         private int currentCycles;
-        internal bool IME;
+        public bool IME;
         private int setIME = 0;
         private int clearIME = 0;
         private bool Halt { get; set; }
@@ -34,6 +34,7 @@ namespace GBSharp
             mmu.SetTimer(_timer);
             Halt = false;
             HaltBug = false;
+            IME = true;
 
             currentCycles = 0;
 
@@ -62,7 +63,7 @@ namespace GBSharp
         {
             InitializeRegisters();
 
-            IME = false;
+            IME = true;
             setIME = 0;
             clearIME = 0;
 
@@ -101,25 +102,32 @@ namespace GBSharp
             // 1FFE - Tetris
             while (currentCycles < CPU_CYCLES)
             {
-                int cycles = CheckInterrupts();
-
-                if(cycles == 0)
-                {
-                    int pc = LoadRegister(Registers16Bit.PC);
-
-                    Instruction instruction = GetNextInstruction();
-
-                    _debugger.Debug(instruction, pc);
-
-                    cycles = instruction.Execute();
-                }
-                
-                currentCycles += cycles;
-                _timer.Tick(cycles);
-                _ppu.Tick(cycles);
-                _input.Tick();
+                currentCycles += ExecuteCycle();
             }
             currentCycles -= CPU_CYCLES;
+        }
+
+        public int ExecuteCycle()
+        {
+            int cycles = CheckInterrupts();
+
+            if (cycles == 0)
+            {
+
+                int pc = LoadRegister(Registers16Bit.PC);
+
+                Instruction instruction = GetNextInstruction();
+
+                _debugger.Debug(instruction, pc);
+
+                cycles = instruction.Execute();
+            }
+
+            _timer.Tick(cycles);
+            _input.Tick();
+            _ppu.Tick(cycles);
+
+            return cycles;
         }
 
         private int CheckInterrupts()

@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GBSharp;
 using System.Diagnostics.Contracts;
+using System.Collections.Generic;
+using System.IO;
 
 namespace GBSharpTests
 {
@@ -128,6 +130,60 @@ namespace GBSharpTests
                 _cpu.SetFlag(CPU.Flags.Z, (i / 4) == 0);
                 _cpu.SetFlag(CPU.Flags.Z, (i / 2) == 0);
                 _cpu.SetFlag(CPU.Flags.Z, (i / 8) == 0);
+            }
+        }
+
+        [TestMethod]
+        public void TestLegendOfZelda()
+        {
+            _cpu.Reset(false, Cartridge.Load("Roms/Games/Links Awakening.gb"));
+
+            int totalCycles = 0;
+            Instruction lastInstruction = null;
+
+            int currentLine = 0;
+
+            using (StreamReader sr = new StreamReader("zeldaValues.txt"))
+            {
+                while(!sr.EndOfStream)
+                {
+                    currentLine++;
+                    int pc = _cpu.LoadRegister(CPU.Registers16Bit.PC);
+
+                    Instruction instruction = _cpu.PeekNextInstruction();
+                    int myOp = instruction.Opcode;
+
+                    string[] tokens = sr.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    int expectedOp = Convert.ToInt32(tokens[8]);
+                    int expectedPc = Convert.ToInt32(tokens[0]);
+                    int expectedAf = Convert.ToInt32(tokens[1]);
+                    int expectedBc = Convert.ToInt32(tokens[2]);
+                    int expectedDe = Convert.ToInt32(tokens[3]);
+                    int expectedHl = Convert.ToInt32(tokens[4]);
+                    int expectedSp = Convert.ToInt32(tokens[5]);
+                    int expectedLCDC = Convert.ToInt32(tokens[6]);
+                    bool expectedIME = tokens[7] == "true";
+                    
+
+                    if (totalCycles == 246451)
+                    {
+                        int debug = 0;
+                    }
+
+                    Assert.AreEqual(expectedPc, pc, String.Format("[0x{2:X4}] Expected pc 0x{0:X4}. Got pc 0x{1:X4}. Cycle count: " + totalCycles.ToString(), expectedPc, pc, pc));
+                    Assert.AreEqual(expectedOp, myOp, String.Format("[0x{2:X4}] Expected op 0x{0:X2}. Got op 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedOp, myOp, pc));
+                    Assert.AreEqual(expectedIME, _cpu.IME, String.Format("[0x{2:X4}] Expected IME {0}. Got IME {1}. Cycle count: " + totalCycles.ToString(), expectedIME, _cpu.IME, pc));
+                    Assert.AreEqual(expectedAf, _cpu.LoadRegister(CPU.Registers16Bit.AF), String.Format("[0x{2:X4}] Expected af 0x{0:X2}. Got af 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedAf, _cpu.LoadRegister(CPU.Registers16Bit.AF), pc));
+                    Assert.AreEqual(expectedBc, _cpu.LoadRegister(CPU.Registers16Bit.BC), String.Format("[0x{2:X4}] Expected bc 0x{0:X2}. Got bc 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedBc, _cpu.LoadRegister(CPU.Registers16Bit.BC), pc));
+                    Assert.AreEqual(expectedDe, _cpu.LoadRegister(CPU.Registers16Bit.DE), String.Format("[0x{2:X4}] Expected de 0x{0:X2}. Got de 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedDe, _cpu.LoadRegister(CPU.Registers16Bit.DE), pc));
+                    Assert.AreEqual(expectedHl, _cpu.LoadRegister(CPU.Registers16Bit.HL), String.Format("[0x{2:X4}] Expected hl 0x{0:X2}. Got hl 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedHl, _cpu.LoadRegister(CPU.Registers16Bit.HL), pc));
+                    Assert.AreEqual(expectedSp, _cpu.LoadRegister(CPU.Registers16Bit.SP), String.Format("[0x{2:X4}] Expected sp 0x{0:X2}. Got sp 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedSp, _cpu.LoadRegister(CPU.Registers16Bit.SP), pc));
+                    Assert.AreEqual(expectedLCDC, _mmu.LCDC, String.Format("[0x{2:X4}] Expected lcdc 0x{0:X2}. Got lcdc 0x{1:X2}. Cycle count: " + totalCycles.ToString(), expectedLCDC, _mmu.LCDC, pc));
+                    totalCycles += _cpu.ExecuteCycle();
+                    lastInstruction = instruction;
+                }
+                sr.Close();
             }
         }
 

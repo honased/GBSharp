@@ -85,6 +85,8 @@ namespace GBSharp
             _zram = new int[0x80];
 
             SetBios();
+
+            WriteByte(0x91, 0xFF40);
         }
 
         internal void Reset()
@@ -95,6 +97,8 @@ namespace GBSharp
             for (int i = 0; i < _oam.Length; i++) _oam[i] = 0;
             for (int i = 0; i < _io.Length; i++) _io[i] = 0;
             for (int i = 0; i < _zram.Length; i++) _zram[i] = 0;
+
+            WriteByte(0x91, 0xFF40);
         }
 
         internal void StartInBios()

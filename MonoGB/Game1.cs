@@ -74,7 +74,7 @@ namespace MonoGB
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
-            Cartridge cartridge = Cartridge.Load("Roms/Games/Kirbys Dream Land.gb");
+            Cartridge cartridge = Cartridge.Load("Roms/Games/Links Awakening.gb");
             //Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _mmu.LoadCartridge(cartridge);

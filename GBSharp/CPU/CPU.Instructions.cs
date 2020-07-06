@@ -86,6 +86,29 @@ namespace GBSharp
             }
         }
 
+        public Instruction PeekNextInstruction()
+        {
+            if (Halt) return _instructions[0x00];
+            int instruction = _mmu.ReadByte(LoadRegister(Registers16Bit.PC));
+            if (instruction != 0xCB)
+            {
+                if (_instructions[instruction] != null) return _instructions[instruction];
+                Instruction unknownInstruction = new Instruction("Unknown?", Instruction_Unknown);
+                unknownInstruction.Opcode = instruction;
+                //_debugger.DebugMode = true;
+                return unknownInstruction;
+            }
+            else
+            {
+                instruction = _mmu.ReadByte(LoadRegister(Registers16Bit.PC) + 1);
+                if (_cbInstructions[instruction] != null) return _cbInstructions[instruction];
+                Instruction unknownInstruction = new Instruction("[CB] Unknown?", Instruction_Unknown);
+                unknownInstruction.Opcode = instruction;
+                //_debugger.DebugMode = true;
+                return unknownInstruction;
+            }
+        }
+
         private void RegisterInstructions()
         {
             _instructions = new Instruction[0x100];

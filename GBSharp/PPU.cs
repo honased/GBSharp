@@ -75,7 +75,9 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
+            if (!Bitwise.IsBitOn(_mmu.LCDC, 7)) return;
             clocksCount += clocks;
+
 
             int mode = _mmu.STAT & 0x03;
 
@@ -102,6 +104,7 @@ namespace GBSharp
                     if(clocksCount >= HBLANK_CLOCK_COUNT)
                     {
                         clocksCount -= HBLANK_CLOCK_COUNT;
+                        CheckLYC();
 
                         if (++_mmu.LY == 144)
                         {
@@ -116,8 +119,9 @@ namespace GBSharp
                     if(clocksCount >= VBLANK_CLOCK_COUNT)
                     {
                         clocksCount -= VBLANK_CLOCK_COUNT;
+                        CheckLYC();
 
-                        if(++_mmu.LY > 153)
+                        if (++_mmu.LY > 153)
                         {
                             _mmu.LY = 0;
                             ChangeMode(2);
@@ -125,8 +129,11 @@ namespace GBSharp
                     }
                     break;
             }
+        }
 
-            if(_mmu.LY == _mmu.LYC)
+        private void CheckLYC()
+        {
+            if (_mmu.LY == _mmu.LYC)
             {
                 _mmu.STAT = Bitwise.SetBit(_mmu.STAT, 2);
                 if (Bitwise.IsBitOn(_mmu.STAT, 6)) _mmu.SetInterrupt(Interrupts.LCDStat);
