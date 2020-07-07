@@ -66,7 +66,7 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
-            if (!Bitwise.IsBitOn(_mmu.LCDC, 7)) return;
+            //if (!Bitwise.IsBitOn(_mmu.LCDC, 7)) return;
             clocksCount += clocks;
 
 
@@ -277,7 +277,7 @@ namespace GBSharp
                             int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
                             if (pixel != 0)
                             {
-                                if (objAboveBg || FrameBuffer[writePosition] == 255)
+                                if (objAboveBg || FrameBuffer[writePosition] == Color3.R)
                                 {
                                     Color color = colors[colorIndex];
                                     FrameBuffer[writePosition] = color.R;

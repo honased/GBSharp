@@ -82,7 +82,7 @@ namespace MonoGB
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
-            Cartridge cartridge = Cartridge.Load("Roms/Games/Tetris.gb");
+            Cartridge cartridge = Cartridge.Load("Roms/Games/Links Awakening.gb");
             //Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _mmu.LoadCartridge(cartridge);
@@ -119,7 +119,7 @@ namespace MonoGB
 
         private Cartridge GetNextTestRom()
         {
-            string[] files = Directory.GetFiles("Roms/Gekkio");
+            string[] files = Directory.GetFiles("Roms/Blargg");
             Console.WriteLine("Loading Rom " + files[_currentTestRom] + "...");
             Cartridge cart = Cartridge.Load(files[_currentTestRom++]);
             if (_currentTestRom >= files.Length) _currentTestRom = 0;
