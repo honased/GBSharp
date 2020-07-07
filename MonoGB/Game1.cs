@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using GBSharp;
 using System.IO;
 using System;
+using GBSharp.Audio;
 
 namespace MonoGB
 {
@@ -19,6 +20,7 @@ namespace MonoGB
         CPU _cpu;
         MMU _mmu;
         PPU _ppu;
+        Synth _synth;
         Input _input;
         Texture2D _frame;
         Texture2D _tiles;
@@ -48,17 +50,21 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            _debugMode = false;
+            _synth = new Synth();
+            _synth.oscillator = Oscillator.Square;
+            _debugMode = true;
 
             _cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
+            graphics.SynchronizeWithVerticalRetrace = true;
+            IsFixedTimeStep = true;
             if (!_debugMode)
             {
                 graphics.IsFullScreen = true;
                 graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
                 graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
-                graphics.ApplyChanges();
             }
+            graphics.ApplyChanges();
 
             gameScale = 2f;
 
@@ -76,7 +82,7 @@ namespace MonoGB
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
-            Cartridge cartridge = Cartridge.Load("Roms/Games/Links Awakening.gb");
+            Cartridge cartridge = Cartridge.Load("Roms/Games/Tetris.gb");
             //Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _mmu.LoadCartridge(cartridge);
@@ -181,6 +187,11 @@ namespace MonoGB
             }
 
             oldState = _keyState;
+
+            //if (_keyState.IsKeyDown(Keys.A)) _synth.NoteOn(0);
+            //else _synth.NoteOff(0);
+
+            _synth.Update(gameTime);
 
             base.Update(gameTime);
         }
