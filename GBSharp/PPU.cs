@@ -66,59 +66,67 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
-            //if (!Bitwise.IsBitOn(_mmu.LCDC, 7)) return;
             clocksCount += clocks;
 
 
             int mode = _mmu.STAT & 0x03;
 
-            switch(mode)
+            if (Bitwise.IsBitOn(_mmu.LCDC, 7))
             {
-                case 2:
-                    if(clocksCount >= OAM_CLOCK_COUNT)
-                    {
-                        clocksCount -= OAM_CLOCK_COUNT;
-                        ChangeMode(3);
-                    }
-                    break;
-
-                case 3:
-                    if(clocksCount >= VRAM_CLOCK_COUNT)
-                    {
-                        clocksCount -= VRAM_CLOCK_COUNT;
-                        ChangeMode(0);
-                        RenderLine();
-                    }
-                    break;
-
-                case 0:
-                    if(clocksCount >= HBLANK_CLOCK_COUNT)
-                    {
-                        clocksCount -= HBLANK_CLOCK_COUNT;
-                        CheckLYC();
-
-                        if (++_mmu.LY == 144)
+                switch (mode)
+                {
+                    case 2:
+                        if (clocksCount >= OAM_CLOCK_COUNT)
                         {
-                            ChangeMode(1);
-                            _mmu.SetInterrupt(Interrupts.VBlank);
+                            clocksCount -= OAM_CLOCK_COUNT;
+                            ChangeMode(3);
                         }
-                        else ChangeMode(2);
-                    }
-                    break;
+                        break;
 
-                case 1:
-                    if(clocksCount >= VBLANK_CLOCK_COUNT)
-                    {
-                        clocksCount -= VBLANK_CLOCK_COUNT;
-                        CheckLYC();
-
-                        if (++_mmu.LY > 153)
+                    case 3:
+                        if (clocksCount >= VRAM_CLOCK_COUNT)
                         {
-                            _mmu.LY = 0;
-                            ChangeMode(2);
+                            clocksCount -= VRAM_CLOCK_COUNT;
+                            ChangeMode(0);
+                            RenderLine();
                         }
-                    }
-                    break;
+                        break;
+
+                    case 0:
+                        if (clocksCount >= HBLANK_CLOCK_COUNT)
+                        {
+                            clocksCount -= HBLANK_CLOCK_COUNT;
+                            CheckLYC();
+
+                            if (++_mmu.LY == 144)
+                            {
+                                ChangeMode(1);
+                                _mmu.SetInterrupt(Interrupts.VBlank);
+                            }
+                            else ChangeMode(2);
+                        }
+                        break;
+
+                    case 1:
+                        if (clocksCount >= VBLANK_CLOCK_COUNT)
+                        {
+                            clocksCount -= VBLANK_CLOCK_COUNT;
+                            CheckLYC();
+
+                            if (++_mmu.LY > 153)
+                            {
+                                _mmu.LY = 0;
+                                ChangeMode(2);
+                            }
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                _mmu.LY = 0;
+                _mmu.STAT &= ~0x03;
+                clocksCount = 0;
             }
         }
 
