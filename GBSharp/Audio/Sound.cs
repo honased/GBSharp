@@ -24,20 +24,29 @@ namespace GBSharp.Audio
             const int bytesPerSample = 2;
             _monoBuffer = new byte[ChannelsCount * SamplesPerBuffer * bytesPerSample];
 
+            _instance.Volume = 0.5f;
+
             _instance.Play();
             _bufferPos = 0;
         }
 
-        internal void AddVolumeInfo(int volume)
+        ~Sound()
+        {
+            _instance.Dispose();
+        }
+
+        internal void AddVolumeInfo(int volume, int leftVolume, int rightVolume)
         {
             float vol = volume / 15.0f;
             if(_bufferPos < SamplesPerBuffer)
             {
-                _workingBuffer[0, _bufferPos] = vol;
-                _workingBuffer[1, _bufferPos] = vol;
+                _workingBuffer[0, _bufferPos] = vol * (leftVolume / 7.0f);
+                _workingBuffer[1, _bufferPos] = vol * (rightVolume / 7.0f);
             }
 
             _bufferPos++;
+
+            if (BufferFilled()) SubmitBuffer();
         }
 
         internal bool BufferFilled()
@@ -50,17 +59,7 @@ namespace GBSharp.Audio
             _bufferPos = 0;
 
             SoundHelper.ConvertBuffer(_workingBuffer, _monoBuffer);
-            _instance.SubmitBuffer(_monoBuffer);
-        }
-
-        private double SineWave(double time ,double frequency)
-        {
-            return Math.Sin(time * 2 * Math.PI * frequency);
-        }
-
-        internal void Update()
-        {
-            SubmitBuffer();
+            if(_instance.PendingBufferCount < 3) _instance.SubmitBuffer(_monoBuffer);
         }
     }
 }

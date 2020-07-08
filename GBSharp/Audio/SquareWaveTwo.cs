@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Audio
 {
-    class SquareWave
+    class SquareWaveTwo
     {
         private int[] DutyCycles { get; set; } =
             {0,0,0,0,0,0,0,1,
@@ -28,16 +28,10 @@ namespace GBSharp.Audio
         private int EnvelopeTime { get; set; }
         private int EnvelopeTimeSet { get; set; }
         private bool EnvelopeEnabled { get; set; }
-        private int SweepTime { get; set; }
-        private int SweepTimeSet { get; set; }
-        private bool SweepDecrease { get; set; }
-        private int SweepShift { get; set; }
-        private int SweepOld { get; set; }
-        private bool SweepEnabled { get; set; }
 
         internal Sound Emitter { get; private set; }
 
-        public SquareWave()
+        public SquareWaveTwo()
         {
             Reset();
         }
@@ -51,12 +45,6 @@ namespace GBSharp.Audio
             LengthEnabled = false;
             FrequencyTimer = 0;
             Volume = 0;
-            SweepTime = 0;
-            SweepDecrease = false;
-            SweepShift = 0;
-            SweepEnabled = false;
-            SweepTimeSet = 0;
-            SweepOld = 0;
 
             Emitter = new Sound();
         }
@@ -95,24 +83,6 @@ namespace GBSharp.Audio
             }
         }
 
-        internal void UpdateSweep()
-        {
-            if(--SweepTime <= 0)
-            {
-                SweepTime = SweepTimeSet;
-                if (SweepTime == 0) SweepTime = 8;
-                if(SweepTimeSet > 0 && SweepEnabled)
-                {
-                    int newFrequency = CalculateSweep();
-                    if(newFrequency <= 2047 && SweepShift > 0)
-                    {
-                        SweepOld = newFrequency;
-                        Frequency = newFrequency;
-                    }
-                }
-            }
-        }
-
         internal void Step()
         {
             if(--FrequencyTimer <= 0)
@@ -137,29 +107,23 @@ namespace GBSharp.Audio
         {
             switch(address)
             {
-                case 0xFF10:
-                    SweepShift = value & 0x07;
-                    SweepDecrease = Bitwise.IsBitOn(value, 3);
-                    SweepTimeSet = (value & 0x70) >> 4;
-                    return value;
-
-                case 0xFF11:
+                case 0xFF16:
                     Duty = (value >> 6);
                     Length = (value & 0x3F);
                     return value;
 
-                case 0xFF12:
+                case 0xFF17:
                     Volume = (value >> 4);
                     EnvelopeAdd = Bitwise.IsBitOn(value, 3);
                     EnvelopeTime = value & 0x07;
                     EnvelopeTimeSet = EnvelopeTime;
                     return value;
 
-                case 0xFF13:
+                case 0xFF18:
                     Frequency = (Frequency & 0x700) | value;
                     return value;
 
-                case 0xFF14:
+                case 0xFF19:
                     Frequency = ((value & 0x7) << 8) | (Frequency & 0xFF);
                     LengthEnabled = Bitwise.IsBitOn(value, 6);
                     if (Bitwise.IsBitOn(value, 7)) Enable();
@@ -173,20 +137,17 @@ namespace GBSharp.Audio
         {
             switch (address)
             {
-                case 0xFF10:
-                    return memory[0x10];
+                case 0xFF16:
+                    return memory[0x16] | (0x3F);
 
-                case 0xFF11:
-                    return memory[0x11] | (0x3F);
+                case 0xFF17:
+                    return memory[0x16];
 
-                case 0xFF12:
-                    return memory[0x12];
-
-                case 0xFF13:
+                case 0xFF18:
                     return 0xFF;
 
-                case 0xFF14:
-                    return memory[0x14] | 0x87;
+                case 0xFF19:
+                    return memory[0x19] | 0x87;
             }
 
             throw new InvalidOperationException("Can't read from this memory spot!");
@@ -202,20 +163,6 @@ namespace GBSharp.Audio
             Enabled = true;
             FrequencyTimer = (2048 - Frequency) * 4;
             EnvelopeEnabled = true;
-
-            SweepOld = Frequency;
-            SweepTime = SweepTimeSet;
-            if (SweepTime == 0) SweepTime = 8;
-            SweepEnabled = SweepShift > 0 || SweepTime > 0;
-        }
-
-        private int CalculateSweep()
-        {
-            int returnFrequency = SweepOld >> SweepShift;
-            if (SweepDecrease) returnFrequency = SweepOld - returnFrequency;
-            else returnFrequency += SweepOld;
-
-            return returnFrequency;
         }
     }
 }

@@ -186,8 +186,6 @@ namespace MonoGB
 
             oldState = _keyState;
 
-            _cpu.UpdateAPU();
-
             base.Update(gameTime);
         }
 

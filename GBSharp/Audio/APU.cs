@@ -17,10 +17,13 @@ namespace GBSharp.Audio
         private int FrameSequencer { get; set; }
         private int totalClocks;
         private int TotalSamples { get; set; }
-        private Sound synth;
-        private float _time;
+
+        private bool[,] OutputSound { get; set; }
+        private int VolumeLeft { get; set; }
+        private int VolumeRight { get; set; }
 
         private SquareWave squareWave;
+        private SquareWaveTwo squareWave2;
 
         public APU()
         {
@@ -34,19 +37,62 @@ namespace GBSharp.Audio
             TotalSamples = 0;
 
             squareWave = new SquareWave();
-            synth = new Sound();
+            squareWave2 = new SquareWaveTwo();
+
+            OutputSound = new bool[2, 4];
+            VolumeLeft = 0;
+            VolumeRight = 0;
         }
 
         public int WriteByte(int address, int value)
         {
             if (address <= 0xFF14) return squareWave.WriteByte(address, value);
+            if (address <= 0xFF19) return squareWave2.WriteByte(address, value);
+
+            if (address <= 0xFF1E) return value;
+            if (address >= 0xFF20 && address <= 0xFF23) return value;
+            if (address <= 0xFF26)
+            {
+                switch(address)
+                {
+                    case 0xFF24:
+                        VolumeLeft = (value >> 4) & 0x07;
+                        VolumeRight = value & 0x07;
+                        return value;
+
+                    case 0xFF25:
+                        for(int i = 0; i < 8; i++)
+                        {
+                            OutputSound[i / 4, i % 4] = Bitwise.IsBitOn(value, i);
+                        }
+                        return value;
+
+                    case 0xFF26:
+                        int returnMem = value & 0x80;
+                        returnMem |= (squareWave.IsPlaying() ? 1 : 0);
+                        returnMem |= (squareWave2.IsPlaying() ? 1 : 0) << 1;
+                        return returnMem;
+                }
+            }
 
             return value;
         }
 
-        public int ReadByte(int address)
+        public int ReadByte(int address, int[] memory)
         {
-            return -1;
+            if (address <= 0xFF14) return squareWave.ReadByte(address, memory);
+            if (address <= 0xFF19) return squareWave2.ReadByte(address, memory);
+            if (address <= 0xFF1E) return memory[address - 0xFF00];
+            if (address >= 0xFF20 && address <= 0xFF23) return memory[address - 0xFF00];
+            if (address == 0xFF26)
+            {
+                int returnMem = memory[address - 0xFF00] & 0x80;
+                returnMem |= (squareWave.IsPlaying() ? 1 : 0);
+                returnMem |= (squareWave2.IsPlaying() ? 1 : 0) << 1;
+                return returnMem;
+            }
+
+            return memory[address - 0xFF00];
         }
 
         public void Tick(int clocks)
@@ -62,6 +108,7 @@ namespace GBSharp.Audio
                     {
                         case 0:
                             squareWave.UpdateLength();
+                            squareWave2.UpdateLength();
                             break;
 
                         case 1:
@@ -70,6 +117,8 @@ namespace GBSharp.Audio
                         case 2:
                             squareWave.UpdateLength();
                             squareWave.UpdateSweep();
+
+                            squareWave2.UpdateLength();
                             break;
 
                         case 3:
@@ -77,6 +126,7 @@ namespace GBSharp.Audio
 
                         case 4:
                             squareWave.UpdateLength();
+                            squareWave2.UpdateLength();
                             break;
 
                         case 5:
@@ -85,10 +135,13 @@ namespace GBSharp.Audio
                         case 6:
                             squareWave.UpdateLength();
                             squareWave.UpdateSweep();
+
+                            squareWave2.UpdateLength();
                             break;
 
                         case 7:
                             squareWave.UpdateEnvelope();
+                            squareWave2.UpdateEnvelope();
                             break;
 
                         default:
@@ -98,23 +151,16 @@ namespace GBSharp.Audio
                 }
 
                 squareWave.Step();
+                squareWave2.Step();
 
                 if (++TotalSamples >= SAMPLE_GOAL)
                 {
                     TotalSamples -= SAMPLE_GOAL;
 
-                    synth.AddVolumeInfo(squareWave.GetVolume());
-                }
-                if(synth.BufferFilled())
-                {
-                    synth.Update();
+                    squareWave.Emitter.AddVolumeInfo(squareWave.GetVolume(), VolumeLeft * (OutputSound[1, 0] ? 1 : 0), VolumeRight * (OutputSound[0, 0] ? 1 : 0));
+                    squareWave2.Emitter.AddVolumeInfo(squareWave2.GetVolume(), VolumeLeft * (OutputSound[1, 1] ? 1 : 0), VolumeRight * (OutputSound[0, 1] ? 1 : 0));
                 }
             }
-        }
-
-        public void UpdateSynths()
-        {
-            //synth.Update();
         }
     }
 }

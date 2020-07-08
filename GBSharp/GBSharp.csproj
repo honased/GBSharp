@@ -45,12 +45,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\APU.cs" />
-    <Compile Include="Audio\Oscillator.cs" />
     <Compile Include="Audio\Sound.cs" />
     <Compile Include="Audio\SoundHelper.cs" />
+    <Compile Include="Audio\SquareWaveTwo.cs" />
     <Compile Include="Audio\SquareWave.cs" />
-    <Compile Include="Audio\Synth.cs" />
-    <Compile Include="Audio\Voice.cs" />
     <Compile Include="Bitwise.cs" />
     <Compile Include="Cartridges\CartidgeMBC1.cs" />
     <Compile Include="Cartridges\CartidgeMBC0.cs" />

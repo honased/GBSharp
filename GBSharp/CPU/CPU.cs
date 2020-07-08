@@ -146,11 +146,6 @@ namespace GBSharp
             return cycles;
         }
 
-        public void UpdateAPU()
-        {
-            _apu.UpdateSynths();
-        }
-
         private int CheckInterrupts()
         {
             int IE = _mmu.IE;

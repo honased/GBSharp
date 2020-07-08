@@ -270,7 +270,7 @@ namespace GBSharp
                 case int _ when address < 0xFF4C:
                     if (address >= 0xFF10 && address <= 0xFF26)
                     {
-                        return _apu.ReadByte(address);
+                        return _apu.ReadByte(address, _io);
                     }
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
