@@ -69,6 +69,7 @@ namespace GBSharp.Audio
 
                         case 2:
                             squareWave.UpdateLength();
+                            squareWave.UpdateSweep();
                             break;
 
                         case 3:
@@ -83,18 +84,20 @@ namespace GBSharp.Audio
 
                         case 6:
                             squareWave.UpdateLength();
+                            squareWave.UpdateSweep();
                             break;
 
                         case 7:
+                            squareWave.UpdateEnvelope();
                             break;
 
                         default:
                             throw new InvalidOperationException("Frame Sequencer can not be this value: " + FrameSequencer.ToString());
                     }
                     FrameSequencer = (FrameSequencer + 1) % 8;
-
-                    squareWave.Step();
                 }
+
+                squareWave.Step();
 
                 if (++TotalSamples >= SAMPLE_GOAL)
                 {
@@ -102,12 +105,16 @@ namespace GBSharp.Audio
 
                     synth.AddVolumeInfo(squareWave.GetVolume());
                 }
+                if(synth.BufferFilled())
+                {
+                    synth.Update();
+                }
             }
         }
 
         public void UpdateSynths()
         {
-            synth.Update();
+            //synth.Update();
         }
     }
 }
