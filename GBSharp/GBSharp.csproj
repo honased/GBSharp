@@ -46,7 +46,9 @@
   <ItemGroup>
     <Compile Include="Audio\APU.cs" />
     <Compile Include="Audio\Oscillator.cs" />
+    <Compile Include="Audio\Sound.cs" />
     <Compile Include="Audio\SoundHelper.cs" />
+    <Compile Include="Audio\SquareWave.cs" />
     <Compile Include="Audio\Synth.cs" />
     <Compile Include="Audio\Voice.cs" />
     <Compile Include="Bitwise.cs" />
@@ -101,6 +103,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Blargg\11-op a,%28hl%29.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Blargg\bgbtest.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Blargg\cpu_instrs.gb">

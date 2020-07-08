@@ -44,7 +44,7 @@ namespace GBSharp.Audio
 
         // Public Methods
 
-        public void Update(GameTime gameTime)
+        public void Update()
         {
             while (_instance.PendingBufferCount < 2)
             {

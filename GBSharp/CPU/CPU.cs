@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBSharp.Audio;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace GBSharp
         private PPU _ppu;
         private Input _input;
         private Timer _timer;
+        private APU _apu;
         const int CPU_CYCLES = 17556;
         private int currentCycles;
         public bool IME;
@@ -29,6 +31,8 @@ namespace GBSharp
             _input = input;
             _timer = new Timer(_mmu);
             _debugger = new Debugger(this, mmu, ppu, _timer);
+            _apu = new APU();
+            mmu._apu = _apu;
             mmu.SetCPU(this);
             mmu.SetPPU(_ppu);
             mmu.SetTimer(_timer);
@@ -137,8 +141,14 @@ namespace GBSharp
             _timer.Tick(cycles);
             _input.Tick();
             _ppu.Tick(cycles);
+            _apu.Tick(cycles);
 
             return cycles;
+        }
+
+        public void UpdateAPU()
+        {
+            _apu.UpdateSynths();
         }
 
         private int CheckInterrupts()

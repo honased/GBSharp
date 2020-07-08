@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBSharp.Audio;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,7 @@ namespace GBSharp
         private int[] _io;
         private PPU _ppu;
         private Timer _timer;
+        internal APU _apu;
 
         public int IE
         {
@@ -214,6 +216,13 @@ namespace GBSharp
                             break;
 
                     }
+
+                    if(address >= 0xFF10 && address <= 0xFF26)
+                    {
+                        value = _apu.WriteByte(address, value);
+                        if (value == -1) value = ReadByte(address);
+                    }
+
                     _io[address - 0xFF00] = value;
 
                     if(address == 0xFF07)
@@ -259,6 +268,10 @@ namespace GBSharp
                 case int _ when address < 0xFF00:
                     return 0;
                 case int _ when address < 0xFF4C:
+                    if (address >= 0xFF10 && address <= 0xFF26)
+                    {
+                        return _apu.ReadByte(address);
+                    }
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
                     return 0xFF;
