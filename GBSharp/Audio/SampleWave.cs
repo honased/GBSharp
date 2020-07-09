@@ -6,32 +6,26 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Audio
 {
-    class SquareWaveTwo
+    class SampleWave
     {
-        private int[] DutyCycles { get; set; } =
-            {0,0,0,0,0,0,0,1,
-             1,0,0,0,0,0,0,1,
-             1,0,0,0,0,1,1,1,
-             0,1,1,1,1,1,1,0};
+        private int[] Samples { get; set; }
 
         private int Length { get; set; }
-        private int Duty { get; set; }
         private int Frequency { get; set; }
         private int FrequencyTimer { get; set; }
         private bool Enabled { get; set; }
         private int SequencePointer { get; set; }
         private bool LengthEnabled { get; set; }
-        private int Volume { get; set; }
+        private int VolumeLevel { get; set; }
         private int OutputVolume { get; set; }
-        private int Envelope { get; set; }
-        private bool EnvelopeAdd { get; set; }
-        private int EnvelopeTime { get; set; }
-        private int EnvelopeTimeSet { get; set; }
-        private bool EnvelopeEnabled { get; set; }
+
+        private bool BitEnabled { get; set; }
+
+        private int SamplePosition { get; set; }
 
         internal Sound Emitter { get; private set; }
 
-        public SquareWaveTwo()
+        public SampleWave()
         {
             Reset();
         }
@@ -41,10 +35,14 @@ namespace GBSharp.Audio
             Length = 0;
             SequencePointer = 0;
             Enabled = false;
-            Duty = 0;
             LengthEnabled = false;
             FrequencyTimer = 0;
-            Volume = 0;
+            VolumeLevel = 0;
+
+            Samples = new int[0x10];
+
+            SamplePosition = 0;
+            BitEnabled = false;
 
             Emitter = new Sound();
         }
@@ -60,42 +58,29 @@ namespace GBSharp.Audio
             }
         }
 
-        internal void UpdateEnvelope()
-        {
-            if(--EnvelopeTime <= 0)
-            {
-                EnvelopeTime = EnvelopeTimeSet;
-                if (EnvelopeTime == 0) EnvelopeTime = 8;
-
-                if(EnvelopeEnabled && EnvelopeTimeSet > 0)
-                {
-                    if(EnvelopeAdd)
-                    {
-                        if (Volume < 15) Volume++;
-                    }
-                    else
-                    {
-                        if (Volume > 0) Volume--;
-                    }
-                }
-
-                if (Volume == 0 || Volume == 15) EnvelopeEnabled = false;
-            }
-        }
-
         internal void Step()
         {
             if(--FrequencyTimer <= 0)
             {
-                FrequencyTimer = (2048 - Frequency) * 4;
-                SequencePointer = (SequencePointer + 1) % 8;
-            }
+                FrequencyTimer = (2048 - Frequency) * 2;
+                SamplePosition = (SamplePosition + 1) & 0x1F;
 
-            if (Enabled)
-            {
-                OutputVolume = DutyCycles[(Duty * 8) + SequencePointer] * Volume;
+                if (BitEnabled && Enabled)
+                {
+                    int position = SamplePosition / 2;
+                    int outputByte = Samples[position];
+                    if ((SamplePosition & 0x1) == 0) outputByte >>= 4;
+                    outputByte &= 0xF;
+
+                    if (VolumeLevel > 0)
+                    {
+                        outputByte >>= VolumeLevel - 1;
+                    }
+                    else outputByte = 0;
+                    OutputVolume = outputByte;
+                }
+                else OutputVolume = 0;
             }
-            else OutputVolume = 0;
         }
 
         internal int GetVolume()
@@ -107,26 +92,30 @@ namespace GBSharp.Audio
         {
             switch(address)
             {
-                case 0xFF16:
-                    Duty = (value >> 6);
-                    Length = (value & 0x3F);
+                case 0xFF1A:
+                    BitEnabled = Bitwise.IsBitOn(value, 7);
                     return value;
 
-                case 0xFF17:
-                    Volume = (value >> 4);
-                    EnvelopeAdd = Bitwise.IsBitOn(value, 3);
-                    EnvelopeTime = value & 0x07;
-                    EnvelopeTimeSet = EnvelopeTime;
+                case 0xFF1B:
+                    Length = value;
                     return value;
 
-                case 0xFF18:
+                case 0xFF1C:
+                    VolumeLevel = (value >> 5) & 0x03;
+                    return value;
+
+                case 0xFF1D:
                     Frequency = (Frequency & 0x700) | value;
                     return value;
 
-                case 0xFF19:
+                case 0xFF1E:
                     Frequency = ((value & 0x7) << 8) | (Frequency & 0xFF);
                     LengthEnabled = Bitwise.IsBitOn(value, 6);
                     if (Bitwise.IsBitOn(value, 7)) Enable();
+                    return value;
+
+                case int _ when address >= 0xFF30 && address <= 0xFF3f:
+                    Samples[address - 0xFF30] = value;
                     return value;
             }
 
@@ -137,17 +126,20 @@ namespace GBSharp.Audio
         {
             switch (address)
             {
-                case 0xFF16:
-                    return memory[0x16] | (0x3F);
+                case 0xFF1A:
+                    return memory[0x10];
 
-                case 0xFF17:
-                    return memory[0x16];
+                case 0xFF1B:
+                    return memory[0x11] | (0x3F);
 
-                case 0xFF18:
+                case 0xFF1C:
+                    return memory[0x12];
+
+                case 0xFF1D:
                     return 0xFF;
 
-                case 0xFF19:
-                    return memory[0x19] | 0x87;
+                case 0xFF1E:
+                    return memory[0x14] | 0x87;
             }
 
             throw new InvalidOperationException("Can't read from this memory spot!");
@@ -161,10 +153,11 @@ namespace GBSharp.Audio
         private void Enable()
         {
             Enabled = true;
-            FrequencyTimer = (2048 - Frequency) * 4;
-            EnvelopeEnabled = true;
+            FrequencyTimer = (2048 - Frequency) * 2;
 
-            if (Length == 0) Length = 64;
+            if (Length == 0) Length = 256;
+
+            SamplePosition = 0;
         }
     }
 }

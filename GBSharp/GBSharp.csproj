@@ -48,6 +48,7 @@
     <Compile Include="Audio\Sound.cs" />
     <Compile Include="Audio\SoundHelper.cs" />
     <Compile Include="Audio\SquareWaveTwo.cs" />
+    <Compile Include="Audio\SampleWave.cs" />
     <Compile Include="Audio\SquareWave.cs" />
     <Compile Include="Bitwise.cs" />
     <Compile Include="Cartridges\CartidgeMBC1.cs" />

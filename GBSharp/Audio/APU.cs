@@ -24,6 +24,7 @@ namespace GBSharp.Audio
 
         private SquareWave squareWave;
         private SquareWaveTwo squareWave2;
+        private SampleWave sampleWave;
 
         public APU()
         {
@@ -38,6 +39,7 @@ namespace GBSharp.Audio
 
             squareWave = new SquareWave();
             squareWave2 = new SquareWaveTwo();
+            sampleWave = new SampleWave();
 
             OutputSound = new bool[2, 4];
             VolumeLeft = 0;
@@ -49,7 +51,7 @@ namespace GBSharp.Audio
             if (address <= 0xFF14) return squareWave.WriteByte(address, value);
             if (address <= 0xFF19) return squareWave2.WriteByte(address, value);
 
-            if (address <= 0xFF1E) return value;
+            if (address <= 0xFF1E) return sampleWave.WriteByte(address, value);
             if (address >= 0xFF20 && address <= 0xFF23) return value;
             if (address <= 0xFF26)
             {
@@ -75,6 +77,8 @@ namespace GBSharp.Audio
                 }
             }
 
+            if (address >= 0xFF30 && address <= 0xFF3F) return sampleWave.WriteByte(address, value);
+
             return value;
         }
 
@@ -82,7 +86,7 @@ namespace GBSharp.Audio
         {
             if (address <= 0xFF14) return squareWave.ReadByte(address, memory);
             if (address <= 0xFF19) return squareWave2.ReadByte(address, memory);
-            if (address <= 0xFF1E) return memory[address - 0xFF00];
+            if (address <= 0xFF1E) return sampleWave.ReadByte(address, memory);
             if (address >= 0xFF20 && address <= 0xFF23) return memory[address - 0xFF00];
             if (address == 0xFF26)
             {
@@ -109,6 +113,7 @@ namespace GBSharp.Audio
                         case 0:
                             squareWave.UpdateLength();
                             squareWave2.UpdateLength();
+                            sampleWave.UpdateLength();
                             break;
 
                         case 1:
@@ -119,6 +124,7 @@ namespace GBSharp.Audio
                             squareWave.UpdateSweep();
 
                             squareWave2.UpdateLength();
+                            sampleWave.UpdateLength();
                             break;
 
                         case 3:
@@ -127,6 +133,7 @@ namespace GBSharp.Audio
                         case 4:
                             squareWave.UpdateLength();
                             squareWave2.UpdateLength();
+                            sampleWave.UpdateLength();
                             break;
 
                         case 5:
@@ -137,6 +144,7 @@ namespace GBSharp.Audio
                             squareWave.UpdateSweep();
 
                             squareWave2.UpdateLength();
+                            sampleWave.UpdateLength();
                             break;
 
                         case 7:
@@ -152,6 +160,7 @@ namespace GBSharp.Audio
 
                 squareWave.Step();
                 squareWave2.Step();
+                sampleWave.Step();
 
                 if (++TotalSamples >= SAMPLE_GOAL)
                 {
@@ -159,6 +168,7 @@ namespace GBSharp.Audio
 
                     squareWave.Emitter.AddVolumeInfo(squareWave.GetVolume(), VolumeLeft * (OutputSound[1, 0] ? 1 : 0), VolumeRight * (OutputSound[0, 0] ? 1 : 0));
                     squareWave2.Emitter.AddVolumeInfo(squareWave2.GetVolume(), VolumeLeft * (OutputSound[1, 1] ? 1 : 0), VolumeRight * (OutputSound[0, 1] ? 1 : 0));
+                    sampleWave.Emitter.AddVolumeInfo(sampleWave.GetVolume(), VolumeLeft * (OutputSound[1, 2] ? 1 : 0), VolumeRight * (OutputSound[0, 2] ? 1 : 0));
                 }
             }
         }

@@ -203,6 +203,9 @@ namespace GBSharp.Audio
             FrequencyTimer = (2048 - Frequency) * 4;
             EnvelopeEnabled = true;
 
+            if (Length == 0) Length = 64;
+
+
             SweepOld = Frequency;
             SweepTime = SweepTimeSet;
             if (SweepTime == 0) SweepTime = 8;

@@ -223,6 +223,12 @@ namespace GBSharp
                         if (value == -1) value = ReadByte(address);
                     }
 
+                    if(address >= 0xFF30 && address <= 0xFF3F)
+                    {
+                        value = _apu.WriteByte(address, value);
+                        if (value == -1) value = ReadByte(address);
+                    }
+
                     _io[address - 0xFF00] = value;
 
                     if(address == 0xFF07)
