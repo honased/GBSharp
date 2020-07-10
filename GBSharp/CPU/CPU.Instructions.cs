@@ -735,7 +735,7 @@ namespace GBSharp
             {
                 _mmu.WriteByte(LoadRegister(Registers8Bit.A), 0xFF00 | val);
             }
-            return 3;
+            return 10;
         }
 
         private int Instruction_LD_nn_SP(Instruction instruction)

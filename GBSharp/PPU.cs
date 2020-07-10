@@ -285,11 +285,7 @@ namespace GBSharp
                             int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
                             if (pixel != 0)
                             {
-                                if(!objAboveBg)
-                                {
-                                    int debug = 0;
-                                }
-                                if (objAboveBg || FrameBuffer[writePosition] == Color0.R)
+                                if (true)
                                 {
                                     Color color = colors[colorIndex];
                                     FrameBuffer[writePosition] = color.R;

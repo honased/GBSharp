@@ -15,6 +15,7 @@ namespace GBSharp.Audio
              0,1,1,1,1,1,1,0};
 
         private int Length { get; set; }
+        private int LengthSet { get; set; }
         private int Duty { get; set; }
         private int Frequency { get; set; }
         private int FrequencyTimer { get; set; }
@@ -22,8 +23,8 @@ namespace GBSharp.Audio
         private int SequencePointer { get; set; }
         private bool LengthEnabled { get; set; }
         private int Volume { get; set; }
+        private int VolumeSet { get; set; }
         private int OutputVolume { get; set; }
-        private int Envelope { get; set; }
         private bool EnvelopeAdd { get; set; }
         private int EnvelopeTime { get; set; }
         private int EnvelopeTimeSet { get; set; }
@@ -45,12 +46,14 @@ namespace GBSharp.Audio
         private void Reset()
         {
             Length = 0;
+            LengthSet = 0;
             SequencePointer = 0;
             Enabled = false;
             Duty = 0;
             LengthEnabled = false;
             FrequencyTimer = 0;
             Volume = 0;
+            VolumeSet = 0;
             SweepTime = 0;
             SweepDecrease = false;
             SweepShift = 0;
@@ -115,17 +118,19 @@ namespace GBSharp.Audio
 
         internal void Step()
         {
+            if (!Enabled)
+            {
+                OutputVolume = 0;
+                return;
+            }
+
             if(--FrequencyTimer <= 0)
             {
                 FrequencyTimer = (2048 - Frequency) * 4;
                 SequencePointer = (SequencePointer + 1) % 8;
             }
 
-            if (Enabled)
-            {
-                OutputVolume = DutyCycles[(Duty * 8) + SequencePointer] * Volume;
-            }
-            else OutputVolume = 0;
+            OutputVolume = DutyCycles[(Duty * 8) + SequencePointer] * Volume;
         }
 
         internal int GetVolume()
@@ -145,11 +150,11 @@ namespace GBSharp.Audio
 
                 case 0xFF11:
                     Duty = (value >> 6);
-                    Length = (value & 0x3F);
+                    LengthSet = 64 - (value & 0x3F);
                     return value;
 
                 case 0xFF12:
-                    Volume = (value >> 4);
+                    VolumeSet = (value >> 4);
                     EnvelopeAdd = Bitwise.IsBitOn(value, 3);
                     EnvelopeTime = value & 0x07;
                     EnvelopeTimeSet = EnvelopeTime;
@@ -203,8 +208,11 @@ namespace GBSharp.Audio
             FrequencyTimer = (2048 - Frequency) * 4;
             EnvelopeEnabled = true;
 
+            Length = 64 - LengthSet;
+
             if (Length == 0) Length = 64;
 
+            Volume = VolumeSet;
 
             SweepOld = Frequency;
             SweepTime = SweepTimeSet;

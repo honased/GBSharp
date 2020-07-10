@@ -11,10 +11,10 @@ namespace GBSharp.Audio
         private int[] Samples { get; set; }
 
         private int Length { get; set; }
+        private int LengthSet { get; set; }
         private int Frequency { get; set; }
         private int FrequencyTimer { get; set; }
         private bool Enabled { get; set; }
-        private int SequencePointer { get; set; }
         private bool LengthEnabled { get; set; }
         private int VolumeLevel { get; set; }
         private int OutputVolume { get; set; }
@@ -33,7 +33,7 @@ namespace GBSharp.Audio
         private void Reset()
         {
             Length = 0;
-            SequencePointer = 0;
+            LengthSet = 0;
             Enabled = false;
             LengthEnabled = false;
             FrequencyTimer = 0;
@@ -60,26 +60,28 @@ namespace GBSharp.Audio
 
         internal void Step()
         {
+            if(!Enabled || !BitEnabled)
+            {
+                OutputVolume = 0;
+                return;
+            }
+
             if(--FrequencyTimer <= 0)
             {
                 FrequencyTimer = (2048 - Frequency) * 2;
                 SamplePosition = (SamplePosition + 1) & 0x1F;
 
-                if (BitEnabled && Enabled)
-                {
-                    int position = SamplePosition / 2;
-                    int outputByte = Samples[position];
-                    if ((SamplePosition & 0x1) == 0) outputByte >>= 4;
-                    outputByte &= 0xF;
+                int position = SamplePosition / 2;
+                int outputByte = Samples[position];
+                if ((SamplePosition & 0x1) == 0) outputByte >>= 4;
+                outputByte &= 0xF;
 
-                    if (VolumeLevel > 0)
-                    {
-                        outputByte >>= VolumeLevel - 1;
-                    }
-                    else outputByte = 0;
-                    OutputVolume = outputByte;
+                if (VolumeLevel > 0)
+                {
+                    outputByte >>= VolumeLevel - 1;
                 }
-                else OutputVolume = 0;
+                else outputByte = 0;
+                OutputVolume = outputByte;
             }
         }
 
@@ -97,7 +99,7 @@ namespace GBSharp.Audio
                     return value;
 
                 case 0xFF1B:
-                    Length = value;
+                    LengthSet = value;
                     return value;
 
                 case 0xFF1C:
@@ -127,19 +129,19 @@ namespace GBSharp.Audio
             switch (address)
             {
                 case 0xFF1A:
-                    return memory[0x10];
+                    return memory[0x1A];
 
                 case 0xFF1B:
-                    return memory[0x11] | (0x3F);
+                    return memory[0x1B] | (0x3F);
 
                 case 0xFF1C:
-                    return memory[0x12];
+                    return memory[0x1C];
 
                 case 0xFF1D:
                     return 0xFF;
 
                 case 0xFF1E:
-                    return memory[0x14] | 0x87;
+                    return memory[0x1E] | 0x87;
             }
 
             throw new InvalidOperationException("Can't read from this memory spot!");
@@ -154,6 +156,8 @@ namespace GBSharp.Audio
         {
             Enabled = true;
             FrequencyTimer = (2048 - Frequency) * 2;
+
+            Length = 256 - LengthSet;
 
             if (Length == 0) Length = 256;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,9 @@ namespace GBSharp.Audio
         private SquareWave squareWave;
         private SquareWaveTwo squareWave2;
         private SampleWave sampleWave;
+        private NoiseWave noiseWave;
+
+        internal MMU _mmu;
 
         public APU()
         {
@@ -40,6 +44,7 @@ namespace GBSharp.Audio
             squareWave = new SquareWave();
             squareWave2 = new SquareWaveTwo();
             sampleWave = new SampleWave();
+            noiseWave = new NoiseWave();
 
             OutputSound = new bool[2, 4];
             VolumeLeft = 0;
@@ -52,7 +57,7 @@ namespace GBSharp.Audio
             if (address <= 0xFF19) return squareWave2.WriteByte(address, value);
 
             if (address <= 0xFF1E) return sampleWave.WriteByte(address, value);
-            if (address >= 0xFF20 && address <= 0xFF23) return value;
+            if (address >= 0xFF20 && address <= 0xFF23) return noiseWave.WriteByte(address, value);
             if (address <= 0xFF26)
             {
                 switch(address)
@@ -87,7 +92,7 @@ namespace GBSharp.Audio
             if (address <= 0xFF14) return squareWave.ReadByte(address, memory);
             if (address <= 0xFF19) return squareWave2.ReadByte(address, memory);
             if (address <= 0xFF1E) return sampleWave.ReadByte(address, memory);
-            if (address >= 0xFF20 && address <= 0xFF23) return memory[address - 0xFF00];
+            if (address >= 0xFF20 && address <= 0xFF23) return noiseWave.ReadByte(address, memory);
             if (address == 0xFF26)
             {
                 int returnMem = memory[address - 0xFF00] & 0x80;
@@ -114,6 +119,7 @@ namespace GBSharp.Audio
                             squareWave.UpdateLength();
                             squareWave2.UpdateLength();
                             sampleWave.UpdateLength();
+                            noiseWave.UpdateLength();
                             break;
 
                         case 1:
@@ -125,6 +131,7 @@ namespace GBSharp.Audio
 
                             squareWave2.UpdateLength();
                             sampleWave.UpdateLength();
+                            noiseWave.UpdateLength();
                             break;
 
                         case 3:
@@ -134,6 +141,7 @@ namespace GBSharp.Audio
                             squareWave.UpdateLength();
                             squareWave2.UpdateLength();
                             sampleWave.UpdateLength();
+                            noiseWave.UpdateLength();
                             break;
 
                         case 5:
@@ -145,11 +153,13 @@ namespace GBSharp.Audio
 
                             squareWave2.UpdateLength();
                             sampleWave.UpdateLength();
+                            noiseWave.UpdateLength();
                             break;
 
                         case 7:
                             squareWave.UpdateEnvelope();
                             squareWave2.UpdateEnvelope();
+                            noiseWave.UpdateEnvelope();
                             break;
 
                         default:
@@ -161,6 +171,7 @@ namespace GBSharp.Audio
                 squareWave.Step();
                 squareWave2.Step();
                 sampleWave.Step();
+                noiseWave.Step();
 
                 if (++TotalSamples >= SAMPLE_GOAL)
                 {
@@ -169,6 +180,7 @@ namespace GBSharp.Audio
                     squareWave.Emitter.AddVolumeInfo(squareWave.GetVolume(), VolumeLeft * (OutputSound[1, 0] ? 1 : 0), VolumeRight * (OutputSound[0, 0] ? 1 : 0));
                     squareWave2.Emitter.AddVolumeInfo(squareWave2.GetVolume(), VolumeLeft * (OutputSound[1, 1] ? 1 : 0), VolumeRight * (OutputSound[0, 1] ? 1 : 0));
                     sampleWave.Emitter.AddVolumeInfo(sampleWave.GetVolume(), VolumeLeft * (OutputSound[1, 2] ? 1 : 0), VolumeRight * (OutputSound[0, 2] ? 1 : 0));
+                    noiseWave.Emitter.AddVolumeInfo(noiseWave.GetVolume(), VolumeLeft * (OutputSound[1, 3] ? 1 : 0), VolumeRight * (OutputSound[0, 3] ? 1 : 0));
                 }
             }
         }

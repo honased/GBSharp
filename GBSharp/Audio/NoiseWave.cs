@@ -6,20 +6,12 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Audio
 {
-    class SquareWaveTwo
+    class NoiseWave
     {
-        private int[] DutyCycles { get; set; } =
-            {0,0,0,0,0,0,0,1,
-             1,0,0,0,0,0,0,1,
-             1,0,0,0,0,1,1,1,
-             0,1,1,1,1,1,1,0};
-
         private int Length { get; set; }
-        private int Duty { get; set; }
-        private int Frequency { get; set; }
+        private int LengthSet { get; set; }
         private int FrequencyTimer { get; set; }
         private bool Enabled { get; set; }
-        private int SequencePointer { get; set; }
         private bool LengthEnabled { get; set; }
         private int Volume { get; set; }
         private int VolumeSet { get; set; }
@@ -28,10 +20,20 @@ namespace GBSharp.Audio
         private int EnvelopeTime { get; set; }
         private int EnvelopeTimeSet { get; set; }
         private bool EnvelopeEnabled { get; set; }
+        private int ShiftFrequency { get; set; }
+        private bool ShiftWidth { get; set; }
+        private bool DAC { get; set; }
+        private int DividingRatio { get; set; }
+
+        private int LFSR { get; set; }
+
+        private int[] Dividers { get; set; } = new int[] { 8, 16, 32, 48, 64, 80, 96, 112 };
+
+        private bool Trigger;
 
         internal Sound Emitter { get; private set; }
 
-        public SquareWaveTwo()
+        public NoiseWave()
         {
             Reset();
         }
@@ -39,13 +41,16 @@ namespace GBSharp.Audio
         private void Reset()
         {
             Length = 0;
-            SequencePointer = 0;
+            LengthSet = 0;
             Enabled = false;
-            Duty = 0;
             LengthEnabled = false;
             FrequencyTimer = 0;
             Volume = 0;
             VolumeSet = 0;
+            LFSR = 0;
+            DAC = false;
+            ShiftWidth = false;
+            Trigger = false;
 
             Emitter = new Sound();
         }
@@ -86,19 +91,34 @@ namespace GBSharp.Audio
 
         internal void Step()
         {
-            if (!Enabled)
+            if(!Enabled || !DAC)
             {
                 OutputVolume = 0;
                 return;
             }
 
-            if (--FrequencyTimer <= 0)
+            if (FrequencyTimer-- <= 0)
             {
-                FrequencyTimer = (2048 - Frequency) * 4;
-                SequencePointer = (SequencePointer + 1) % 8;
+                FrequencyTimer = Dividers[DividingRatio] << ShiftFrequency;    // odd
+
+                int result = (LFSR & 0x1) ^ ((LFSR >> 1) & 0x1);
+                LFSR >>= 1;
+                LFSR |= result << 14;
+                if (ShiftWidth)
+                {
+                    LFSR &= ~0x40;
+                    LFSR |= result << 6;
+                }
+                if ((LFSR & 0x1) == 0)
+                {
+                    OutputVolume = Volume;
+                }
+                else
+                {
+                    OutputVolume = 0;
+                }
             }
 
-            OutputVolume = DutyCycles[(Duty * 8) + SequencePointer] * Volume;
         }
 
         internal int GetVolume()
@@ -110,26 +130,28 @@ namespace GBSharp.Audio
         {
             switch(address)
             {
-                case 0xFF16:
-                    Duty = (value >> 6);
-                    Length = (value & 0x3F);
+                case 0xFF20:
+                    LengthSet = (value & 0x3F);
                     return value;
 
-                case 0xFF17:
-                    VolumeSet = (value >> 4);
+                case 0xFF21:
+                    DAC = (value & 0xF8) != 0;
+                    VolumeSet = (value >> 4) & 0xF;
                     EnvelopeAdd = Bitwise.IsBitOn(value, 3);
-                    EnvelopeTime = value & 0x07;
-                    EnvelopeTimeSet = EnvelopeTime;
+                    //EnvelopeTime = value & 0x07;
+                    EnvelopeTimeSet = value & 0x07;
                     return value;
 
-                case 0xFF18:
-                    Frequency = (Frequency & 0x700) | value;
+                case 0xFF22:
+                    DividingRatio = value & 0x07;
+                    ShiftWidth = Bitwise.IsBitOn(value, 3);
+                    ShiftFrequency = (value >> 4) & 0xF;
                     return value;
 
-                case 0xFF19:
-                    Frequency = ((value & 0x7) << 8) | (Frequency & 0xFF);
+                case 0xFF23:
                     LengthEnabled = Bitwise.IsBitOn(value, 6);
-                    if (Bitwise.IsBitOn(value, 7)) Enable();
+                    Trigger = Bitwise.IsBitOn(value, 7);
+                    if (Trigger) Enable();
                     return value;
             }
 
@@ -140,17 +162,17 @@ namespace GBSharp.Audio
         {
             switch (address)
             {
-                case 0xFF16:
-                    return memory[0x16] | (0x3F);
+                case 0xFF20:
+                    return LengthSet & 0x3F;
 
-                case 0xFF17:
-                    return memory[0x17];
+                case 0xFF21:
+                    return (EnvelopeTimeSet & 0x7) | ((EnvelopeAdd ? 1 : 0) << 3) | ((VolumeSet & 0xF) << 4);
 
-                case 0xFF18:
-                    return 0xFF;
+                case 0xFF22:
+                    return (DividingRatio) | ((ShiftWidth ? 1 : 0) << 3) | (ShiftFrequency << 4);
 
-                case 0xFF19:
-                    return memory[0x19] | 0x87;
+                case 0xFF23:
+                    return ((LengthEnabled ? 1 : 0) << 6) | ((Trigger ? 1 : 0) << 7);
             }
 
             throw new InvalidOperationException("Can't read from this memory spot!");
@@ -164,10 +186,16 @@ namespace GBSharp.Audio
         private void Enable()
         {
             Enabled = true;
-            FrequencyTimer = (2048 - Frequency) * 4;
             EnvelopeEnabled = true;
+            EnvelopeTime = EnvelopeTimeSet;
 
             Volume = VolumeSet;
+
+            FrequencyTimer = Dividers[DividingRatio] << ShiftFrequency;
+
+            LFSR = 0x7FFF;
+
+            Length = 64 - LengthSet;
 
             if (Length == 0) Length = 64;
         }

@@ -32,6 +32,7 @@ namespace GBSharp
             _timer = new Timer(_mmu);
             _debugger = new Debugger(this, mmu, ppu, _timer);
             _apu = new APU();
+            _apu._mmu = mmu;
             mmu._apu = _apu;
             mmu.SetCPU(this);
             mmu.SetPPU(_ppu);

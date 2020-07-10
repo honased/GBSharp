@@ -23,6 +23,7 @@ namespace MonoGB
         Input _input;
         Texture2D _frame;
         Texture2D _tiles;
+        SpriteFont font;
         int _currentTestRom;
         float gameScale;
 
@@ -49,7 +50,7 @@ namespace MonoGB
             _ppu = new PPU(_mmu);
             _input = new Input(_mmu);
             _cpu = new CPU(_mmu, _ppu, _input);
-            _debugMode = true;
+            _debugMode = false;
 
             _cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
@@ -74,13 +75,27 @@ namespace MonoGB
             gameScale -= 1;
 
             //_cpu.Debug();
-            //_cpu.StartInBios();
+            _cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
-            Cartridge cartridge = Cartridge.Load("Roms/Games/Kirbys Dream Land.gb");
+
+            string path = "Roms/Games/Kirbys Dream Land.gb";
+
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1) path = args[1];
+
+            if(!File.Exists(path))
+            {
+                Console.WriteLine(path);
+                Console.WriteLine("Invalid usage... GBSharp [rom]");
+                Exit();
+                return;
+            }
+
+            Cartridge cartridge = Cartridge.Load(path);
             //Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _mmu.LoadCartridge(cartridge);
@@ -102,6 +117,8 @@ namespace MonoGB
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            font = Content.Load<SpriteFont>("Font");
 
             // TODO: use this.Content to load your game content here
         }
@@ -209,6 +226,8 @@ namespace MonoGB
                 spriteBatch.Draw(_tiles, new Vector2(GraphicsDevice.Viewport.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 2f, SpriteEffects.None, 0f);
                 spriteBatch.Draw(_frame, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 3, SpriteEffects.None, 0f);
             }
+
+            spriteBatch.DrawString(font, "FPS: " + (1 / (float)gameTime.ElapsedGameTime.TotalSeconds).ToString(), new Vector2(0, GraphicsDevice.Viewport.Height - 20), Color.White);
             
             
             spriteBatch.End();
