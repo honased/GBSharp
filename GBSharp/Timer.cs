@@ -8,15 +8,15 @@ namespace GBSharp
 {
     internal class Timer
     {
-        private MMU _mmu;
+        private Gameboy _gameboy;
         private int divClocks = 0;
         private int timerClocks = 0;
         private bool timerEnabled = false;
         int timerClockGoal = 1024;
 
-        public Timer(MMU mmu)
+        public Timer(Gameboy gameboy)
         {
-            _mmu = mmu;
+            _gameboy = gameboy;
         }
 
         internal void Tick(int clocks)
@@ -26,7 +26,7 @@ namespace GBSharp
             while(divClocks >= 256)
             {
                 divClocks -= 256;
-                _mmu.DIV = Bitwise.Wrap8(_mmu.DIV + 1);
+                _gameboy.Mmu.DIV = Bitwise.Wrap8(_gameboy.Mmu.DIV + 1);
             }
 
             if(timerEnabled)
@@ -35,11 +35,11 @@ namespace GBSharp
                 while(timerClocks >= timerClockGoal)
                 {
                     timerClocks -= timerClockGoal;
-                    _mmu.TIMA = Bitwise.Wrap8(_mmu.TIMA + 1);
-                    if(_mmu.TIMA == 0)
+                    _gameboy.Mmu.TIMA = Bitwise.Wrap8(_gameboy.Mmu.TIMA + 1);
+                    if(_gameboy.Mmu.TIMA == 0)
                     {
-                        _mmu.TIMA = _mmu.TMA;
-                        _mmu.SetInterrupt(Interrupts.Timer);
+                        _gameboy.Mmu.TIMA = _gameboy.Mmu.TMA;
+                        _gameboy.Mmu.SetInterrupt(Interrupts.Timer);
                     }
                 }
             }
@@ -56,15 +56,15 @@ namespace GBSharp
 
         public override string ToString()
         {
-            return "DIV:" + _mmu.DIV.ToString() + "\tTimer Enabled:" + Bitwise.IsBitOn(_mmu.TAC, 2).ToString() + "\tTimer:" + _mmu.TIMA.ToString()
+            return "DIV:" + _gameboy.Mmu.DIV.ToString() + "\tTimer Enabled:" + Bitwise.IsBitOn(_gameboy.Mmu.TAC, 2).ToString() + "\tTimer:" + _gameboy.Mmu.TIMA.ToString()
                 + "\tTimer Clocks:" + timerClocks.ToString() + "\tGoal:" + timerClockGoal.ToString();
         }
 
         internal void Update()
         {
-            timerEnabled = Bitwise.IsBitOn(_mmu.TAC, 2);
+            timerEnabled = Bitwise.IsBitOn(_gameboy.Mmu.TAC, 2);
 
-            switch(_mmu.TAC & 0x03)
+            switch(_gameboy.Mmu.TAC & 0x03)
             {
                 case 0: timerClockGoal = 1024; break;
                 case 1: timerClockGoal = 16; break;
@@ -77,7 +77,7 @@ namespace GBSharp
 
         internal void UpdateDiv()
         {
-            //_mmu.TIMA = 0;
+            //_gameboy.Mmu.TIMA = 0;
             timerClocks = 0;
             divClocks = 0;
         }

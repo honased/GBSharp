@@ -1,4 +1,5 @@
 ﻿using GBSharp.Audio;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,7 @@ namespace GBSharp
         private int[] _zram;
         private int[] _oam;
         private int[] _io;
-        private PPU _ppu;
-        private Timer _timer;
-        internal APU _apu;
+        private Gameboy _gameboy;
 
         public int IE
         {
@@ -76,7 +75,7 @@ namespace GBSharp
 
         internal Cartridge _cartridge;
 
-        public MMU()
+        public MMU(Gameboy gameboy)
         {
             _inBios = false;
             _vram = new int[0x2000];
@@ -86,9 +85,10 @@ namespace GBSharp
             _io = new int[0x80];
             _zram = new int[0x80];
 
-            Reset();
-
+            _gameboy = gameboy;
             SetBios();
+
+            Reset();
         }
 
         internal void Reset()
@@ -106,21 +106,6 @@ namespace GBSharp
         internal void StartInBios()
         {
             _inBios = true;
-        }
-
-        internal void SetCPU(CPU cpu)
-        {
-            _cpu = cpu;
-        }
-
-        internal void SetPPU(PPU ppu)
-        {
-            _ppu = ppu;
-        }
-
-        internal void SetTimer(Timer timer)
-        {
-            _timer = timer;
         }
 
         public void WriteBytes(int[] bytes, int address)
@@ -171,7 +156,7 @@ namespace GBSharp
                     break;
                 case int _ when address < 0xA000:
                     _vram[address - 0x8000] = value;
-                    if(address < 0x9800) _ppu.UpdateTile(address, value);
+                    if(address < 0x9800) _gameboy.Ppu.UpdateTile(address, value);
                     break;
                 case int _ when address < 0xC000:
                     _cartridge.WriteERam(address, value);
@@ -195,7 +180,7 @@ namespace GBSharp
                             break;
 
                         case 0xFF04:
-                            _timer.UpdateDiv();
+                            _gameboy.Timer.UpdateDiv();
                             value = 0;
                             break;
 
@@ -219,13 +204,13 @@ namespace GBSharp
 
                     if(address >= 0xFF10 && address <= 0xFF26)
                     {
-                        value = _apu.WriteByte(address, value);
+                        value = _gameboy.Apu.WriteByte(address, value);
                         if (value == -1) value = ReadByte(address);
                     }
 
                     if(address >= 0xFF30 && address <= 0xFF3F)
                     {
-                        value = _apu.WriteByte(address, value);
+                        value = _gameboy.Apu.WriteByte(address, value);
                         if (value == -1) value = ReadByte(address);
                     }
 
@@ -233,7 +218,7 @@ namespace GBSharp
 
                     if(address == 0xFF07)
                     {
-                        _timer.Update();
+                        _gameboy.Timer.Update();
                     }
 
                     break;
@@ -276,7 +261,7 @@ namespace GBSharp
                 case int _ when address < 0xFF4C:
                     if (address >= 0xFF10 && address <= 0xFF26)
                     {
-                        return _apu.ReadByte(address, _io);
+                        return _gameboy.Apu.ReadByte(address, _io);
                     }
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:

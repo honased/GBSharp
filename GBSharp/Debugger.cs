@@ -29,17 +29,11 @@ namespace GBSharp
         private int DebugOp { get; set; }
         private int DebugPC { get; set; }
 
-        private CPU _cpu { get; set; }
-        private MMU _mmu { get; set; }
-        private PPU _ppu { get; set; }
-        private Timer _timer { get; set; }
+        private Gameboy _gameboy;
 
-        public Debugger(CPU cpu, MMU mmu, PPU ppu, Timer timer)
+        public Debugger(Gameboy gameboy)
         {
-            _cpu = cpu;
-            _mmu = mmu;
-            _ppu = ppu;
-            _timer = timer;
+            _gameboy = gameboy;
             Reset();
         }
 
@@ -83,14 +77,14 @@ namespace GBSharp
                 }
                 if (Debugging)
                 {
-                    Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", _cpu.LoadRegister(CPU.Registers16Bit.AF), _cpu.LoadRegister(CPU.Registers16Bit.BC), _cpu.LoadRegister(CPU.Registers16Bit.DE), _cpu.LoadRegister(CPU.Registers16Bit.HL), _cpu.LoadRegister(CPU.Registers16Bit.SP));
-                    Console.WriteLine(_timer.ToString());
-                    Console.WriteLine("IME:" + _cpu.IME + "\tIE:{0:X2}\tIF:{1:X2}", _mmu.IE, _mmu.IF);
+                    Console.WriteLine("\nAF:0x{0:X4}\tBC:0x{1:X4}\tDE:0x{2:X4}\tHL:0x{3:X4}\tSP:0x{4:X4}", _gameboy.Cpu.LoadRegister(CPU.Registers16Bit.AF), _gameboy.Cpu.LoadRegister(CPU.Registers16Bit.BC), _gameboy.Cpu.LoadRegister(CPU.Registers16Bit.DE), _gameboy.Cpu.LoadRegister(CPU.Registers16Bit.HL), _gameboy.Cpu.LoadRegister(CPU.Registers16Bit.SP));
+                    Console.WriteLine(_gameboy.Timer.ToString());
+                    Console.WriteLine("IME:" + _gameboy.Cpu.IME + "\tIE:{0:X2}\tIF:{1:X2}", _gameboy.Mmu.IE, _gameboy.Mmu.IF);
 
-                    Console.WriteLine("LCDC:{0:X2}\tSTAT:{1:X2}\tLY:{2:X2}", _mmu.LCDC, _mmu.STAT, _mmu.LY);
-                    Console.WriteLine(_mmu._cartridge.ToString());
+                    Console.WriteLine("LCDC:{0:X2}\tSTAT:{1:X2}\tLY:{2:X2}", _gameboy.Mmu.LCDC, _gameboy.Mmu.STAT, _gameboy.Mmu.LY);
+                    Console.WriteLine(_gameboy.Mmu._cartridge.ToString());
 
-                    string instructionName = instruction.Name.Replace("nn", "0x" + String.Format("{0:X4}", _mmu.ReadWord(pc + 1))).Replace("n", "0x" + String.Format("{0:X2}", _mmu.ReadByte(pc + 1)));
+                    string instructionName = instruction.Name.Replace("nn", "0x" + String.Format("{0:X4}", _gameboy.Mmu.ReadWord(pc + 1))).Replace("n", "0x" + String.Format("{0:X2}", _gameboy.Mmu.ReadByte(pc + 1)));
                     
                     Console.WriteLine("Instruction: [0x{0:X4}] 0x{1:X2}: " + instructionName, pc, instruction.Opcode);
 
@@ -119,7 +113,7 @@ namespace GBSharp
                     {
                         case "mem":
                             if (tokens.Length == 2) Console.WriteLine("Not enough arguments!");
-                            if (TryParseHex(tokens[2], out memLocation)) Console.WriteLine("Memory at 0x{0:X4}:" + _mmu.ReadByte(memLocation), memLocation);
+                            if (TryParseHex(tokens[2], out memLocation)) Console.WriteLine("Memory at 0x{0:X4}:" + _gameboy.Mmu.ReadByte(memLocation), memLocation);
                             else Console.WriteLine("Bad location given!");
                             break;
                     }

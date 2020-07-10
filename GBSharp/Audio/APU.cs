@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
 namespace GBSharp.Audio
@@ -28,10 +29,11 @@ namespace GBSharp.Audio
         private SampleWave sampleWave;
         private NoiseWave noiseWave;
 
-        internal MMU _mmu;
+        private Gameboy _gameboy;
 
-        public APU()
+        public APU(Gameboy gameboy)
         {
+            _gameboy = gameboy;
             Reset();
         }
 

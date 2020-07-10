@@ -11,7 +11,7 @@ namespace GBSharp
     {
         static void Main(string[] args)
         {
-            MMU mmu = new MMU();
+            //MMU mmu = new MMU();
 
             //Console.WriteLine("Done");
             //Console.ReadKey();

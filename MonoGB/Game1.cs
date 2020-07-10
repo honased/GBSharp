@@ -17,15 +17,12 @@ namespace MonoGB
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        CPU _cpu;
-        MMU _mmu;
-        PPU _ppu;
-        Input _input;
         Texture2D _frame;
         Texture2D _tiles;
         SpriteFont font;
         int _currentTestRom;
         float gameScale;
+        Gameboy _gameboy;
 
         KeyboardState oldState;
 
@@ -46,13 +43,10 @@ namespace MonoGB
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            _mmu = new MMU();
-            _ppu = new PPU(_mmu);
-            _input = new Input(_mmu);
-            _cpu = new CPU(_mmu, _ppu, _input);
+            _gameboy = new Gameboy();
             _debugMode = false;
 
-            _cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
+            //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
             graphics.PreferMultiSampling = false;
             graphics.SynchronizeWithVerticalRetrace = true;
@@ -75,7 +69,7 @@ namespace MonoGB
             gameScale -= 1;
 
             //_cpu.Debug();
-            _cpu.StartInBios();
+            //_cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
@@ -98,7 +92,7 @@ namespace MonoGB
             Cartridge cartridge = Cartridge.Load(path);
             //Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
-            _mmu.LoadCartridge(cartridge);
+            _gameboy.LoadCartridge(cartridge);
 
             this.Window.Title = cartridge.Name;
 
@@ -157,22 +151,24 @@ namespace MonoGB
             var _padState = GamePad.GetState(0);
 
             float deadzone = .15f; ;
-            _input.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up) || _padState.DPad.Up == ButtonState.Pressed || _padState.ThumbSticks.Left.Y > deadzone);
-            _input.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down) || _padState.DPad.Down == ButtonState.Pressed || _padState.ThumbSticks.Left.Y < -deadzone);
-            _input.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left) || _padState.DPad.Left == ButtonState.Pressed || _padState.ThumbSticks.Left.X < -deadzone);
-            _input.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right) || _padState.DPad.Right == ButtonState.Pressed || _padState.ThumbSticks.Left.X > deadzone);
-            _input.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A) || _padState.Buttons.X == ButtonState.Pressed);
-            _input.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S) || _padState.Buttons.A == ButtonState.Pressed);
-            _input.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space) || _padState.Buttons.Start == ButtonState.Pressed);
-            _input.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift) || _padState.Buttons.Back == ButtonState.Pressed);
+            _gameboy.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up) || _padState.DPad.Up == ButtonState.Pressed || _padState.ThumbSticks.Left.Y > deadzone);
+            _gameboy.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down) || _padState.DPad.Down == ButtonState.Pressed || _padState.ThumbSticks.Left.Y < -deadzone);
+            _gameboy.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left) || _padState.DPad.Left == ButtonState.Pressed || _padState.ThumbSticks.Left.X < -deadzone);
+            _gameboy.SetInput(Input.Button.Right, _keyState.IsKeyDown(Keys.Right) || _padState.DPad.Right == ButtonState.Pressed || _padState.ThumbSticks.Left.X > deadzone);
+            _gameboy.SetInput(Input.Button.B, _keyState.IsKeyDown(Keys.A) || _padState.Buttons.X == ButtonState.Pressed);
+            _gameboy.SetInput(Input.Button.A, _keyState.IsKeyDown(Keys.S) || _padState.Buttons.A == ButtonState.Pressed);
+            _gameboy.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space) || _padState.Buttons.Start == ButtonState.Pressed);
+            _gameboy.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift) || _padState.Buttons.Back == ButtonState.Pressed);
 
-            _cpu.ExecuteFrame();
+            _gameboy.ExecuteFrame();
 
             Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
 
-            for(int i = 0; i < _ppu.FrameBuffer.Length; i+=4)
+            int[] frameBuffer = _gameboy.GetFrameBuffer();
+
+            for(int i = 0; i < frameBuffer.Length; i+=4)
             {
-                colors[i / 4] = new Color(_ppu.FrameBuffer[i], _ppu.FrameBuffer[i + 1], _ppu.FrameBuffer[i + 2], _ppu.FrameBuffer[i + 3]);
+                colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
             }
 
             _frame.SetData<Color>(colors);
@@ -181,7 +177,7 @@ namespace MonoGB
             {
                 //                 tiles w   h
                 colors = new Color[384 * 8 * 8];
-                int[] ppuTiles = _ppu.Tiles;
+                int[] ppuTiles = _gameboy.GetTilesBuffer();
                 for (int i = 0; i < ppuTiles.Length; i += 4)
                 {
                     colors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
@@ -192,13 +188,13 @@ namespace MonoGB
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
             {
-                _cpu.Reset(false, GetNextTestRom());
+                _gameboy.Reset(false, GetNextTestRom());
                 //_cpu.Debug();
             }
 
             if(_keyState.IsKeyDown(Keys.Tab) && !oldState.IsKeyDown(Keys.Tab))
             {
-                _cpu.Debug();
+                //_cpu.Debug();
             }
 
             oldState = _keyState;

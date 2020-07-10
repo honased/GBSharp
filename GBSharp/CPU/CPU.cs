@@ -10,52 +10,53 @@ namespace GBSharp
 {
     public partial class CPU
     {
-        private MMU _mmu;
-        private PPU _ppu;
-        private Input _input;
-        private Timer _timer;
-        private APU _apu;
-        const int CPU_CYCLES = 17556;
-        private int currentCycles;
         public bool IME;
-        private int setIME = 0;
-        private int clearIME = 0;
+        private int setIME;
+        private int clearIME;
         private bool Halt { get; set; }
         private bool HaltBug { get; set; }
         private Debugger _debugger;
 
-        public CPU(MMU mmu, PPU ppu, Input input)
-        {
-            _mmu = mmu;
-            _ppu = ppu;
-            _input = input;
-            _timer = new Timer(_mmu);
-            _debugger = new Debugger(this, mmu, ppu, _timer);
-            _apu = new APU();
-            _apu._mmu = mmu;
-            mmu._apu = _apu;
-            mmu.SetCPU(this);
-            mmu.SetPPU(_ppu);
-            mmu.SetTimer(_timer);
-            Halt = false;
-            HaltBug = false;
-            IME = true;
+        private Gameboy _gameboy;
 
-            currentCycles = 0;
+        public CPU(Gameboy gameboy)
+        {
+            _gameboy = gameboy;
+            _debugger = new Debugger(gameboy);
 
             RegisterInstructions();
-            InitializeRegisters();
 
             SetPalette(new PPU.Color(0, 0, 0), new PPU.Color(96, 96, 96), new PPU.Color(192, 192, 192), new PPU.Color(255, 255, 255));
+
+            Reset(false, null);
+        }
+
+        public void Reset(bool inBios = false, Cartridge cart = null)
+        {
+            InitializeRegisters();
+
+            IME = true;
+            setIME = 0;
+            clearIME = 0;
+
+            Halt = false;
+            HaltBug = false;
+
+            if (cart != null)
+            {
+                _gameboy.Mmu.LoadCartridge(cart);
+            }
+
+            if (inBios) StartInBios();
         }
 
         public void SetPalette(PPU.Color color0, PPU.Color color1, PPU.Color color2, PPU.Color color3)
         {
-            _ppu.Color0 = color0;
-            _ppu.Color1 = color1;
-            _ppu.Color2 = color2;
-            _ppu.Color3 = color3;
-            _ppu.UpdateColors();
+            _gameboy.Ppu.Color0 = color0;
+            _gameboy.Ppu.Color1 = color1;
+            _gameboy.Ppu.Color2 = color2;
+            _gameboy.Ppu.Color3 = color3;
+            _gameboy.Ppu.UpdateColors();
         }
 
         public void Debug()
@@ -72,55 +73,22 @@ namespace GBSharp
             SetRegister(Registers16Bit.PC, 0);
             SetRegister(Registers16Bit.SP, 0);
 
-            _mmu.StartInBios();
-        }
-
-        public void Reset(bool inBios=false, Cartridge cart = null)
-        {
-            InitializeRegisters();
-
-            IME = true;
-            setIME = 0;
-            clearIME = 0;
-
-            _mmu.Reset();
-            _ppu.Reset();
-            _timer.Reset();
-            
-            Halt = false;
-            HaltBug = false;
-
-            if(cart != null)
-            {
-                _mmu.LoadCartridge(cart);
-            }
-
-            if (inBios) StartInBios();
+            _gameboy.Mmu.StartInBios();
         }
 
         private int ReadByte()
         {
             int pc = LoadRegister(Registers16Bit.PC);
             SetRegister(Registers16Bit.PC, pc + 1);
-            return _mmu.ReadByte(pc);
+            return _gameboy.Mmu.ReadByte(pc);
         }
 
         private int ReadWord()
         {
             int pc = LoadRegister(Registers16Bit.PC);
-            int word = _mmu.ReadWord(pc);
+            int word = _gameboy.Mmu.ReadWord(pc);
             SetRegister(Registers16Bit.PC, pc + 2);
             return word;
-        }
-
-        public void ExecuteFrame()
-        {
-            // 1FFE - Tetris
-            while (currentCycles < CPU_CYCLES)
-            {
-                currentCycles += ExecuteCycle();
-            }
-            currentCycles -= CPU_CYCLES;
         }
 
         public int ExecuteCycle()
@@ -139,18 +107,13 @@ namespace GBSharp
                 cycles = instruction.Execute();
             }
 
-            _timer.Tick(cycles);
-            _input.Tick();
-            _ppu.Tick(cycles);
-            _apu.Tick(cycles);
-
             return cycles;
         }
 
         private int CheckInterrupts()
         {
-            int IE = _mmu.IE;
-            int IF = _mmu.IF;
+            int IE = _gameboy.Mmu.IE;
+            int IF = _gameboy.Mmu.IF;
 
             switch(setIME)
             {
@@ -186,7 +149,7 @@ namespace GBSharp
                 IME = false;
                 Push(LoadRegister(Registers16Bit.PC));
                 SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
-                _mmu.IF &= ~(0x1 << interrupt);
+                _gameboy.Mmu.IF &= ~(0x1 << interrupt);
                 return 1;
             }
 

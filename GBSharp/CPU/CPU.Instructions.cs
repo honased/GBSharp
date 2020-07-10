@@ -89,7 +89,7 @@ namespace GBSharp
         public Instruction PeekNextInstruction()
         {
             if (Halt) return _instructions[0x00];
-            int instruction = _mmu.ReadByte(LoadRegister(Registers16Bit.PC));
+            int instruction = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.PC));
             if (instruction != 0xCB)
             {
                 if (_instructions[instruction] != null) return _instructions[instruction];
@@ -100,7 +100,7 @@ namespace GBSharp
             }
             else
             {
-                instruction = _mmu.ReadByte(LoadRegister(Registers16Bit.PC) + 1);
+                instruction = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.PC) + 1);
                 if (_cbInstructions[instruction] != null) return _cbInstructions[instruction];
                 Instruction unknownInstruction = new Instruction("[CB] Unknown?", Instruction_Unknown);
                 unknownInstruction.Opcode = instruction;
@@ -549,7 +549,7 @@ namespace GBSharp
 
             int add1;
 
-            if (instruction.registers16bit == Registers16Bit.HL) add1 = _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) add1 = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else add1 = LoadRegister(instruction.registers8bit);
 
             int result = Bitwise.Wrap8(add1 + 1);
@@ -557,7 +557,7 @@ namespace GBSharp
             SetFlag(Flags.Z, result == 0);
             SetFlag(Flags.H, (add1 & 0x0F) + 1 > 0x0F);
 
-            if (instruction.registers16bit == Registers16Bit.HL) _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
             else SetRegister(instruction.registers8bit, result);
 
             return (instruction.registers16bit == Registers16Bit.HL) ? 3 : 1;
@@ -613,12 +613,12 @@ namespace GBSharp
 
             int dec1;
 
-            if (instruction.registers16bit == Registers16Bit.HL) dec1 = _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) dec1 = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else dec1 = LoadRegister(instruction.registers8bit);
 
             int result = Bitwise.Wrap8(dec1 - 1);
 
-            if (instruction.registers16bit == Registers16Bit.HL) _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
             else SetRegister(instruction.registers8bit, result);
 
             SetFlag(Flags.Z, result == 0);
@@ -637,7 +637,7 @@ namespace GBSharp
         private int Instruction_LDD_HL_A(Instruction instruction)
         {
             int position = LoadRegister(Registers16Bit.HL);
-            _mmu.WriteByte(LoadRegister(Registers8Bit.A), position);
+            _gameboy.Mmu.WriteByte(LoadRegister(Registers8Bit.A), position);
             SetRegister(Registers16Bit.HL, position + instruction.index);
             return 2;
         }
@@ -645,7 +645,7 @@ namespace GBSharp
         private int Instruction_LDD_A_HL(Instruction instruction)
         {
             int position = LoadRegister(Registers16Bit.HL);
-            SetRegister(Registers8Bit.A, _mmu.ReadByte(position));
+            SetRegister(Registers8Bit.A, _gameboy.Mmu.ReadByte(position));
             SetRegister(Registers16Bit.HL, position + instruction.index);
             return 2;
         }
@@ -671,7 +671,7 @@ namespace GBSharp
 
         private int Instruction_LD_r1_HL(Instruction instruction)
         {
-            SetRegister(instruction.registers8bit, _mmu.ReadByte(LoadRegister(instruction.registers16Bit2)));
+            SetRegister(instruction.registers8bit, _gameboy.Mmu.ReadByte(LoadRegister(instruction.registers16Bit2)));
             return 2;
         }
 
@@ -683,31 +683,31 @@ namespace GBSharp
 
         private int Instruction_LD_r1_nn(Instruction instruction)
         {
-            SetRegister(instruction.registers8bit, _mmu.ReadByte(ReadWord()));
+            SetRegister(instruction.registers8bit, _gameboy.Mmu.ReadByte(ReadWord()));
             return 4;
         }
 
         private int Instruction_LD_n_A(Instruction instruction)
         {
-            _mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(instruction.registers16bit));
+            _gameboy.Mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(instruction.registers16bit));
             return 2;
         }
 
         private int Instruction_LD_nn_A(Instruction instruction)
         {
-            _mmu.WriteByte(LoadRegister(Registers8Bit.A), ReadWord());
+            _gameboy.Mmu.WriteByte(LoadRegister(Registers8Bit.A), ReadWord());
             return 4;
         }
 
         private int Instruction_LD_HL_r2(Instruction instruction)
         {
-            _mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(Registers16Bit.HL));
+            _gameboy.Mmu.WriteByte(LoadRegister(instruction.registers8bit2), LoadRegister(Registers16Bit.HL));
             return 2;
         }
 
         private int Instruction_LD_HL_n(Instruction instruction)
         {
-            _mmu.WriteByte(ReadByte(), LoadRegister(Registers16Bit.HL));
+            _gameboy.Mmu.WriteByte(ReadByte(), LoadRegister(Registers16Bit.HL));
             return 3;
         }
 
@@ -715,11 +715,11 @@ namespace GBSharp
         {
             if (instruction.registers8bit != Registers8Bit.C)
             {
-                SetRegister(instruction.registers8bit, _mmu.ReadByte(0xFF00 | LoadRegister(instruction.registers8bit2)));
+                SetRegister(instruction.registers8bit, _gameboy.Mmu.ReadByte(0xFF00 | LoadRegister(instruction.registers8bit2)));
             }
             else
             {
-                _mmu.WriteByte(LoadRegister(instruction.registers8bit2), 0xFF00 | LoadRegister(instruction.registers8bit));
+                _gameboy.Mmu.WriteByte(LoadRegister(instruction.registers8bit2), 0xFF00 | LoadRegister(instruction.registers8bit));
             }
             return 2;
         }
@@ -729,24 +729,24 @@ namespace GBSharp
             int val = ReadByte();
             if (instruction.registers8bit == Registers8Bit.A)
             {
-                SetRegister(Registers8Bit.A, _mmu.ReadByte(0xFF00 | val));
+                SetRegister(Registers8Bit.A, _gameboy.Mmu.ReadByte(0xFF00 | val));
             }
             else
             {
-                _mmu.WriteByte(LoadRegister(Registers8Bit.A), 0xFF00 | val);
+                _gameboy.Mmu.WriteByte(LoadRegister(Registers8Bit.A), 0xFF00 | val);
             }
             return 10;
         }
 
         private int Instruction_LD_nn_SP(Instruction instruction)
         {
-            _mmu.WriteWord(LoadRegister(Registers16Bit.SP), ReadWord());
+            _gameboy.Mmu.WriteWord(LoadRegister(Registers16Bit.SP), ReadWord());
             return 5;
         }
 
         private int Instruction_LD_HL_N(Instruction instruction)
         {
-            _mmu.WriteByte(ReadByte(), LoadRegister(Registers16Bit.HL));
+            _gameboy.Mmu.WriteByte(ReadByte(), LoadRegister(Registers16Bit.HL));
             return 3;
         }
 
@@ -756,7 +756,7 @@ namespace GBSharp
             int cycles = 2;
 
             int result = LoadRegister(Registers8Bit.A);
-            if (instruction.registers16bit == Registers16Bit.HL) result ^= _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) result ^= _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else if (instruction.registers8bit == Registers8Bit.None) result ^= ReadByte();
             else
             {
@@ -864,7 +864,7 @@ namespace GBSharp
             }   
             else if(instruction.registers16bit != Registers16Bit.None)
             {
-                result &= _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+                result &= _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
                 SetFlag(Flags.Z, result == 0);
                 SetRegister(Registers8Bit.A, result);
                 return 2;
@@ -892,7 +892,7 @@ namespace GBSharp
             }
             else if (instruction.registers16bit != Registers16Bit.None)
             {
-                result |= _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+                result |= _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
                 SetFlag(Flags.Z, result == 0);
                 SetRegister(Registers8Bit.A, result);
                 return 2;
@@ -917,7 +917,7 @@ namespace GBSharp
         {
             int sp = LoadRegister(Registers16Bit.SP) - 2;
             SetRegister(Registers16Bit.SP, sp);
-            _mmu.WriteWord(value, sp);
+            _gameboy.Mmu.WriteWord(value, sp);
         }
 
         private int Call(bool doIt)
@@ -950,8 +950,8 @@ namespace GBSharp
             }
             else
             {
-                int value = _mmu.ReadByte(LoadRegister(instruction.registers16bit));
-                _mmu.WriteByte(((value & 0xF) << 4) | ((value & 0xF0) >> 4), LoadRegister(instruction.registers16bit));
+                int value = _gameboy.Mmu.ReadByte(LoadRegister(instruction.registers16bit));
+                _gameboy.Mmu.WriteByte(((value & 0xF) << 4) | ((value & 0xF0) >> 4), LoadRegister(instruction.registers16bit));
 
                 SetFlag(Flags.Z, value == 0);
                 return 4;
@@ -964,7 +964,7 @@ namespace GBSharp
 
             byte initialValue;
 
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             byte result = (byte)((initialValue << 1) | (IsFlagOn(Flags.C) ? 1 : 0));
@@ -974,7 +974,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -990,7 +990,7 @@ namespace GBSharp
 
             byte initialValue;
 
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             byte result = (byte)((initialValue >> 1) | (IsFlagOn(Flags.C) ? 0x80 : 0));
@@ -1000,7 +1000,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1013,7 +1013,7 @@ namespace GBSharp
         private int Instruction_RLC(Instruction instruction)
         {
             int initialValue;
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             bool oldBit7 = Bitwise.IsBitOn(initialValue, 7);
@@ -1026,7 +1026,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1039,7 +1039,7 @@ namespace GBSharp
         private int Instruction_RRC(Instruction instruction)
         {
             int initialValue;
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             bool oldBit0 = Bitwise.IsBitOn(initialValue, 0);
@@ -1052,7 +1052,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1065,7 +1065,7 @@ namespace GBSharp
         private int Instruction_SLA(Instruction instruction)
         {
             int initialValue;
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 7));
@@ -1077,7 +1077,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1090,7 +1090,7 @@ namespace GBSharp
         private int Instruction_SRA(Instruction instruction)
         {
             int initialValue;
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 0));
@@ -1102,7 +1102,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1115,7 +1115,7 @@ namespace GBSharp
         private int Instruction_SRL(Instruction instruction)
         {
             int initialValue;
-            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) initialValue = (byte)_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else initialValue = (byte)LoadRegister(instruction.registers8bit);
 
             SetFlag(Flags.C, Bitwise.IsBitOn(initialValue, 0));
@@ -1127,7 +1127,7 @@ namespace GBSharp
 
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                _mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(result, LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1168,7 +1168,7 @@ namespace GBSharp
         private int Pop()
         {
             int sp = LoadRegister(Registers16Bit.SP);
-            int val = _mmu.ReadWord(sp);
+            int val = _gameboy.Mmu.ReadWord(sp);
             SetRegister(Registers16Bit.SP, sp + 2);
 
             return val;
@@ -1226,7 +1226,7 @@ namespace GBSharp
             }
             else if (instruction.registers16bit != Registers16Bit.None)
             {
-                SetRegister(Registers8Bit.A, Add(_mmu.ReadByte(LoadRegister(instruction.registers16bit)), instruction.shouldFlagBeSet));
+                SetRegister(Registers8Bit.A, Add(_gameboy.Mmu.ReadByte(LoadRegister(instruction.registers16bit)), instruction.shouldFlagBeSet));
                 return 2;
             }
             else
@@ -1259,7 +1259,7 @@ namespace GBSharp
             }
             else if(instruction.registers16bit != Registers16Bit.None)
             {
-                Sub(_mmu.ReadByte(LoadRegister(instruction.registers16bit)), false);
+                Sub(_gameboy.Mmu.ReadByte(LoadRegister(instruction.registers16bit)), false);
                 return 2;
             }
             else
@@ -1278,7 +1278,7 @@ namespace GBSharp
             }
             else if (instruction.registers16bit != Registers16Bit.None)
             {
-                SetRegister(Registers8Bit.A, Sub(_mmu.ReadByte(LoadRegister(instruction.registers16bit)), instruction.shouldFlagBeSet));
+                SetRegister(Registers8Bit.A, Sub(_gameboy.Mmu.ReadByte(LoadRegister(instruction.registers16bit)), instruction.shouldFlagBeSet));
                 return 2;
             }
             else
@@ -1294,7 +1294,7 @@ namespace GBSharp
             SetFlag(Flags.H, true);
 
             int data = -1;
-            if (instruction.registers16bit == Registers16Bit.HL) data = _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+            if (instruction.registers16bit == Registers16Bit.HL) data = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
             else data = LoadRegister(instruction.registers8bit);
 
             SetFlag(Flags.Z, (data & (1 << instruction.index)) == 0);
@@ -1307,8 +1307,8 @@ namespace GBSharp
             int data = -1;
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                data = _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
-                _mmu.WriteByte(Bitwise.SetBit(data, instruction.index), LoadRegister(Registers16Bit.HL));
+                data = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(Bitwise.SetBit(data, instruction.index), LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else
@@ -1324,8 +1324,8 @@ namespace GBSharp
             int data = -1;
             if (instruction.registers16bit == Registers16Bit.HL)
             {
-                data = _mmu.ReadByte(LoadRegister(Registers16Bit.HL));
-                _mmu.WriteByte(Bitwise.ClearBit(data, instruction.index), LoadRegister(Registers16Bit.HL));
+                data = _gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.HL));
+                _gameboy.Mmu.WriteByte(Bitwise.ClearBit(data, instruction.index), LoadRegister(Registers16Bit.HL));
                 return 4;
             }
             else

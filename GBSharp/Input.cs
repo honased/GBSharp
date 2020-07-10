@@ -8,13 +8,13 @@ namespace GBSharp
 {
     public class Input
     {
-        private MMU _mmu;
+        private Gameboy _gameboy;
 
         private const int MASK_DIRECTION = 0x10, MASK_BUTTON = 0x20;
 
-        private int directionInput = 0xF, buttonInput = 0xF;
+        private int directionInput, buttonInput;
 
-        bool setButtonInterrupt = false, setDirectionInterrupt = false;
+        bool setButtonInterrupt, setDirectionInterrupt;
 
         public enum Button
         {
@@ -28,22 +28,32 @@ namespace GBSharp
             Start = 7,
         }
 
-        public Input(MMU mmu)
+        public Input(Gameboy gameboy)
         {
-            _mmu = mmu;
+            _gameboy = gameboy;
+
+            Reset();
+        }
+
+        public void Reset()
+        {
+            setDirectionInterrupt = false;
+            setButtonInterrupt = false;
+            directionInput = 0xF;
+            buttonInput = 0xF;
         }
 
         public void Tick()
         {
-            if(!Bitwise.IsBitOn(_mmu.Joypad, 4)) // Direction Keys
+            if(!Bitwise.IsBitOn(_gameboy.Mmu.Joypad, 4)) // Direction Keys
             {
-                _mmu.Joypad = (_mmu.Joypad & 0xF0) | (directionInput);
-                if (setDirectionInterrupt) _mmu.SetInterrupt(Interrupts.Joypad);
+                _gameboy.Mmu.Joypad = (_gameboy.Mmu.Joypad & 0xF0) | (directionInput);
+                if (setDirectionInterrupt) _gameboy.Mmu.SetInterrupt(Interrupts.Joypad);
             }
-            if (!Bitwise.IsBitOn(_mmu.Joypad, 5)) // Button Keys
+            if (!Bitwise.IsBitOn(_gameboy.Mmu.Joypad, 5)) // Button Keys
             {
-                _mmu.Joypad = (_mmu.Joypad & 0xF0) | (buttonInput);
-                if (setButtonInterrupt) _mmu.SetInterrupt(Interrupts.Joypad);
+                _gameboy.Mmu.Joypad = (_gameboy.Mmu.Joypad & 0xF0) | (buttonInput);
+                if (setButtonInterrupt) _gameboy.Mmu.SetInterrupt(Interrupts.Joypad);
             }
 
             setButtonInterrupt = false;
