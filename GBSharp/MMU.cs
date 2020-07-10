@@ -202,17 +202,8 @@ namespace GBSharp
 
                     }
 
-                    if(address >= 0xFF10 && address <= 0xFF26)
-                    {
-                        value = _gameboy.Apu.WriteByte(address, value);
-                        if (value == -1) value = ReadByte(address);
-                    }
-
-                    if(address >= 0xFF30 && address <= 0xFF3F)
-                    {
-                        value = _gameboy.Apu.WriteByte(address, value);
-                        if (value == -1) value = ReadByte(address);
-                    }
+                    if((address >= 0xFF10 && address <= 0xFF26) ||
+                        (address >= 0xFF30 && address <= 0xFF3F)) _gameboy.Apu.WriteByte(address, value);
 
                     _io[address - 0xFF00] = value;
 

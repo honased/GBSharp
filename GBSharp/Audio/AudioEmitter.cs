@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Audio
 {
-    class Sound
+    class AudioEmitter
     {
         private DynamicSoundEffectInstance _instance;
         private const int ChannelsCount = 2;
@@ -17,7 +17,7 @@ namespace GBSharp.Audio
         private byte[] _monoBuffer;
         private int _bufferPos;
 
-        public Sound()
+        public AudioEmitter()
         {
             _instance = new DynamicSoundEffectInstance(SampleRate, AudioChannels.Stereo);
             _workingBuffer = new float[ChannelsCount, SamplesPerBuffer];
@@ -30,7 +30,7 @@ namespace GBSharp.Audio
             _bufferPos = 0;
         }
 
-        ~Sound()
+        ~AudioEmitter()
         {
             _instance.Dispose();
         }
@@ -58,8 +58,41 @@ namespace GBSharp.Audio
         {
             _bufferPos = 0;
 
-            SoundHelper.ConvertBuffer(_workingBuffer, _monoBuffer);
+            ConvertBuffer(_workingBuffer, _monoBuffer);
             if(_instance.PendingBufferCount < 3) _instance.SubmitBuffer(_monoBuffer);
         }
+
+        private static void ConvertBuffer(float[,] from, byte[] to)
+        {
+            const int bytesPerSample = 2;
+            int channels = from.GetLength(0);
+            int bufferSize = from.GetLength(1);
+
+            for (int i = 0; i < bufferSize; i++)
+            {
+                for (int c = 0; c < channels; c++)
+                {
+                    float floatSample = from[c, i];
+
+                    // Clamp float sample between -1.0 and 1.0
+                    if (floatSample < -1.0f) floatSample = 1.0f;
+                    else if (floatSample > 1.0f) floatSample = 1.0f;
+
+                    short shortSample = (short)(floatSample >= 0.0f ? floatSample * short.MaxValue : floatSample * short.MinValue * -1);
+                    int index = i * channels * bytesPerSample + c * bytesPerSample;
+                    if (!BitConverter.IsLittleEndian)
+                    {
+                        to[index] = (byte)(shortSample >> 8);
+                        to[index + 1] = (byte)shortSample;
+                    }
+                    else
+                    {
+                        to[index] = (byte)shortSample;
+                        to[index + 1] = (byte)(shortSample >> 8);
+                    }
+                }
+            }
+        }
+
     }
 }

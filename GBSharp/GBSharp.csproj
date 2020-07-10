@@ -60,12 +60,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\APU.cs" />
-    <Compile Include="Audio\Sound.cs" />
-    <Compile Include="Audio\SoundHelper.cs" />
-    <Compile Include="Audio\NoiseWave.cs" />
-    <Compile Include="Audio\SquareWaveTwo.cs" />
-    <Compile Include="Audio\SampleWave.cs" />
-    <Compile Include="Audio\SquareWave.cs" />
+    <Compile Include="Audio\AudioChannel.cs" />
+    <Compile Include="Audio\AudioEmitter.cs" />
+    <Compile Include="Audio\NoiseChannel.cs" />
+    <Compile Include="Audio\WaveChannel.cs" />
+    <Compile Include="Audio\SquareChannel.cs" />
     <Compile Include="Bitwise.cs" />
     <Compile Include="Cartridges\CartidgeMBC1.cs" />
     <Compile Include="Cartridges\CartidgeMBC0.cs" />
@@ -86,9 +85,6 @@
     <None Include="App.config" />
     <Compile Include="CPU\CPU.Instructions.cs" />
     <None Include="Roms\Blargg\01-read_timing.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\01-registers.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Blargg\01-special.gb">
@@ -127,9 +123,6 @@
     <None Include="Roms\Blargg\bgbtest.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\Blargg\cgb_sound.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Roms\Blargg\cpu_instrs.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -146,6 +139,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Blargg\mem_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Demos\P5_ALBUM.GB">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Games\Kirbys Dream Land.gb">

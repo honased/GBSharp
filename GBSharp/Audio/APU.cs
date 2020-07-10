@@ -11,9 +11,6 @@ namespace GBSharp.Audio
 {
     public class APU
     {
-        private const int FREQUENCY = 44100;
-        private const int CHANNELS = 2;
-        private const int SAMPLE_SIZE = 1000;
         private const int FRAME_SEQUENCER_CLOCKS = 8192;
         private const int SAMPLE_GOAL = 95;
         private int FrameSequencer { get; set; }
@@ -24,10 +21,10 @@ namespace GBSharp.Audio
         private int VolumeLeft { get; set; }
         private int VolumeRight { get; set; }
 
-        private SquareWave squareWave;
-        private SquareWaveTwo squareWave2;
-        private SampleWave sampleWave;
-        private NoiseWave noiseWave;
+        private SquareChannel squareChannel;
+        private SquareChannel squareChannel2;
+        private WaveChannel waveChannel;
+        private NoiseChannel noiseChannel;
 
         private Gameboy _gameboy;
 
@@ -43,63 +40,59 @@ namespace GBSharp.Audio
             totalClocks = 0;
             TotalSamples = 0;
 
-            squareWave = new SquareWave();
-            squareWave2 = new SquareWaveTwo();
-            sampleWave = new SampleWave();
-            noiseWave = new NoiseWave();
+            squareChannel = new SquareChannel();
+            squareChannel2 = new SquareChannel();
+            waveChannel = new WaveChannel();
+            noiseChannel = new NoiseChannel();
 
             OutputSound = new bool[2, 4];
             VolumeLeft = 0;
             VolumeRight = 0;
         }
 
-        public int WriteByte(int address, int value)
+        public void WriteByte(int address, int value)
         {
-            if (address <= 0xFF14) return squareWave.WriteByte(address, value);
-            if (address <= 0xFF19) return squareWave2.WriteByte(address, value);
-
-            if (address <= 0xFF1E) return sampleWave.WriteByte(address, value);
-            if (address >= 0xFF20 && address <= 0xFF23) return noiseWave.WriteByte(address, value);
-            if (address <= 0xFF26)
+            if (address <= 0xFF14) squareChannel.WriteByte(address, value);
+            else if (address <= 0xFF19) squareChannel2.WriteByte(address, value);
+            else if (address <= 0xFF1E) waveChannel.WriteByte(address, value);
+            else if (address >= 0xFF20 && address <= 0xFF23) noiseChannel.WriteByte(address, value);
+            else if (address <= 0xFF26)
             {
                 switch(address)
                 {
                     case 0xFF24:
                         VolumeLeft = (value >> 4) & 0x07;
                         VolumeRight = value & 0x07;
-                        return value;
+                        break;
 
                     case 0xFF25:
                         for(int i = 0; i < 8; i++)
                         {
                             OutputSound[i / 4, i % 4] = Bitwise.IsBitOn(value, i);
                         }
-                        return value;
+                        break;
 
                     case 0xFF26:
                         int returnMem = value & 0x80;
-                        returnMem |= (squareWave.IsPlaying() ? 1 : 0);
-                        returnMem |= (squareWave2.IsPlaying() ? 1 : 0) << 1;
-                        return returnMem;
+                        returnMem |= (squareChannel.IsPlaying() ? 1 : 0);
+                        returnMem |= (squareChannel2.IsPlaying() ? 1 : 0) << 1;
+                        break;
                 }
             }
-
-            if (address >= 0xFF30 && address <= 0xFF3F) return sampleWave.WriteByte(address, value);
-
-            return value;
+            else if (address >= 0xFF30 && address <= 0xFF3F) waveChannel.WriteByte(address, value);
         }
 
         public int ReadByte(int address, int[] memory)
         {
-            if (address <= 0xFF14) return squareWave.ReadByte(address, memory);
-            if (address <= 0xFF19) return squareWave2.ReadByte(address, memory);
-            if (address <= 0xFF1E) return sampleWave.ReadByte(address, memory);
-            if (address >= 0xFF20 && address <= 0xFF23) return noiseWave.ReadByte(address, memory);
+            if (address <= 0xFF14) return squareChannel.ReadByte(address);
+            if (address <= 0xFF19) return squareChannel2.ReadByte(address);
+            if (address <= 0xFF1E) return waveChannel.ReadByte(address);
+            if (address >= 0xFF20 && address <= 0xFF23) return noiseChannel.ReadByte(address);
             if (address == 0xFF26)
             {
                 int returnMem = memory[address - 0xFF00] & 0x80;
-                returnMem |= (squareWave.IsPlaying() ? 1 : 0);
-                returnMem |= (squareWave2.IsPlaying() ? 1 : 0) << 1;
+                returnMem |= (squareChannel.IsPlaying() ? 1 : 0);
+                returnMem |= (squareChannel2.IsPlaying() ? 1 : 0) << 1;
                 return returnMem;
             }
 
@@ -118,50 +111,50 @@ namespace GBSharp.Audio
                     switch (FrameSequencer)
                     {
                         case 0:
-                            squareWave.UpdateLength();
-                            squareWave2.UpdateLength();
-                            sampleWave.UpdateLength();
-                            noiseWave.UpdateLength();
+                            squareChannel.UpdateLength();
+                            squareChannel2.UpdateLength();
+                            waveChannel.UpdateLength();
+                            noiseChannel.UpdateLength();
                             break;
 
                         case 1:
                             break;
 
                         case 2:
-                            squareWave.UpdateLength();
-                            squareWave.UpdateSweep();
+                            squareChannel.UpdateLength();
+                            squareChannel.UpdateSweep();
 
-                            squareWave2.UpdateLength();
-                            sampleWave.UpdateLength();
-                            noiseWave.UpdateLength();
+                            squareChannel2.UpdateLength();
+                            waveChannel.UpdateLength();
+                            noiseChannel.UpdateLength();
                             break;
 
                         case 3:
                             break;
 
                         case 4:
-                            squareWave.UpdateLength();
-                            squareWave2.UpdateLength();
-                            sampleWave.UpdateLength();
-                            noiseWave.UpdateLength();
+                            squareChannel.UpdateLength();
+                            squareChannel2.UpdateLength();
+                            waveChannel.UpdateLength();
+                            noiseChannel.UpdateLength();
                             break;
 
                         case 5:
                             break;
 
                         case 6:
-                            squareWave.UpdateLength();
-                            squareWave.UpdateSweep();
+                            squareChannel.UpdateLength();
+                            squareChannel.UpdateSweep();
 
-                            squareWave2.UpdateLength();
-                            sampleWave.UpdateLength();
-                            noiseWave.UpdateLength();
+                            squareChannel2.UpdateLength();
+                            waveChannel.UpdateLength();
+                            noiseChannel.UpdateLength();
                             break;
 
                         case 7:
-                            squareWave.UpdateEnvelope();
-                            squareWave2.UpdateEnvelope();
-                            noiseWave.UpdateEnvelope();
+                            squareChannel.UpdateEnvelope();
+                            squareChannel2.UpdateEnvelope();
+                            noiseChannel.UpdateEnvelope();
                             break;
 
                         default:
@@ -170,19 +163,19 @@ namespace GBSharp.Audio
                     FrameSequencer = (FrameSequencer + 1) % 8;
                 }
 
-                squareWave.Step();
-                squareWave2.Step();
-                sampleWave.Step();
-                noiseWave.Step();
+                squareChannel.Tick();
+                squareChannel2.Tick();
+                waveChannel.Tick();
+                noiseChannel.Tick();
 
                 if (++TotalSamples >= SAMPLE_GOAL)
                 {
                     TotalSamples -= SAMPLE_GOAL;
 
-                    squareWave.Emitter.AddVolumeInfo(squareWave.GetVolume(), VolumeLeft * (OutputSound[1, 0] ? 1 : 0), VolumeRight * (OutputSound[0, 0] ? 1 : 0));
-                    squareWave2.Emitter.AddVolumeInfo(squareWave2.GetVolume(), VolumeLeft * (OutputSound[1, 1] ? 1 : 0), VolumeRight * (OutputSound[0, 1] ? 1 : 0));
-                    sampleWave.Emitter.AddVolumeInfo(sampleWave.GetVolume(), VolumeLeft * (OutputSound[1, 2] ? 1 : 0), VolumeRight * (OutputSound[0, 2] ? 1 : 0));
-                    noiseWave.Emitter.AddVolumeInfo(noiseWave.GetVolume(), VolumeLeft * (OutputSound[1, 3] ? 1 : 0), VolumeRight * (OutputSound[0, 3] ? 1 : 0));
+                    squareChannel.AddVolumeInfo(VolumeLeft * (OutputSound[1, 0] ? 1 : 0), VolumeRight * (OutputSound[0, 0] ? 1 : 0));
+                    squareChannel2.AddVolumeInfo(VolumeLeft * (OutputSound[1, 1] ? 1 : 0), VolumeRight * (OutputSound[0, 1] ? 1 : 0));
+                    waveChannel.AddVolumeInfo(VolumeLeft * (OutputSound[1, 2] ? 1 : 0), VolumeRight * (OutputSound[0, 2] ? 1 : 0));
+                    noiseChannel.AddVolumeInfo(VolumeLeft * (OutputSound[1, 3] ? 1 : 0), VolumeRight * (OutputSound[0, 3] ? 1 : 0));
                 }
             }
         }
