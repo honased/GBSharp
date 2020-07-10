@@ -13,6 +13,8 @@ namespace GBSharp
         public const int SCREEN_WIDTH = 160, SCREEN_HEIGHT = 144;
         public int[] FrameBuffer { get; private set; }
 
+        private bool[] BGPriority { get; set; }
+
         public int[] Tiles
         {
             get
@@ -168,6 +170,8 @@ namespace GBSharp
                     }
                 }
             }
+
+            BGPriority = new bool[SCREEN_WIDTH];
         }
 
         private void RenderLine()
@@ -175,6 +179,10 @@ namespace GBSharp
             if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 7))
             {
                 if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 0)) DrawBackground();
+                else
+                {
+                    for (int i = 0; i < SCREEN_WIDTH; i++) BGPriority[i] = false;
+                }
                 if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 1)) DrawSprites();
             }
         }
@@ -215,13 +223,12 @@ namespace GBSharp
                 if (shouldValueBeSigned) tile = (sbyte)_gameboy.Mmu.LoadVRAM(mapLocation + actualY + x);
                 else tile = (byte)_gameboy.Mmu.LoadVRAM(mapLocation + actualY + x);
 
-                if(tile == 0x7C)
-                {
-                    int debug = 0;
-                }
+                int pixel = isInWindow ? _tileset[tileInitLocation + tile, (ly) % 8, (xx) % 8]
+                    : _tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8];
 
-                int colorIndex = isInWindow ? GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly) % 8, (xx) % 8])
-                    : GetColorIndexFromPalette(_tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8]);
+                BGPriority[xx] = (pixel != 0);
+
+                int colorIndex = GetColorIndexFromPalette(pixel);
                 Color color = colors[colorIndex];
                 FrameBuffer[startingIndex] = color.R;
                 FrameBuffer[startingIndex + 1] = color.G;
@@ -286,7 +293,7 @@ namespace GBSharp
                             int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
                             if (pixel != 0)
                             {
-                                if (true)
+                                if (objAboveBg || !BGPriority[spriteX + x])
                                 {
                                     Color color = colors[colorIndex];
                                     FrameBuffer[writePosition] = color.R;
