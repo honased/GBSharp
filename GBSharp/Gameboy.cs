@@ -60,9 +60,10 @@ namespace GBSharp
             CyclesCount -= CPU_CYCLES;
         }
 
-        public int[] GetFrameBuffer()
+        public ref int[] GetFrameBuffer()
         {
-            return Ppu.FrameBuffer;
+            ref int[] buffer = ref Ppu.GetFrameBuffer();
+            return ref buffer;
         }
 
         public int[] GetTilesBuffer()

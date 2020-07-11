@@ -44,7 +44,7 @@ namespace MonoGB
         {
             // TODO: Add your initialization logic here
             _gameboy = new Gameboy();
-            _debugMode = false;
+            _debugMode = true;
 
             //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
@@ -76,7 +76,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/SML2.gb";
+            string path = "Roms/Games/Kirbys Dream Land.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -176,14 +176,14 @@ namespace MonoGB
             if (_debugMode)
             {
                 //                 tiles w   h
-                colors = new Color[384 * 8 * 8];
+                /*colors = new Color[384 * 8 * 8];
                 int[] ppuTiles = _gameboy.GetTilesBuffer();
                 for (int i = 0; i < ppuTiles.Length; i += 4)
                 {
                     colors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
                 }
 
-                _tiles.SetData<Color>(colors);
+                _tiles.SetData<Color>(colors);*/
             }
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
@@ -219,7 +219,7 @@ namespace MonoGB
             }
             else
             {
-                spriteBatch.Draw(_tiles, new Vector2(GraphicsDevice.Viewport.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 2f, SpriteEffects.None, 0f);
+                //spriteBatch.Draw(_tiles, new Vector2(GraphicsDevice.Viewport.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 2f, SpriteEffects.None, 0f);
                 spriteBatch.Draw(_frame, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 3, SpriteEffects.None, 0f);
             }
 

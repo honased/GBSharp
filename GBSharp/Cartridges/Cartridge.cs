@@ -21,6 +21,8 @@ namespace GBSharp
         protected int RomOffset { get; private set; } = 0x4000;
         protected int ERamOffset { get; private set; } = 0x2000;
 
+        protected int RomBankCount { get; private set; }
+
         public static Cartridge Load(string path)
         {
             BinaryReader br = new BinaryReader(File.OpenRead(path));
@@ -51,6 +53,8 @@ namespace GBSharp
         {
             // Setup rom
             Rom = new int[GetRomSize(data[0x0148])];
+
+            RomBankCount = (Rom.Length / (1024 * 16));
 
             Array.Copy(data, Rom, data.Length);
 

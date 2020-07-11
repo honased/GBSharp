@@ -192,7 +192,7 @@ namespace GBSharp
                 }
 
             }
-            catch (FormatException e)
+            catch
             {
                 return false;
             }

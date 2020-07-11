@@ -69,8 +69,6 @@ namespace GBSharp
             return _io[0x48 + palette];
         }
 
-        private CPU _cpu;
-
         private bool _inBios;
 
         internal Cartridge _cartridge;
@@ -232,7 +230,7 @@ namespace GBSharp
                     if(_inBios)
                     {
                         if (address < 0x100) return _bios[address];
-                        if(_cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0101) _inBios = false;
+                        if(_gameboy.Cpu.LoadRegister(CPU.Registers16Bit.PC) == 0x0101) _inBios = false;
                     }
                     return _cartridge.ReadLowRom(address);
                 case int _ when address < 0x8000:

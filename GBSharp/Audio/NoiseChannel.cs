@@ -56,7 +56,7 @@ namespace GBSharp.Audio
             switch (address)
             {
                 case 0xFF20:
-                    return LengthSet;
+                    return LengthSet & 0x3F;
 
                 case 0xFF21:
                     return ReadEnvelope();

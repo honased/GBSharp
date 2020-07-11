@@ -144,6 +144,9 @@
     <None Include="Roms\Demos\P5_ALBUM.GB">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Roms\dmg_sound.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Roms\Games\Kirbys Dream Land.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

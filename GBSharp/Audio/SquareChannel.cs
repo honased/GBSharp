@@ -79,7 +79,7 @@ namespace GBSharp.Audio
 
                 case 0xFF11:
                 case 0xFF16:
-                    return (Duty << 6) | (Length & 0x1F);
+                    return (Duty << 6) | (Length & 0x3F);
 
                 case 0xFF12:
                 case 0xFF17:

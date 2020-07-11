@@ -11,7 +11,7 @@ namespace GBSharp
     public class PPU
     {
         public const int SCREEN_WIDTH = 160, SCREEN_HEIGHT = 144;
-        public int[] FrameBuffer { get; private set; }
+        private int[] FrameBuffer;
 
         private bool[] BGPriority { get; set; }
 
@@ -131,6 +131,11 @@ namespace GBSharp
                 _gameboy.Mmu.STAT &= ~0x03;
                 clocksCount = 0;
             }
+        }
+
+        internal ref int[] GetFrameBuffer()
+        {
+            return ref FrameBuffer;
         }
 
         private void CheckLYC()

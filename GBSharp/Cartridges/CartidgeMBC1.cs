@@ -102,6 +102,13 @@ namespace GBSharp.Cartridges
             }
         }
 
+        private int GetWrappedRomBank()
+        {
+            int returnBank = BankRom % 2;
+            if (returnBank == 0x00 || returnBank == 0x20 || returnBank == 0x40 || returnBank == 0x60) returnBank++;
+            return returnBank;
+        }
+
         public override string ToString()
         {
             return String.Format("ROM:{0:X2}\tRAM:{1:X2}\tCartridgeMode:{2}", BankRom, BankRam, CartridgeMode);
