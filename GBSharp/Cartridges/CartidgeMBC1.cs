@@ -25,7 +25,7 @@ namespace GBSharp.Cartridges
             CartridgeMode = 0;
 
             // Battery Backed
-            if (CartridgeType == 3)
+            if (Battery)
             {
                 byte[] save = FileManager.LoadSaveFile(Name, Checksum);
                 Array.Copy(save, ERam, save.Length);
@@ -46,7 +46,7 @@ namespace GBSharp.Cartridges
 
         public override int ReadHighRom(int address)
         {
-            return Rom[(BankRom * RomOffset) | (address & 0x3FFF)];
+            return Rom[(GetWrappedRomBank() * RomOffset) | (address & 0x3FFF)];
         }
 
         public override void WriteERam(int address, int value)
@@ -62,17 +62,19 @@ namespace GBSharp.Cartridges
                 case int _ when address < 0x2000:
                     ERAMEnabled = ((value & 0x0F) == 0x0A);
 
-                    if (ERAMEnabled) ERAMWasOpen = true;
+                    if (ERAMEnabled)
+                    {
+                        if (!ERAMWasOpen) Console.WriteLine("Eram Open");
+                        ERAMWasOpen = true;
+                    }
                     else
                     {
-                        if(ERAMWasOpen)
+                        if (ERAMWasOpen)
                         {
                             ERAMWasOpen = false;
                             // Save game
-                            if(CartridgeType == 3)
-                            {
-                                FileManager.SaveFile(Name, Checksum, ERam);
-                            }
+                            Console.WriteLine("ERAM Closed");
+                            if (Battery) FileManager.SaveFile(Name, Checksum, ERam);
                         }
                     }
 
@@ -104,7 +106,7 @@ namespace GBSharp.Cartridges
 
         private int GetWrappedRomBank()
         {
-            int returnBank = BankRom % 2;
+            int returnBank = BankRom % RomBankCount;
             if (returnBank == 0x00 || returnBank == 0x20 || returnBank == 0x40 || returnBank == 0x60) returnBank++;
             return returnBank;
         }
@@ -112,6 +114,11 @@ namespace GBSharp.Cartridges
         public override string ToString()
         {
             return String.Format("ROM:{0:X2}\tRAM:{1:X2}\tCartridgeMode:{2}", BankRom, BankRam, CartridgeMode);
+        }
+
+        public override void Close()
+        {
+            if(Battery) FileManager.SaveFile(Name, Checksum, ERam);
         }
     }
 }

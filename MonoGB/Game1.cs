@@ -49,7 +49,7 @@ namespace MonoGB
             //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
             graphics.PreferMultiSampling = false;
-            graphics.SynchronizeWithVerticalRetrace = true;
+            graphics.SynchronizeWithVerticalRetrace = false;
             IsFixedTimeStep = true;
             if (!_debugMode)
             {
@@ -68,7 +68,7 @@ namespace MonoGB
 
             gameScale -= 1;
 
-            //_cpu.Debug();
+            _gameboy.Debug();
             //_cpu.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
@@ -76,7 +76,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Kirbys Dream Land.gb";
+            string path = "Roms/Games/SML2.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -85,20 +85,21 @@ namespace MonoGB
             {
                 Console.WriteLine(path);
                 Console.WriteLine("Invalid usage... GBSharp [rom]");
+
                 Exit();
-                return;
+                throw new Exception();
             }
 
-            Cartridge cartridge = Cartridge.Load(path);
-            //Cartridge cartridge = GetNextTestRom();
+            //Cartridge cartridge = Cartridge.Load(path);
+            Cartridge cartridge = GetNextTestRom();
             //CartridgeLoader.LoadDataIntoMemory(_mmu, GetNextTestRom(), 0x00);
             _gameboy.LoadCartridge(cartridge);
 
             this.Window.Title = cartridge.Name;
 
-            IsFixedTimeStep = true;
-
             oldState = Keyboard.GetState();
+
+            Exiting += new EventHandler<EventArgs>(OnExit);
 
             base.Initialize();
         }
@@ -128,7 +129,7 @@ namespace MonoGB
 
         private Cartridge GetNextTestRom()
         {
-            string[] files = Directory.GetFiles("Roms/Blargg");
+            string[] files = Directory.GetFiles("Roms/Blargg/Mem");
             Console.WriteLine("Loading Rom " + files[_currentTestRom] + "...");
             Cartridge cart = Cartridge.Load(files[_currentTestRom++]);
             if (_currentTestRom >= files.Length) _currentTestRom = 0;
@@ -229,6 +230,11 @@ namespace MonoGB
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void OnExit(Object sender, EventArgs args)
+        {
+            _gameboy.Close();
         }
     }
 }

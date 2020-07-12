@@ -735,7 +735,7 @@ namespace GBSharp
             {
                 _gameboy.Mmu.WriteByte(LoadRegister(Registers8Bit.A), 0xFF00 | val);
             }
-            return 10;
+            return 3;
         }
 
         private int Instruction_LD_nn_SP(Instruction instruction)

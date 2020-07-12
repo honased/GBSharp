@@ -63,6 +63,7 @@ namespace GBSharp
         internal void Update()
         {
             timerEnabled = Bitwise.IsBitOn(_gameboy.Mmu.TAC, 2);
+            if (!timerEnabled) timerClocks = 0;
 
             switch(_gameboy.Mmu.TAC & 0x03)
             {

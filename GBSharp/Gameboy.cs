@@ -60,6 +60,11 @@ namespace GBSharp
             CyclesCount -= CPU_CYCLES;
         }
 
+        public void Close()
+        {
+            Mmu._cartridge.Close();
+        }
+
         public ref int[] GetFrameBuffer()
         {
             ref int[] buffer = ref Ppu.GetFrameBuffer();
@@ -79,6 +84,11 @@ namespace GBSharp
         public void SetInput(Input.Button button, bool pressed)
         {
             Input.SetInput(button, pressed);
+        }
+
+        public void Debug()
+        {
+            Cpu.Debug();
         }
     }
 }

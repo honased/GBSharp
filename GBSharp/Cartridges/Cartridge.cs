@@ -23,13 +23,16 @@ namespace GBSharp
 
         protected int RomBankCount { get; private set; }
 
+        protected bool Battery { get; private set; }
+
         public static Cartridge Load(string path)
         {
             BinaryReader br = new BinaryReader(File.OpenRead(path));
             byte[] data = br.ReadBytes((int)br.BaseStream.Length);
             br.Close();
             Cartridge cartridge;
-            switch(data[0x0147])
+            int cartType = data[0x0147];
+            switch(cartType)
             {
                 case 0:
                     cartridge = new CartidgeMBC0();
@@ -38,10 +41,11 @@ namespace GBSharp
                 case 2:
                 case 3:
                     cartridge = new CartidgeMBC1();
+                    if (cartType == 3) cartridge.Battery = true;
                     break;
 
                 default:
-                    throw new NotImplementedException("Cartridge type " + data[0x0147].ToString() + " not implemented yet.");
+                    throw new NotImplementedException(String.Format("Cartridge type 0x{0:X2} not implemented yet.", data[0x0147]));
             }
 
             cartridge.Init(data);
@@ -78,6 +82,8 @@ namespace GBSharp
         }
 
         protected abstract void CustomInit();
+
+        public abstract void Close();
 
         private static int GetRomSize(int type)
         {

@@ -37,5 +37,10 @@ namespace GBSharp.Cartridges
         {
             // Do nothing
         }
+
+        public override void Close()
+        {
+            // Do nothing
+        }
     }
 }

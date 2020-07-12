@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework.Audio;
+﻿// Adapted from code written by David Gouveia at https://www.david-gouveia.com/creating-a-basic-synth-in-xna-part-ii
+
+using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
 using System.Linq;

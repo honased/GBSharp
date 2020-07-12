@@ -84,49 +84,10 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="CPU\CPU.Instructions.cs" />
-    <None Include="Roms\Blargg\01-read_timing.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\01-special.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\02-interrupts.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\03-op sp,hl.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\04-op r,imm.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\05-op rp.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\06-ld r,r.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\07-jr,jp,call,ret,rst.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\08-misc-instrs.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\09-op r,r.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\10-bit ops.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\11-op a,%28hl%29.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Roms\Blargg\bgbtest.gb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Roms\Blargg\cpu_instrs.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\Blargg\daa.gb">
+    <None Include="Roms\Blargg\dmg_sound.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Blargg\halt_bug.gb">
@@ -135,10 +96,13 @@
     <None Include="Roms\Blargg\instr_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Roms\Blargg\interrupt_time.gb">
+    <None Include="Roms\Blargg\Mem\01-read_timing.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Blargg\mem_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Roms\Blargg\oam_bug.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Roms\Demos\P5_ALBUM.GB">
