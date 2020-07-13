@@ -66,6 +66,7 @@
     <Compile Include="Audio\WaveChannel.cs" />
     <Compile Include="Audio\SquareChannel.cs" />
     <Compile Include="Bitwise.cs" />
+    <Compile Include="Cartridges\CartridgeMBC3.cs" />
     <Compile Include="Cartridges\CartidgeMBC1.cs" />
     <Compile Include="Cartridges\CartidgeMBC0.cs" />
     <Compile Include="Cartridges\Cartridge.cs" />

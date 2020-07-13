@@ -26,7 +26,7 @@ namespace GBSharp.Audio
             const int bytesPerSample = 2;
             _monoBuffer = new byte[ChannelsCount * SamplesPerBuffer * bytesPerSample];
 
-            _instance.Volume = 0.5f;
+            _instance.Volume = 0.25f;
 
             _instance.Play();
             _bufferPos = 0;

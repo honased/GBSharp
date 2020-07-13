@@ -44,6 +44,22 @@ namespace GBSharp
                     if (cartType == 3) cartridge.Battery = true;
                     break;
 
+                case 0x0F:
+                case 0x10:
+                    cartridge = new CartidgeMBC3();
+                    cartridge.Battery = true;
+                    ((CartidgeMBC3)cartridge).HasRTC = true;
+                    break;
+
+                case 0x11:
+                case 0x12:
+                    cartridge = new CartidgeMBC3();
+                    break;
+                case 0x13:
+                    cartridge = new CartidgeMBC3();
+                    cartridge.Battery = true;
+                    break;
+
                 default:
                     throw new NotImplementedException(String.Format("Cartridge type 0x{0:X2} not implemented yet.", data[0x0147]));
             }
