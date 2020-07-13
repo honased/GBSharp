@@ -34,7 +34,7 @@ namespace GBSharp.Cartridges
 
         public override int ReadERam(int address)
         {
-            if(!ERAMEnabled) return 0xFF;
+            if(!ERAMEnabled || ERam.Length == 0) return 0x00;
 
             return ERam[(BankRam * ERamOffset) | (address & 0x1FFF)];
         }

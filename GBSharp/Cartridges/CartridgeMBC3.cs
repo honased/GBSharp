@@ -36,9 +36,12 @@ namespace GBSharp.Cartridges
 
         public override int ReadERam(int address)
         {
-            if(!ERAMEnabled) return 0xFF;
+            if(!ERAMEnabled || ERam.Length == 0) return 0x00;
 
-            return ERam[(BankRam * ERamOffset) | (address & 0x1FFF)];
+            if (BankRam <= 0x07) return ERam[(BankRam * ERamOffset) | (address & 0x1FFF)];
+            else if (BankRam <= 0x0C) return 0x00;
+
+            return 0x00;
         }
 
         public override int ReadLowRom(int address)
@@ -54,7 +57,11 @@ namespace GBSharp.Cartridges
         public override void WriteERam(int address, int value)
         {
             if (!ERAMEnabled || ERam.Length == 0) return;
-            ERam[(BankRam * ERamOffset) + (address & 0x1FFF)] = value;
+            if(BankRam <= 0x07) ERam[(BankRam * ERamOffset) + (address & 0x1FFF)] = value;
+            else if(BankRam <= 0x0C)
+            {
+                // RTC Register
+            }
         }
 
         public override void WriteRom(int address, int value)
@@ -84,7 +91,7 @@ namespace GBSharp.Cartridges
                     break;
                 case int _ when address < 0x4000:
                     BankRom = value & 0x7F;
-                    if (BankRom == 0x00) BankRom++;
+                    if (BankRom == 0x00) BankRom = 0x01;
                     break;
                 case int _ when address < 0x6000:
                     BankRam = value;
@@ -98,7 +105,7 @@ namespace GBSharp.Cartridges
         private int GetWrappedRomBank()
         {
             int returnBank = BankRom % RomBankCount;
-            if (returnBank == 0x00 || returnBank == 0x20 || returnBank == 0x40 || returnBank == 0x60) returnBank++;
+            if (returnBank == 0x00) returnBank = 0x01;
             return returnBank;
         }
 

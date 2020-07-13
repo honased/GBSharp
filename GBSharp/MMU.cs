@@ -289,5 +289,10 @@ namespace GBSharp
         {
             IF = Bitwise.SetBit(IF, (int)interrupt);
         }
+
+        internal void DisableInterrupt(Interrupts interrupt)
+        {
+            IF = Bitwise.ClearBit(IF, (int)interrupt);
+        }
     }
 }

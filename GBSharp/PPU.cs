@@ -71,7 +71,6 @@ namespace GBSharp
         {
             clocksCount += clocks;
 
-
             int mode = _gameboy.Mmu.STAT & 0x03;
 
             if (Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 7))
@@ -99,7 +98,6 @@ namespace GBSharp
                         if (clocksCount >= HBLANK_CLOCK_COUNT)
                         {
                             clocksCount -= HBLANK_CLOCK_COUNT;
-                            CheckLYC();
 
                             if (++_gameboy.Mmu.LY == 144)
                             {
@@ -107,6 +105,7 @@ namespace GBSharp
                                 _gameboy.Mmu.SetInterrupt(Interrupts.VBlank);
                             }
                             else ChangeMode(2);
+                            CheckLYC();
                         }
                         break;
 
@@ -114,13 +113,13 @@ namespace GBSharp
                         if (clocksCount >= VBLANK_CLOCK_COUNT)
                         {
                             clocksCount -= VBLANK_CLOCK_COUNT;
-                            CheckLYC();
 
                             if (++_gameboy.Mmu.LY > 153)
                             {
                                 _gameboy.Mmu.LY = 0;
                                 ChangeMode(2);
                             }
+                            CheckLYC();
                         }
                         break;
                 }
@@ -161,7 +160,7 @@ namespace GBSharp
             }
             clocksCount = 0;
 
-            ChangeMode(2);
+            ChangeMode(0);
 
             _tileset = new int[384, 8, 8];
 
