@@ -30,8 +30,8 @@ namespace AndroidGB
 
         public void HandleInput(int mx, int my)
         {
-            int width = (int)(_texture.Width/2 * Scale) + 50;
-            int height = (int)(_texture.Height/2 * Scale) + 50;
+            int width = (int)(_texture.Width/2 * Scale);
+            int height = (int)(_texture.Height/2 * Scale);
 
             if(mx >= _position.X - width && mx <= _position.X + width &&
                my >= _position.Y - height && my <= _position.Y + height)
@@ -47,7 +47,7 @@ namespace AndroidGB
 
         public void Render(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_texture, _position, null, Color.White, 0f, new Vector2(_texture.Width / 2, _texture.Height / 2), 2f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(_texture, _position, null, Color.White, 0f, new Vector2(_texture.Width / 2, _texture.Height / 2), 1f, SpriteEffects.None, 0f);
         }
     }
 }

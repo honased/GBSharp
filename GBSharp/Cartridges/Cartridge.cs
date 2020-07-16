@@ -43,6 +43,11 @@ namespace GBSharp
             return CreateCartridge(data);
         }
 
+        public static Cartridge Load(byte[] data)
+        {
+            return CreateCartridge(data);
+        }
+
         private static Cartridge CreateCartridge(byte[] data)
         {
             Cartridge cartridge;

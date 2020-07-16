@@ -19,6 +19,10 @@ using Android.Runtime;
 using System.Collections.Generic;
 using Android.Views;
 using Microsoft.Xna.Framework.Input.Touch;
+using Plugin.FilePicker.Abstractions;
+using Plugin.FilePicker;
+using Android.Locations;
+using System.Threading.Tasks;
 
 namespace AndroidGB
 {
@@ -40,6 +44,8 @@ namespace AndroidGB
         Button btnB;
         Button btnA;
         SpriteFont font;
+        Cartridge cartridge;
+        Task<Cartridge> task;
 
         public Game1()
         {
@@ -85,51 +91,16 @@ namespace AndroidGB
             // TODO: Add your initialization logic here
             _gameboy = new Gameboy();
 
-            string path = "GBSharp/Links Awakening.gb";
+            FileManager.SavePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/GBSharp/";
             
-            dpad = new DPAD(300, 1920 - 300, CreateCircleTexture(200));
-            start = new Button(1080 / 2 + 100, 1920 - 650, CreateCircleTexture(50));
-            select = new Button(1080 / 2 - 100, 1920 - 650, CreateCircleTexture(50));
+            dpad = new DPAD(300, 1920 - 300, CreateCircleOutline(200), CreateCircleOutline(100));
+            start = new Button(1080 / 2 + 100, 1920 - 650, CreateCircleOutline(50));
+            select = new Button(1080 / 2 - 100, 1920 - 650, CreateCircleOutline(50));
 
-            btnB = new Button(1080 - 300, 1920 - 200, CreateCircleTexture(85));
-            btnA = new Button(1080 - 150, 1920 - 350, CreateCircleTexture(85));
+            btnB = new Button(1080 - 300, 1920 - 200, CreateCircleOutline(85));
+            btnA = new Button(1080 - 150, 1920 - 350, CreateCircleOutline(85));
 
-            /*IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication();
-
-            Cartridge cartridge;
-
-            if(store.FileExists("Kirby.gb"))
-            {
-                var fs = store.OpenFile("Kirby.gb", FileMode.Open);
-                using(StreamReader sr = new StreamReader(fs))
-                {
-                    string test = sr.ReadLine();
-                }
-                fs.Close();
-            }
-            else
-            {
-                string file = "";
-                using (StreamReader sr = new StreamReader(Game.Activity.Assets.Open("Kirby.gb")))
-                {
-                    file = sr.ReadToEnd();
-                }
-
-                var fs = store.CreateFile("Kirby.gb");
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    sw.Write(file);
-                }
-                fs.Close();
-            }*/
-
-            //StreamWriter writer = new StreamWriter(Environment.DownloadCacheDirectory.AbsolutePath + "/test.txt");
-            //writer.WriteLine("Hello");
-            //writer.Close();
-
-            Cartridge cartridge = Cartridge.Load(TitleContainer.OpenStream("Kirby.gb"));
-
-            _gameboy.LoadCartridge(cartridge);
+            task = GetGame();
 
             gameScale = 2f;
 
@@ -141,9 +112,23 @@ namespace AndroidGB
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            //_gameboy.StartInBios();
+            _gameboy.StartInBios();
 
             base.Initialize();
+        }
+
+        static async Task<Cartridge> GetGame()
+        {
+            try
+            {
+                FileData data = await CrossFilePicker.Current.PickFile();
+                if (data == null) return null;
+                return Cartridge.Load(data.DataArray);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         Texture2D CreateCircleTexture(int radius)
@@ -175,6 +160,33 @@ namespace AndroidGB
             return texture;
         }
 
+        public Texture2D CreateCircleOutline(int radius)
+        {
+            int outerRadius = radius * 2 + 2; // So circle doesn't go out of bounds
+            Texture2D texture = new Texture2D(GraphicsDevice, outerRadius, outerRadius);
+
+            Color[] data = new Color[outerRadius * outerRadius];
+
+            // Colour the entire texture transparent first.
+            for (int i = 0; i < data.Length; i++)
+                data[i] = Color.Transparent;
+
+            // Work out the minimum step necessary using trigonometry + sine approximation.
+            double angleStep = 1f / radius;
+
+            for (double angle = 0; angle < Math.PI * 2; angle += angleStep)
+            {
+                // Use the parametric definition of a circle: http://en.wikipedia.org/wiki/Circle#Cartesian_coordinates
+                int x = (int)Math.Round(radius + radius * Math.Cos(angle));
+                int y = (int)Math.Round(radius + radius * Math.Sin(angle));
+
+                data[y * outerRadius + x + 1] = Color.White;
+            }
+
+            texture.SetData(data);
+            return texture;
+        }
+
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -184,7 +196,7 @@ namespace AndroidGB
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            font = Content.Load<SpriteFont>("font");
+            //font = Content.Load<SpriteFont>("font");
 
             // TODO: use this.Content to load your game content here
         }
@@ -205,52 +217,58 @@ namespace AndroidGB
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                Exit();
-
-            dpad.Reset();
-            start.Reset();
-            select.Reset();
-            btnB.Reset();
-            btnA.Reset();
-
-            TouchCollection tc = TouchPanel.GetState();
-
-            foreach(TouchLocation tl in tc)
+            if (task.IsCompleted)
             {
-                int mx = (int)tl.Position.X, my = (int)tl.Position.Y;
-                dpad.HandleInput(mx, my);
-                start.HandleInput(mx, my);
-                select.HandleInput(mx, my);
-                btnB.HandleInput(mx, my);
-                btnA.HandleInput(mx, my);
+                if(cartridge == null)
+                {
+                    cartridge = task.Result;
+                    _gameboy.LoadCartridge(cartridge);
+                }
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+                    Exit();
+
+                dpad.Reset();
+                start.Reset();
+                select.Reset();
+                btnB.Reset();
+                btnA.Reset();
+
+                TouchCollection tc = TouchPanel.GetState();
+
+                foreach (TouchLocation tl in tc)
+                {
+                    int mx = (int)tl.Position.X, my = (int)tl.Position.Y;
+                    dpad.HandleInput(mx, my);
+                    start.HandleInput(mx, my);
+                    select.HandleInput(mx, my);
+                    btnB.HandleInput(mx, my);
+                    btnA.HandleInput(mx, my);
+                }
+
+                float deadzone = .35f;
+                _gameboy.SetInput(Input.Button.Up, dpad.YAxis < -deadzone);
+                _gameboy.SetInput(Input.Button.Down, dpad.YAxis > deadzone);
+                _gameboy.SetInput(Input.Button.Left, dpad.XAxis < -deadzone);
+                _gameboy.SetInput(Input.Button.Right, dpad.XAxis > deadzone);
+
+                _gameboy.SetInput(Input.Button.Start, start.Down);
+                _gameboy.SetInput(Input.Button.Select, select.Down);
+                _gameboy.SetInput(Input.Button.B, btnB.Down);
+                _gameboy.SetInput(Input.Button.A, btnA.Down);
+
+                _gameboy.ExecuteFrame();
+
+                Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
+
+                int[] frameBuffer = _gameboy.GetFrameBuffer();
+
+                for (int i = 0; i < frameBuffer.Length; i += 4)
+                {
+                    colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
+                }
+
+                _frame.SetData<Color>(colors);
             }
-
-            float deadzone = .35f;
-            _gameboy.SetInput(Input.Button.Up, dpad.YAxis < -deadzone);
-            _gameboy.SetInput(Input.Button.Down, dpad.YAxis > deadzone);
-            _gameboy.SetInput(Input.Button.Left, dpad.XAxis < -deadzone);
-            _gameboy.SetInput(Input.Button.Right, dpad.XAxis > deadzone);
-
-            _gameboy.SetInput(Input.Button.Start, start.Down);
-            _gameboy.SetInput(Input.Button.Select, select.Down);
-            _gameboy.SetInput(Input.Button.B, btnB.Down);
-            _gameboy.SetInput(Input.Button.A, btnA.Down);
-
-            _gameboy.ExecuteFrame();
-
-            Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
-
-            int[] frameBuffer = _gameboy.GetFrameBuffer();
-
-            for (int i = 0; i < frameBuffer.Length; i += 4)
-            {
-                colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
-            }
-
-            _frame.SetData<Color>(colors);
-
-            // TODO: Add your update logic here
 
             base.Update(gameTime);
 
@@ -265,22 +283,26 @@ namespace AndroidGB
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
+            if (task.IsCompleted)
+            {
 
-            Vector2 origin = new Vector2(PPU.SCREEN_WIDTH / 2, PPU.SCREEN_HEIGHT / 2);
-            spriteBatch.Draw(_frame, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 3f), null, Color.White, 0, origin, gameScale, SpriteEffects.None, 0f);
+                spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
 
-            dpad.Render(spriteBatch);
-            start.Render(spriteBatch);
-            select.Render(spriteBatch);
-            btnB.Render(spriteBatch);
-            btnA.Render(spriteBatch);
+                Vector2 origin = new Vector2(PPU.SCREEN_WIDTH / 2, PPU.SCREEN_HEIGHT / 2);
+                spriteBatch.Draw(_frame, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 3f), null, Color.White, 0, origin, gameScale, SpriteEffects.None, 0f);
 
-            spriteBatch.DrawString(font, "DPAD:" + dpad.XAxis.ToString() + "," + dpad.YAxis.ToString(), new Vector2(10, 10), Color.White);
+                dpad.Render(spriteBatch);
+                start.Render(spriteBatch);
+                select.Render(spriteBatch);
+                btnB.Render(spriteBatch);
+                btnA.Render(spriteBatch);
 
-            spriteBatch.End();
+                
 
-            // TODO: Add your drawing code here
+                //spriteBatch.DrawString(font, "DPAD:" + dpad.XAxis.ToString() + "," + dpad.YAxis.ToString(), new Vector2(10, 10), Color.White);
+
+                spriteBatch.End();
+            }
 
             base.Draw(gameTime);
         }

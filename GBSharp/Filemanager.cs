@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace GBSharp
 {
-    static class FileManager
+    public static class FileManager
     {
-        private static string SavePath { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/GBSharp/";
-        public static byte[] LoadSaveFile(string name, int checksum)
+        public static string SavePath { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/GBSharp/";
+        internal static byte[] LoadSaveFile(string name, int checksum)
         {
             string path = SavePath + name + "_" + checksum.ToString() + ".gbsav";
             if (!File.Exists(path)) return new byte[1] { 0 };
@@ -25,7 +25,7 @@ namespace GBSharp
             return bytes;
         }
 
-        public static void SaveFile(string name, int checksum, int[] data)
+        internal static void SaveFile(string name, int checksum, int[] data)
         {
             string path = SavePath + name + "_" + checksum.ToString() + ".gbsav";
             byte[] saveData = new byte[data.Length];
