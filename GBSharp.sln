@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGB", "MonoGB\MonoGB.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBSharpTests", "GBSharpTests\GBSharpTests.csproj", "{ECA2CBB7-5E25-466A-9963-08F01D68BBFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndroidGB", "AndroidGB\AndroidGB.csproj", "{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,18 @@ Global
 		{ECA2CBB7-5E25-466A-9963-08F01D68BBFA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ECA2CBB7-5E25-466A-9963-08F01D68BBFA}.Release|x86.ActiveCfg = Release|Any CPU
 		{ECA2CBB7-5E25-466A-9963-08F01D68BBFA}.Release|x86.Build.0 = Release|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Release|x86.Build.0 = Release|Any CPU
+		{7C36FD6D-D3B0-40DB-A9CA-58CEBA242CB1}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace GBSharp
 {
@@ -25,14 +23,31 @@ namespace GBSharp
 
         protected bool Battery { get; private set; }
 
+        public static Cartridge Load(Stream stream)
+        {
+            List<byte> data = new List<byte>();
+            int bit = stream.ReadByte();
+            while(bit != -1)
+            {
+                data.Add((byte)bit);
+                bit = stream.ReadByte();
+            }
+            return CreateCartridge(data.ToArray());
+        }
+
         public static Cartridge Load(string path)
         {
             BinaryReader br = new BinaryReader(File.OpenRead(path));
             byte[] data = br.ReadBytes((int)br.BaseStream.Length);
             br.Close();
+            return CreateCartridge(data);
+        }
+
+        private static Cartridge CreateCartridge(byte[] data)
+        {
             Cartridge cartridge;
             int cartType = data[0x0147];
-            switch(cartType)
+            switch (cartType)
             {
                 case 0:
                     cartridge = new CartidgeMBC0();

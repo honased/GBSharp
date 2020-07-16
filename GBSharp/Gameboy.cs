@@ -45,6 +45,11 @@ namespace GBSharp
             Timer.Reset();
         }
 
+        public void StartInBios()
+        {
+            Cpu.StartInBios();
+        }
+
         public void ExecuteFrame()
         {
             while (CyclesCount < CPU_CYCLES)
