@@ -24,6 +24,9 @@ namespace AndroidGB
         public float XAxis { get; private set; }
         public float YAxis { get; private set; }
 
+        public bool BeingHandled { get; private set; }
+        public int TLIndex { get; private set; }
+
         public DPAD(int x, int y, Texture2D texture, Texture2D innerCircle)
         {
             _position = new Vector2(x, y);
@@ -31,17 +34,47 @@ namespace AndroidGB
             _innerCircle = innerCircle;
         }
 
+        public void SetInput(int mx, int my, int tlIndex)
+        {
+            if (BeingHandled) return;
+
+            int width = (int)(_texture.Width / 2 * Scale);
+            int height = (int)(_texture.Height / 2 * Scale);
+
+            if (mx >= _position.X - width && mx <= _position.X + width &&
+               my >= _position.Y - height && my <= _position.Y + height)
+            {
+                BeingHandled = true;
+                TLIndex = tlIndex;
+            }
+        }
+
+        public void ResetInput()
+        {
+            BeingHandled = false;
+            TLIndex = -1;
+        }
+
         public void HandleInput(int mx, int my)
         {
             int width = (int)(_texture.Width/2 * Scale);
             int height = (int)(_texture.Height/2 * Scale);
 
-            if(mx >= _position.X - width && mx <= _position.X + width &&
-               my >= _position.Y - height && my <= _position.Y + height)
+            int bufferWidth = 50, bufferHeight = 50;
+
+            XAxis = Math.Clamp((mx - _position.X) / width, -1, 1);
+            YAxis = Math.Clamp((my - _position.Y) / height, -1, 1);
+
+            /*if(mx >= _position.X - width - bufferWidth && mx <= _position.X + width + bufferWidth &&
+               my >= _position.Y - height - bufferHeight && my <= _position.Y + height + bufferHeight)
             {
-                XAxis = (mx - _position.X) / width;
-                YAxis = (my - _position.Y) / height;
+                XAxis = Math.Clamp((mx - _position.X) / width, -1, 1);
+                YAxis = Math.Clamp((my - _position.Y) / height, -1, 1);
             }
+            else
+            {
+                ResetInput();
+            }*/
         }
 
         public void Reset()

@@ -237,12 +237,27 @@ namespace AndroidGB
 
                 foreach (TouchLocation tl in tc)
                 {
+                    if (dpad.BeingHandled && tl.Id == dpad.TLIndex) continue;
+
                     int mx = (int)tl.Position.X, my = (int)tl.Position.Y;
-                    dpad.HandleInput(mx, my);
+                    if(tl.State == TouchLocationState.Pressed) dpad.SetInput(mx, my, tl.Id);
                     start.HandleInput(mx, my);
                     select.HandleInput(mx, my);
                     btnB.HandleInput(mx, my);
                     btnA.HandleInput(mx, my);
+                }
+
+                if(dpad.BeingHandled)
+                {
+                    bool stillValid = tc.FindById(dpad.TLIndex, out var tl);
+                    if(!stillValid || tl.State == TouchLocationState.Released)
+                    {
+                        dpad.ResetInput();
+                    }
+                    else
+                    {
+                        dpad.HandleInput((int)tl.Position.X, (int)tl.Position.Y);
+                    }
                 }
 
                 float deadzone = .35f;
