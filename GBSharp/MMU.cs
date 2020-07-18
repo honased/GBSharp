@@ -19,6 +19,9 @@ namespace GBSharp
         private int[] _io;
         private Gameboy _gameboy;
 
+        private int _wramBank;
+        private const int WRAM_OFFSET = 0x1000;
+
         public int IE
         {
             get
@@ -78,7 +81,7 @@ namespace GBSharp
             _inBios = false;
             _vram = new int[0x2000];
             _eram = new int[0x2000];
-            _wram = new int[0x2000];
+            _wram = new int[0x8000];
             _oam = new int[0xA0];
             _io = new int[0x80];
             _zram = new int[0x80];
@@ -99,6 +102,7 @@ namespace GBSharp
             for (int i = 0; i < _zram.Length; i++) _zram[i] = 0;
 
             WriteByte(0x91, 0xFF40);
+            _wramBank = 0x01;
         }
 
         internal void StartInBios()
@@ -159,8 +163,11 @@ namespace GBSharp
                 case int _ when address < 0xC000:
                     _cartridge.WriteERam(address, value);
                     break;
-                case int _ when address < 0xE000:
+                case int _ when address < 0xD000:
                     _wram[address - 0xC000] = value;
+                    break;
+                case int _ when address < 0xE000:
+                    _wram[(address - 0xC000) + (_wramBank * WRAM_OFFSET)] = value;
                     break;
                 case int _ when address < 0xFE00:
                     WriteByte(value, address - 0x2000);
@@ -196,6 +203,15 @@ namespace GBSharp
                             {
                                 _oam[i] = ReadByte(addr + i);
                             }
+                            break;
+
+                        case 0xFF4D:
+                            value = (value & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7);
+                            break;
+
+                        case 0xFF70:
+                            if (!_gameboy.IsCGB) value = 0x01;
+                            _wramBank = value;
                             break;
 
                     }
@@ -239,8 +255,10 @@ namespace GBSharp
                     return _vram[address - 0x8000];
                 case int _ when address < 0xC000:
                     return _cartridge.ReadERam(address);
-                case int _ when address < 0xE000:
+                case int _ when address < 0xD000:
                     return _wram[address - 0xC000];
+                case int _ when address < 0xE000:
+                    return _wram[(address - 0xC000) + (_wramBank * WRAM_OFFSET)];
                 case int _ when address < 0xFE00:
                     return ReadByte(address - 0x2000);
                 case int _ when address < 0xFEA0:
@@ -254,6 +272,8 @@ namespace GBSharp
                     }
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
+                    if (address == 0xFF4D) return (_io[address - 0xFF00] & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7);
+                    if (address == 0xFF70) return _wramBank;
                     return 0xFF;
                 case int _ when address <= 0xFFFF:
                     return _zram[address - 0xFF80];

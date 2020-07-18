@@ -531,6 +531,19 @@ namespace GBSharp
             return 1;
         }
 
+        private int Instruction_STOP(Instruction instruction)
+        {
+            if(Bitwise.IsBitOn(_gameboy.Mmu.ReadByte(0xFF4D), 0))
+            {
+                _gameboy.Mmu.WriteByte(0, 0xFF4D);
+                DoubleSpeed = !DoubleSpeed;
+            }
+
+            if (_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.PC)) == 0x00) ReadByte();
+
+            return 4;
+        }
+
         private int Instruction_JR(Instruction instruction)
         {
             sbyte n = (sbyte)ReadByte();

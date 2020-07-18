@@ -23,6 +23,15 @@ namespace GBSharp
 
         protected bool Battery { get; private set; }
 
+        internal GBMode GameboyType { get; private set; }
+
+        internal enum GBMode
+        {
+            GBOnly = 0,
+            CBGAndGB = 1,
+            CGBOnly = 2
+        }
+
         public static Cartridge Load(Stream stream)
         {
             List<byte> data = new List<byte>();
@@ -113,6 +122,13 @@ namespace GBSharp
 
             CartridgeType = Rom[0x0147];
             Checksum = (Rom[0x14E] << 8) | Rom[0x14F];
+
+            switch(data[0x0143])
+            {
+                case 0x80: GameboyType = GBMode.CBGAndGB; break;
+                case 0xC0: GameboyType = GBMode.CGBOnly; break;
+                default: GameboyType = GBMode.GBOnly; break;
+            }
 
             CustomInit();
         }

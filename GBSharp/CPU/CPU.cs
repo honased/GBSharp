@@ -19,6 +19,8 @@ namespace GBSharp
 
         private Gameboy _gameboy;
 
+        internal bool DoubleSpeed { get; private set; }
+
         public CPU(Gameboy gameboy)
         {
             _gameboy = gameboy;
@@ -41,6 +43,7 @@ namespace GBSharp
 
             Halt = false;
             HaltBug = false;
+            DoubleSpeed = false;
 
             if (cart != null)
             {

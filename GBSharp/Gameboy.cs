@@ -15,6 +15,7 @@ namespace GBSharp
         internal APU Apu { get; private set; }
         internal Input Input { get; private set; }
         internal Timer Timer { get; private set; }
+        internal bool IsCGB { get; private set; }
 
         public int CyclesCount { get; private set; }
         public const int CPU_CYCLES = 17556;
@@ -54,13 +55,24 @@ namespace GBSharp
         {
             while (CyclesCount < CPU_CYCLES)
             {
-                int cycles = Cpu.ExecuteCycle();
-                CyclesCount += cycles;
+                int divisorAmount = Cpu.DoubleSpeed ? 2 : 1;
 
-                Timer.Tick(cycles);
+                int accumalitiveCycles = 0;
+
+                for(int i = 0; i < divisorAmount; i++)
+                {
+                    int cycles = Cpu.ExecuteCycle();
+                    Timer.Tick(cycles);
+                    accumalitiveCycles += cycles;
+                }
+
+                accumalitiveCycles /= divisorAmount;
+
+                CyclesCount += accumalitiveCycles;
+
                 Input.Tick();
-                Ppu.Tick(cycles);
-                Apu.Tick(cycles);
+                Ppu.Tick(accumalitiveCycles);
+                Apu.Tick(accumalitiveCycles);
             }
             CyclesCount -= CPU_CYCLES;
         }
@@ -84,6 +96,11 @@ namespace GBSharp
         public void LoadCartridge(Cartridge cartridge)
         {
             Mmu.LoadCartridge(cartridge);
+            if (cartridge.GameboyType == Cartridge.GBMode.GBOnly) IsCGB = false;
+            else IsCGB = true;
+
+            if (IsCGB) Cpu.SetRegister(CPU.Registers8Bit.A, 0x11);
+            else Cpu.SetRegister(CPU.Registers8Bit.A, 0x01);
         }
 
         public void SetInput(Input.Button button, bool pressed)

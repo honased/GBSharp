@@ -65,6 +65,9 @@ namespace GBSharp.Audio
                     LengthEnabled = Bitwise.IsBitOn(value, 6);
                     if (Bitwise.IsBitOn(value, 7)) Enable();
                     return;
+
+                case 0xFF15:
+                    return;
             }
 
             throw new InvalidOperationException(String.Format("Cannot write to memory address 0x{0:X4}", address));

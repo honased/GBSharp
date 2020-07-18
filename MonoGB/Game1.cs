@@ -44,7 +44,7 @@ namespace MonoGB
         {
             // TODO: Add your initialization logic here
             _gameboy = new Gameboy();
-            _debugMode = false;
+            _debugMode = true;
 
             //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
@@ -76,7 +76,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Tetris.gb";
+            string path = "Roms/Games/Pokemon Silver.gbc";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
