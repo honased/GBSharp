@@ -60,6 +60,8 @@ namespace GBSharp
         public Color Color2 { get; set; }
         public Color Color3 { get; set; }
 
+        
+
         public PPU(Gameboy gameboy)
         {
             _gameboy = gameboy;
@@ -224,8 +226,8 @@ namespace GBSharp
                 int tile;// = _gameboy.Mmu.LoadVRAM(0x9800 + y + x);
                 int mapLocation = isInWindow ? windowTileMapLocation : bgTileMapLocation;
 
-                if (shouldValueBeSigned) tile = (sbyte)_gameboy.Mmu.LoadVRAM(mapLocation + actualY + x);
-                else tile = (byte)_gameboy.Mmu.LoadVRAM(mapLocation + actualY + x);
+                if (shouldValueBeSigned) tile = (sbyte)_gameboy.Mmu.LoadVRAM0(mapLocation + actualY + x);
+                else tile = (byte)_gameboy.Mmu.LoadVRAM0(mapLocation + actualY + x);
 
                 int pixel = isInWindow ? _tileset[tileInitLocation + tile, (ly) % 8, (xx) % 8]
                     : _tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8];
@@ -324,7 +326,7 @@ namespace GBSharp
             {
                 int sx = 1 << (7 - x);
 
-                _tileset[tile, y, x] = (((_gameboy.Mmu.LoadVRAM(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM(address + 1) & sx) != 0) ? 2 : 0);
+                _tileset[tile, y, x] = (((_gameboy.Mmu.LoadVRAM0(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM0(address + 1) & sx) != 0) ? 2 : 0);
             }
         }
 

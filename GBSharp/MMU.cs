@@ -72,6 +72,9 @@ namespace GBSharp
             return _io[0x48 + palette];
         }
 
+        internal const int VRAM_OFFSET = 0x2000;
+        private int _vramBank;
+
         private bool _inBios;
 
         internal Cartridge _cartridge;
@@ -79,7 +82,7 @@ namespace GBSharp
         public MMU(Gameboy gameboy)
         {
             _inBios = false;
-            _vram = new int[0x2000];
+            _vram = new int[0x4000];
             _eram = new int[0x2000];
             _wram = new int[0x8000];
             _oam = new int[0xA0];
@@ -103,6 +106,7 @@ namespace GBSharp
 
             WriteByte(0x91, 0xFF40);
             _wramBank = 0x01;
+            _vramBank = 0x00;
         }
 
         internal void StartInBios()
@@ -157,7 +161,7 @@ namespace GBSharp
                     _cartridge.WriteRom(address, value);
                     break;
                 case int _ when address < 0xA000:
-                    _vram[address - 0x8000] = value;
+                    _vram[(address - 0x8000) + (_vramBank * VRAM_OFFSET)] = value;
                     if(address < 0x9800) _gameboy.Ppu.UpdateTile(address, value);
                     break;
                 case int _ when address < 0xC000:
@@ -214,6 +218,11 @@ namespace GBSharp
                             _wramBank = value;
                             break;
 
+                        case 0xFF4f:
+                            _vramBank = (value & 0x01) == 0x01 && _gameboy.IsCGB ? 1 : 0;
+                            value = _vramBank;
+                            break;
+
                     }
 
                     if((address >= 0xFF10 && address <= 0xFF26) ||
@@ -252,7 +261,7 @@ namespace GBSharp
                 case int _ when address < 0x8000:
                     return _cartridge.ReadHighRom(address);
                 case int _ when address < 0xA000:
-                    return _vram[address - 0x8000];
+                    return _vram[(address - 0x8000) + (_vramBank * VRAM_OFFSET)];
                 case int _ when address < 0xC000:
                     return _cartridge.ReadERam(address);
                 case int _ when address < 0xD000:
@@ -274,6 +283,7 @@ namespace GBSharp
                 case int _ when address < 0xFF80:
                     if (address == 0xFF4D) return (_io[address - 0xFF00] & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7);
                     if (address == 0xFF70) return _wramBank;
+                    if (address == 0xFF4F) return _vramBank;
                     return 0xFF;
                 case int _ when address <= 0xFFFF:
                     return _zram[address - 0xFF80];
@@ -295,9 +305,14 @@ namespace GBSharp
             WriteByte(value >> 8, address + 1);
         }
 
-        public int LoadVRAM(int addr)
+        public int LoadVRAM0(int addr)
         {
             return _vram[addr & 0x1FFF];
+        }
+
+        public int LoadVRAM1(int addr)
+        {
+            return _vram[(addr & 0x1FFF) + VRAM_OFFSET];
         }
 
         public int LoadOAM(int addr)
