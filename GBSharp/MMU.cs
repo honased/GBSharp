@@ -230,9 +230,20 @@ namespace GBSharp
 
                         case 0xFF6B:
                             if ((STAT & 0x03) == 3) return;
-                            _gameboy.Ppu.UpdateSpritePalettes(value);
+                            _gameboy.Ppu.UpdateSpritePalettes(value, -1);
                             break;
 
+                        case 0xFF47:
+                            _gameboy.Ppu.UpdateBackgroundPalettes(value);
+                            break;
+
+                        case 0xFF48:
+                            _gameboy.Ppu.UpdateSpritePalettes(value, 0);
+                            break;
+
+                        case 0xFF49:
+                            _gameboy.Ppu.UpdateSpritePalettes(value, 1);
+                            break;
                     }
 
                     if((address >= 0xFF10 && address <= 0xFF26) ||

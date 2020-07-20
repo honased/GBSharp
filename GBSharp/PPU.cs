@@ -26,8 +26,8 @@ namespace GBSharp
                 {
                     for (int xx = 0; xx < 128; xx++)
                     {
-                        int colorIndex = GetColorIndexFromPalette(_tileset[0, xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
-                        Color color2 = colors[colorIndex];
+                        int colorIndex = (_tileset[0, xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
+                        Color color2 = _bgPalettes[0].Colors[colorIndex];
                         tiles[count] = color2.R;
                         tiles[count + 1] = color2.G;
                         tiles[count + 2] = color2.B;
@@ -92,7 +92,7 @@ namespace GBSharp
                 for (int i = 0; i < blue.Length; i++) blue[i] = 0;
             }
 
-            public void Update(MMU mmu, int value)
+            public void UpdateCGB(MMU mmu, int value)
             {
                 int register = mmu.ReadByte(PaletteIndexAddress);
                 bool increment = Bitwise.IsBitOn(register, 7);
@@ -118,6 +118,26 @@ namespace GBSharp
                 {
                     index = (index + 1) % 64;
                     mmu.WriteByte(index | (0x80), PaletteIndexAddress);
+                }
+            }
+
+            public void UpdateDMG(int value)
+            {
+                Colors[0] = GetDMGColor(value & 0x03);
+                Colors[1] = GetDMGColor((value >> 2) & 0x03);
+                Colors[2] = GetDMGColor((value >> 4) & 0x03);
+                Colors[3] = GetDMGColor((value >> 6) & 0x03);
+            }
+
+            private Color GetDMGColor(int index)
+            {
+                switch(index)
+                {
+                    case 0: return new Color(224, 248, 208);
+                    case 1: return new Color(136, 192, 112);
+                    case 2: return new Color(52, 104, 86);
+                    case 3: return new Color(8, 24, 32);
+                    default: throw new Exception("Invalid color index");
                 }
             }
 
@@ -344,22 +364,6 @@ namespace GBSharp
                 FrameBuffer[startingIndex + 3] = 255;
                 startingIndex += 4;
             }
-            
-
-            /*int count = 0;
-            for(int yy = 0; yy < SCREEN_HEIGHT; yy++)
-            {
-                for (int xx = 0; xx < SCREEN_WIDTH; xx++)
-                {
-                    int colorIndex = GetColorIndexFromPalette(_tileset[xx / 8 + ((yy / 8) * (SCREEN_WIDTH / 8)), yy % 8, xx % 8]);
-                    Color color2 = colors[colorIndex];
-                    FrameBuffer[count] = color2.R;
-                    FrameBuffer[count + 1] = color2.G;
-                    FrameBuffer[count + 2] = color2.B;
-                    FrameBuffer[count + 3] = 255;
-                    count += 4;
-                }
-            }*/
         }
 
         private void DrawSprites()
@@ -439,16 +443,6 @@ namespace GBSharp
             }
         }
 
-        private int GetColorIndexFromPalette(int pixel)
-        {
-            return (_gameboy.Mmu.bgPalette >> (2 * pixel)) & 0x03;
-        }
-
-        private int GetSpriteColorIndexFromPalette(int pixel, int palette)
-        {
-            return (_gameboy.Mmu.GetObjPalette(palette) >> (2 * pixel)) & 0x03;
-        }
-
         private void ChangeMode(int mode)
         {
             _gameboy.Mmu.STAT = (_gameboy.Mmu.STAT & ~0x03) | (mode & 0x03);
@@ -480,8 +474,15 @@ namespace GBSharp
 
         internal void UpdateBackgroundPalettes(int value)
         {
-            int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
-            _bgPalettes[paletteIndex / 8].Update(_gameboy.Mmu, value);
+            if (_gameboy.IsCGB)
+            {
+                int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
+                _bgPalettes[paletteIndex / 8].UpdateCGB(_gameboy.Mmu, value);
+            }
+            else
+            {
+                _bgPalettes[0].UpdateDMG(value);
+            }
         }
 
         internal int ReadBackgroundPalettes()
@@ -490,10 +491,17 @@ namespace GBSharp
             return _bgPalettes[paletteIndex / 8].Read(_gameboy.Mmu);
         }
 
-        internal void UpdateSpritePalettes(int value)
+        internal void UpdateSpritePalettes(int value, int index)
         {
-            int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
-            _spPalettes[paletteIndex / 8].Update(_gameboy.Mmu, value);
+            if (_gameboy.IsCGB)
+            {
+                int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
+                _spPalettes[paletteIndex / 8].UpdateCGB(_gameboy.Mmu, value);
+            }
+            else
+            {
+                _spPalettes[index].UpdateDMG(value);
+            }
         }
 
         internal int ReadSpritePalettes()
