@@ -318,8 +318,11 @@ namespace GBSharp
                     vramBank = (value >> 3) & 0x01;
                 }
 
-                int pixel = isInWindow ? _tileset[vramBank, tileInitLocation + tile, (ly) % 8, (xx) % 8]
-                    : _tileset[vramBank, tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8];
+                int drawX = hFlip ? 7 - (xx % 8) : xx;
+                int drawY = vFlip ? 7 - (ly % 8) : ly;
+
+                int pixel = isInWindow ? _tileset[vramBank, tileInitLocation + tile, (drawY) % 8, (drawX) % 8]
+                    : _tileset[vramBank, tileInitLocation + tile, (drawY + sy) % 8, (drawX + sx) % 8];
 
                 BGPriority[xx] = (pixel != 0);
 
