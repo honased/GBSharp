@@ -26,7 +26,7 @@ namespace GBSharp
                 {
                     for (int xx = 0; xx < 128; xx++)
                     {
-                        int colorIndex = GetColorIndexFromPalette(_tileset[xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
+                        int colorIndex = GetColorIndexFromPalette(_tileset[0, xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
                         Color color2 = colors[colorIndex];
                         tiles[count] = color2.R;
                         tiles[count + 1] = color2.G;
@@ -51,7 +51,7 @@ namespace GBSharp
         private const int OAM_SIZE = 0xA0;
         private const int SPRITE_SIZE = 0x04;
 
-        private int[, ,] _tileset;
+        private int[, , ,] _tileset;
 
         private Color[] colors;
 
@@ -232,15 +232,18 @@ namespace GBSharp
 
             ChangeMode(0);
 
-            _tileset = new int[384, 8, 8];
+            _tileset = new int[2, 384, 8, 8];
 
-            for (int i = 0; i < 384; i++)
+            for (int bank = 0; bank < 2; bank++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int i = 0; i < 384; i++)
                 {
-                    for (int x = 0; x < 8; x++)
+                    for (int j = 0; j < 8; j++)
                     {
-                        _tileset[i, j, x] = 0;
+                        for (int x = 0; x < 8; x++)
+                        {
+                            _tileset[bank, i, j, x] = 0;
+                        }
                     }
                 }
             }
@@ -315,8 +318,8 @@ namespace GBSharp
                     vramBank = (value >> 3) & 0x01;
                 }
 
-                int pixel = isInWindow ? _tileset[tileInitLocation + tile, (ly) % 8, (xx) % 8]
-                    : _tileset[tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8];
+                int pixel = isInWindow ? _tileset[vramBank, tileInitLocation + tile, (ly) % 8, (xx) % 8]
+                    : _tileset[vramBank, tileInitLocation + tile, (ly + sy) % 8, (xx + sx) % 8];
 
                 BGPriority[xx] = (pixel != 0);
 
@@ -379,7 +382,7 @@ namespace GBSharp
                                 if (drawY < 8) tileNumber = upperTile;
                                 else tileNumber = lowerTile;
                             }
-                            int pixel = _tileset[tileNumber, drawY % 8, drawX];
+                            int pixel = _tileset[0, tileNumber, drawY % 8, drawX];
 
                             int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
                             if (pixel != 0)
@@ -400,7 +403,7 @@ namespace GBSharp
             }
         }
 
-        internal void UpdateTile(int address, int value)
+        internal void UpdateTile(int address, int vramBank, int value)
         {
             address &= 0x1FFE;
 
@@ -411,7 +414,7 @@ namespace GBSharp
             {
                 int sx = 1 << (7 - x);
 
-                _tileset[tile, y, x] = (((_gameboy.Mmu.LoadVRAM0(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM0(address + 1) & sx) != 0) ? 2 : 0);
+                _tileset[vramBank, tile, y, x] = (((_gameboy.Mmu.LoadVRAM0(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM0(address + 1) & sx) != 0) ? 2 : 0);
             }
         }
 

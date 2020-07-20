@@ -162,7 +162,7 @@ namespace GBSharp
                     break;
                 case int _ when address < 0xA000:
                     _vram[(address - 0x8000) + (_vramBank * VRAM_OFFSET)] = value;
-                    if(address < 0x9800) _gameboy.Ppu.UpdateTile(address, value);
+                    if(address < 0x9800) _gameboy.Ppu.UpdateTile(address, _vramBank, value);
                     break;
                 case int _ when address < 0xC000:
                     _cartridge.WriteERam(address, value);
