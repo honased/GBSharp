@@ -228,6 +228,11 @@ namespace GBSharp
                             _gameboy.Ppu.UpdateBackgroundPalettes(value);
                             break;
 
+                        case 0xFF6B:
+                            if ((STAT & 0x03) == 3) return;
+                            _gameboy.Ppu.UpdateSpritePalettes(value);
+                            break;
+
                     }
 
                     if((address >= 0xFF10 && address <= 0xFF26) ||
@@ -295,6 +300,10 @@ namespace GBSharp
                         if(address == 0xFF69)
                         {
                             return _gameboy.Ppu.ReadBackgroundPalettes();
+                        }
+                        if (address == 0xFF6B)
+                        {
+                            return _gameboy.Ppu.ReadSpritePalettes();
                         }
                         return _io[address - 0xFF00];
                     }

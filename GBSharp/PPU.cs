@@ -61,6 +61,7 @@ namespace GBSharp
         public Color Color3 { get; set; }
 
         private PaletteEntry[] _bgPalettes;
+        private PaletteEntry[] _spPalettes;
 
         private class PaletteEntry
         {
@@ -68,12 +69,19 @@ namespace GBSharp
 
             private int[] red, green, blue;
 
-            public PaletteEntry()
+            public int PaletteIndexAddress { get; private set; }
+            public int PaletteDataAddress { get; private set; }
+
+            public PaletteEntry(bool isBackround)
             {
                 red = new int[4];
                 green = new int[4];
                 blue = new int[4];
                 Colors = new Color[4];
+
+                PaletteDataAddress =  isBackround ? 0xFF69 : 0xFF6B;
+                PaletteIndexAddress = isBackround ? 0xFF68 : 0xFF6A;
+
                 Reset();
             }
 
@@ -86,7 +94,7 @@ namespace GBSharp
 
             public void Update(MMU mmu, int value)
             {
-                int register = mmu.ReadByte(0xFF68);
+                int register = mmu.ReadByte(PaletteIndexAddress);
                 bool increment = Bitwise.IsBitOn(register, 7);
                 int index = register & 0x3F;
 
@@ -109,13 +117,13 @@ namespace GBSharp
                 if(increment)
                 {
                     index = (index + 1) % 64;
-                    mmu.WriteByte(index | (0x80), 0xFF68);
+                    mmu.WriteByte(index | (0x80), PaletteIndexAddress);
                 }
             }
 
             public int Read(MMU mmu)
             {
-                int register = mmu.ReadByte(0xFF68);
+                int register = mmu.ReadByte(PaletteIndexAddress);
                 int index = register & 0x3F;
 
                 int colorToModify = (index % 8) / 2;
@@ -251,7 +259,10 @@ namespace GBSharp
             BGPriority = new bool[SCREEN_WIDTH];
 
             _bgPalettes = new PaletteEntry[8];
-            for (int i = 0; i < _bgPalettes.Length; i++) _bgPalettes[i] = new PaletteEntry();
+            for (int i = 0; i < _bgPalettes.Length; i++) _bgPalettes[i] = new PaletteEntry(true);
+
+            _spPalettes = new PaletteEntry[8];
+            for (int i = 0; i < _spPalettes.Length; i++) _spPalettes[i] = new PaletteEntry(false);
         }
 
         private void RenderLine()
@@ -369,6 +380,13 @@ namespace GBSharp
                 bool yFlip = Bitwise.IsBitOn(attribs, 6);
                 bool xFlip = Bitwise.IsBitOn(attribs, 5);
                 int paletteNumber = Bitwise.IsBitOn(attribs, 4) ? 1 : 0;
+                int vramBank = 0;
+
+                if(_gameboy.IsCGB)
+                {
+                    vramBank = Bitwise.IsBitOn(attribs, 3) ? 1 : 0;
+                    paletteNumber = attribs & 0x07;
+                }
 
                 if(ly >= spriteY && ly < spriteY + spriteHeight)
                 {
@@ -385,14 +403,14 @@ namespace GBSharp
                                 if (drawY < 8) tileNumber = upperTile;
                                 else tileNumber = lowerTile;
                             }
-                            int pixel = _tileset[0, tileNumber, drawY % 8, drawX];
+                            int pixel = _tileset[vramBank, tileNumber, drawY % 8, drawX];
 
-                            int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
+                            //int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
                             if (pixel != 0)
                             {
                                 if (objAboveBg || !BGPriority[spriteX + x])
                                 {
-                                    Color color = colors[colorIndex];
+                                    Color color = _spPalettes[paletteNumber].Colors[pixel];
                                     FrameBuffer[writePosition] = color.R;
                                     FrameBuffer[writePosition + 1] = color.G;
                                     FrameBuffer[writePosition + 2] = color.B;
@@ -470,6 +488,18 @@ namespace GBSharp
         {
             int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
             return _bgPalettes[paletteIndex / 8].Read(_gameboy.Mmu);
+        }
+
+        internal void UpdateSpritePalettes(int value)
+        {
+            int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
+            _spPalettes[paletteIndex / 8].Update(_gameboy.Mmu, value);
+        }
+
+        internal int ReadSpritePalettes()
+        {
+            int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
+            return _spPalettes[paletteIndex / 8].Read(_gameboy.Mmu);
         }
 
         public struct Color
