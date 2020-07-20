@@ -74,7 +74,6 @@ namespace GBSharp.Cartridges
 
                     if (ERAMEnabled)
                     {
-                        if (!ERAMWasOpen) Console.WriteLine("Eram Open");
                         ERAMWasOpen = true;
                     }
                     else
@@ -83,7 +82,6 @@ namespace GBSharp.Cartridges
                         {
                             ERAMWasOpen = false;
                             // Save game
-                            Console.WriteLine("ERAM Closed");
                             if (Battery) FileManager.SaveFile(Name, Checksum, ERam);
                         }
                     }

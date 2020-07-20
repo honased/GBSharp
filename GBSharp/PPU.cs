@@ -84,23 +84,22 @@ namespace GBSharp
                 for (int i = 0; i < blue.Length; i++) blue[i] = 0;
             }
 
-            public void Update(MMU mmu)
+            public void Update(MMU mmu, int value)
             {
                 int register = mmu.ReadByte(0xFF68);
                 bool increment = Bitwise.IsBitOn(register, 7);
                 int index = register & 0x3F;
 
                 int colorToModify = (index % 8) / 2;
-                int value = mmu.ReadByte(0xFF69);
                 if((index % 8) % 2 == 0)
                 {
                     red[colorToModify] = value & 0x1F;
-                    green[colorToModify] = (green[colorToModify] & 0xE0) | (value >> 5);
+                    green[colorToModify] = (green[colorToModify] & 0x18) | (value >> 5);
                 }
                 else
                 {
                     green[colorToModify] = (green[colorToModify] & 0x07) | ((value & 0x03) << 3);
-                    blue[colorToModify] = value >> 3;
+                    blue[colorToModify] = (value >> 2) & 0x1F;
                 }
 
                 Colors[colorToModify].R = (int)((red[colorToModify] / 31.0) * 255);
@@ -111,6 +110,22 @@ namespace GBSharp
                 {
                     index = (index + 1) % 64;
                     mmu.WriteByte(index | (0x80), 0xFF68);
+                }
+            }
+
+            public int Read(MMU mmu)
+            {
+                int register = mmu.ReadByte(0xFF68);
+                int index = register & 0x3F;
+
+                int colorToModify = (index % 8) / 2;
+                if ((index % 8) % 2 == 0)
+                {
+                    return (red[colorToModify] & 0x1F) | ((green[colorToModify] & 0x07) << 5);
+                }
+                else
+                {
+                    return ((green[colorToModify] & 0x18) >> 3) | (blue[colorToModify] << 5);
                 }
             }
         }
@@ -245,7 +260,7 @@ namespace GBSharp
                 {
                     for (int i = 0; i < SCREEN_WIDTH; i++) BGPriority[i] = false;
                 }
-                //if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 1)) DrawSprites();
+                if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 1)) DrawSprites();
             }
         }
 
@@ -439,11 +454,16 @@ namespace GBSharp
             colors[3] = Color0;
         }
 
-        internal void UpdateBackgroundPalettes()
+        internal void UpdateBackgroundPalettes(int value)
         {
-            int value = _gameboy.Mmu.ReadByte(0xFF68);
             int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
-            _bgPalettes[paletteIndex / 8].Update(_gameboy.Mmu);
+            _bgPalettes[paletteIndex / 8].Update(_gameboy.Mmu, value);
+        }
+
+        internal int ReadBackgroundPalettes()
+        {
+            int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
+            return _bgPalettes[paletteIndex / 8].Read(_gameboy.Mmu);
         }
 
         public struct Color

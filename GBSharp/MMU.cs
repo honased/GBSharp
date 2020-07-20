@@ -223,13 +223,9 @@ namespace GBSharp
                             value = _vramBank;
                             break;
 
-                        case 0xFF68:
-                            value = value;
-                            break;
-
                         case 0xFF69:
                             if ((STAT & 0x03) == 3) return;
-                            _gameboy.Ppu.UpdateBackgroundPalettes();
+                            _gameboy.Ppu.UpdateBackgroundPalettes(value);
                             break;
 
                     }
@@ -293,8 +289,15 @@ namespace GBSharp
                     if (address == 0xFF4D) return (_io[address - 0xFF00] & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7);
                     if (address == 0xFF70) return _wramBank;
                     if (address == 0xFF4F) return _vramBank;
-                    if(address == 0xFF68 || address == 0xFF69 ||
-                        address == 0xFF6A || address == 0xFF6B) return _io[address - 0xFF00];
+                    if (address == 0xFF68 || address == 0xFF69 ||
+                        address == 0xFF6A || address == 0xFF6B)
+                    {
+                        if(address == 0xFF69)
+                        {
+                            return _gameboy.Ppu.ReadBackgroundPalettes();
+                        }
+                        return _io[address - 0xFF00];
+                    }
                     return 0xFF;
                 case int _ when address <= 0xFFFF:
                     return _zram[address - 0xFF80];

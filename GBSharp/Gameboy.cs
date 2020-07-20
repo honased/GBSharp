@@ -72,7 +72,7 @@ namespace GBSharp
 
                 Input.Tick();
                 Ppu.Tick(accumalitiveCycles);
-                Apu.Tick(accumalitiveCycles);
+                //Apu.Tick(accumalitiveCycles);
             }
             CyclesCount -= CPU_CYCLES;
         }
