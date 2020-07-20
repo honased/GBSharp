@@ -30,8 +30,6 @@ namespace GBSharp
 
             Cpu = new CPU(this);
 
-            Cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
-
             Reset();
         }
 

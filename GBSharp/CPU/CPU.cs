@@ -28,8 +28,6 @@ namespace GBSharp
 
             RegisterInstructions();
 
-            SetPalette(new PPU.Color(0, 0, 0), new PPU.Color(96, 96, 96), new PPU.Color(192, 192, 192), new PPU.Color(255, 255, 255));
-
             Reset(false, null);
         }
 
@@ -51,15 +49,6 @@ namespace GBSharp
             }
 
             if (inBios) StartInBios();
-        }
-
-        public void SetPalette(PPU.Color color0, PPU.Color color1, PPU.Color color2, PPU.Color color3)
-        {
-            _gameboy.Ppu.Color0 = color0;
-            _gameboy.Ppu.Color1 = color1;
-            _gameboy.Ppu.Color2 = color2;
-            _gameboy.Ppu.Color3 = color3;
-            _gameboy.Ppu.UpdateColors();
         }
 
         public void Debug()
