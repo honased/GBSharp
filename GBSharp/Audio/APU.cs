@@ -28,6 +28,8 @@ namespace GBSharp.Audio
 
         private Gameboy _gameboy;
 
+        private bool On { get; set; }
+
         public APU(Gameboy gameboy)
         {
             _gameboy = gameboy;
@@ -48,17 +50,21 @@ namespace GBSharp.Audio
             OutputSound = new bool[2, 4];
             VolumeLeft = 0;
             VolumeRight = 0;
+            On = false;
         }
 
         public void WriteByte(int address, int value)
         {
+            if (address == 0xFF26) On = Bitwise.IsBitOn(value, 7);
+            if (!On) return;
+
             if (address <= 0xFF14) squareChannel.WriteByte(address, value);
             else if (address <= 0xFF19) squareChannel2.WriteByte(address, value);
             else if (address <= 0xFF1E) waveChannel.WriteByte(address, value);
             else if (address >= 0xFF20 && address <= 0xFF23) noiseChannel.WriteByte(address, value);
             else if (address <= 0xFF26)
             {
-                switch(address)
+                switch (address)
                 {
                     case 0xFF24:
                         VolumeLeft = (value >> 4) & 0x07;
@@ -66,16 +72,10 @@ namespace GBSharp.Audio
                         break;
 
                     case 0xFF25:
-                        for(int i = 0; i < 8; i++)
+                        for (int i = 0; i < 8; i++)
                         {
                             OutputSound[i / 4, i % 4] = Bitwise.IsBitOn(value, i);
                         }
-                        break;
-
-                    case 0xFF26:
-                        int returnMem = value & 0x80;
-                        returnMem |= (squareChannel.IsPlaying() ? 1 : 0);
-                        returnMem |= (squareChannel2.IsPlaying() ? 1 : 0) << 1;
                         break;
                 }
             }
@@ -93,6 +93,9 @@ namespace GBSharp.Audio
                 int returnMem = memory[address - 0xFF00] & 0x80;
                 returnMem |= (squareChannel.IsPlaying() ? 1 : 0);
                 returnMem |= (squareChannel2.IsPlaying() ? 1 : 0) << 1;
+                returnMem |= (waveChannel.IsPlaying() ? 1 : 0) << 2;
+                returnMem |= (noiseChannel.IsPlaying() ? 1 : 0) << 3;
+                returnMem |= (On ? 1 : 0) << 7;
                 return returnMem;
             }
 

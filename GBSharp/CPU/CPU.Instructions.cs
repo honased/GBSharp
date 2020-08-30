@@ -115,6 +115,7 @@ namespace GBSharp
             _cbInstructions = new Instruction[0x100];
 
             AddInstruction(0x00, new Instruction("NOP", Instruction_NOP));
+            AddInstruction(0x10, new Instruction("STOP", Instruction_STOP));
 
             AddInstruction(0x76, new Instruction("HALT", Instruction_Halt));
             
@@ -539,9 +540,9 @@ namespace GBSharp
                 DoubleSpeed = !DoubleSpeed;
             }
 
-            if (_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.PC)) == 0x00) ReadByte();
+            //if (_gameboy.Mmu.ReadByte(LoadRegister(Registers16Bit.PC)) == 0x00) ReadByte();
 
-            return 4;
+            return 1;
         }
 
         private int Instruction_JR(Instruction instruction)
@@ -1205,6 +1206,8 @@ namespace GBSharp
         {
             int registerA = LoadRegister(Registers8Bit.A);
             int cVal = (includeCarry && IsFlagOn(Flags.C)) ? 1 : 0;
+
+            //Console.WriteLine("{0},{1}", registerA, val);
 
             int result = Bitwise.Wrap8(registerA - val - cVal);
 

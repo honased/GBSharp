@@ -75,9 +75,7 @@ namespace GBSharp
 
                 case 0x0F:
                 case 0x10:
-                    cartridge = new CartidgeMBC3();
-                    cartridge.Battery = true;
-                    ((CartidgeMBC3)cartridge).HasRTC = true;
+                    cartridge = new CartidgeMBC3() { Battery = true, HasRTC = true };
                     break;
 
                 case 0x11:
@@ -85,8 +83,18 @@ namespace GBSharp
                     cartridge = new CartidgeMBC3();
                     break;
                 case 0x13:
-                    cartridge = new CartidgeMBC3();
-                    cartridge.Battery = true;
+                    cartridge = new CartidgeMBC3() { Battery = true };
+                    break;
+
+                case 0x1A:
+                case 0x1C:
+                case 0x1D:
+                    cartridge = new CartidgeMBC5() { Battery = false };
+                    break;
+
+                case 0x1B:
+                case 0x1E:
+                    cartridge = new CartidgeMBC5() { Battery = true };
                     break;
 
                 default:

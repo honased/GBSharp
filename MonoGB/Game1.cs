@@ -76,7 +76,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Pokemon Silver.gbc";
+            string path = "Roms/Games/Links Awakening DX.gbc";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -147,6 +147,8 @@ namespace MonoGB
                 Exit();
 
             // TODO: Add your update logic here
+
+            if (!IsActive) return;
 
             var _keyState = Keyboard.GetState();
             var _padState = GamePad.GetState(0);

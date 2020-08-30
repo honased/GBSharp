@@ -6,26 +6,23 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Cartridges
 {
-    class CartidgeMBC3 : Cartridge
+    class CartidgeMBC5 : Cartridge
     {
         private bool ERAMEnabled { get; set; }
 
         private int BankRom { get; set; }
         private int BankRam { get; set; }
 
-        public bool HasRTC { get; set; }
+        private int CartridgeMode { get; set; }
 
-        private int[] _rtcRegisters;
-        private bool RTCLatch { get; set; }
+        public bool RumbleEnabled { get; set; }
 
         protected override void CustomInit()
         {
             ERAMEnabled = false;
             BankRom = 1;
             BankRam = 0;
-            RTCLatch = false;
-
-            _rtcRegisters = new int[5];
+            CartridgeMode = 0;
 
             // Battery Backed
             if (Battery)
@@ -39,10 +36,7 @@ namespace GBSharp.Cartridges
         {
             if(!ERAMEnabled || ERam.Length == 0) return 0x00;
 
-            if (BankRam <= 0x07) return ERam[(BankRam * ERamOffset) | (address & 0x1FFF)];
-            else if (BankRam <= 0x0C) return _rtcRegisters[BankRam - 0x08];
-
-            return 0x00;
+            return ERam[(BankRam * ERamOffset) | (address & 0x1FFF)];
         }
 
         public override int ReadLowRom(int address)
@@ -58,12 +52,7 @@ namespace GBSharp.Cartridges
         public override void WriteERam(int address, int value)
         {
             if (!ERAMEnabled || ERam.Length == 0) return;
-            if(BankRam <= 0x07) ERam[(BankRam * ERamOffset) + (address & 0x1FFF)] = value;
-            else if(BankRam <= 0x0C)
-            {
-                // RTC Register
-                
-            }
+            ERam[(BankRam * ERamOffset) + (address & 0x1FFF)] = value;
         }
 
         public override void WriteRom(int address, int value)
@@ -73,24 +62,14 @@ namespace GBSharp.Cartridges
                 case int _ when address < 0x2000:
                     ERAMEnabled = ((value & 0x0F) == 0x0A);
                     break;
+                case int _ when address < 0x3000:
+                    BankRom = (value & 0xFF) | (BankRom & 0x100);
+                    break;
                 case int _ when address < 0x4000:
-                    BankRom = value & 0x7F;
-                    if (BankRom == 0x00) BankRom = 0x01;
+                    BankRom = ((value & 0x01) << 8) | (BankRom & 0xFF);
                     break;
                 case int _ when address < 0x6000:
-                    BankRam = value;
-                    break;
-                case int _ when address < 0x8000:
-                    if (!HasRTC) return;
-                    if (value == 0x00) RTCLatch = false;
-                    else if(value == 0x01)
-                    {
-                        if(!RTCLatch)
-                        {
-                            UpdateRTC();
-                        }
-                        RTCLatch = true;
-                    }
+                    BankRam = value & 0x0F;
                     break;
             }
         }
@@ -98,26 +77,17 @@ namespace GBSharp.Cartridges
         private int GetWrappedRomBank()
         {
             int returnBank = BankRom % RomBankCount;
-            if (returnBank == 0x00) returnBank = 0x01;
             return returnBank;
         }
 
         public override string ToString()
         {
-            return String.Format("ROM:{0:X2}\tRAM:{1:X2}", BankRom, BankRam);
+            return String.Format("ROM:{0:X2}\tRAM:{1:X2}\tCartridgeMode:{2}", BankRom, BankRam, CartridgeMode);
         }
 
         public override void Close()
         {
             if(Battery) FileManager.SaveFile(Name, Checksum, ERam);
-        }
-
-        private void UpdateRTC()
-        {
-            DateTime current = DateTime.Now;
-            _rtcRegisters[0] = current.Second;
-            _rtcRegisters[1] = current.Minute;
-            _rtcRegisters[2] = current.Hour;
         }
     }
 }

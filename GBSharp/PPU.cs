@@ -43,10 +43,10 @@ namespace GBSharp
         private Gameboy _gameboy;
         private int clocksCount;
 
-        private const int OAM_CLOCK_COUNT = 20;
-        private const int VRAM_CLOCK_COUNT = 43;
-        private const int HBLANK_CLOCK_COUNT = 51;
-        private const int VBLANK_CLOCK_COUNT = 114;
+        private const int OAM_CLOCK_COUNT = 80;
+        private const int VRAM_CLOCK_COUNT = 172;
+        private const int HBLANK_CLOCK_COUNT = 204;
+        private const int VBLANK_CLOCK_COUNT = 456;
 
         private const int OAM_SIZE = 0xA0;
         private const int SPRITE_SIZE = 0x04;
@@ -160,13 +160,34 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
-            clocksCount += clocks;
-
             int mode = _gameboy.Mmu.STAT & 0x03;
 
             if (Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 7))
             {
-                switch (mode)
+                clocksCount += clocks;
+
+                if (clocksCount >= VBLANK_CLOCK_COUNT)
+                {
+                    _gameboy.Mmu.LY = (_gameboy.Mmu.LY + 1) % 154;
+                    clocksCount -= VBLANK_CLOCK_COUNT;
+                    CheckLYC();
+                    if (_gameboy.Mmu.LY >= 144 && mode != 1) ChangeMode(1);
+                }
+
+                if(_gameboy.Mmu.LY < 144)
+                {
+                    if (clocksCount <= OAM_CLOCK_COUNT)
+                    {
+                        if (mode != 2) ChangeMode(2);
+                    }
+                    else if (clocksCount <= OAM_CLOCK_COUNT + VRAM_CLOCK_COUNT)
+                    {
+                        if (mode != 3) ChangeMode(3);
+                    }
+                    else { if (mode != 0) ChangeMode(0); }
+                }
+                
+                /*switch (mode)
                 {
                     case 2:
                         if (clocksCount >= OAM_CLOCK_COUNT)
@@ -196,7 +217,6 @@ namespace GBSharp
                                 _gameboy.Mmu.SetInterrupt(Interrupts.VBlank);
                             }
                             else ChangeMode(2);
-                            CheckLYC();
                         }
                         break;
 
@@ -210,16 +230,9 @@ namespace GBSharp
                                 _gameboy.Mmu.LY = 0;
                                 ChangeMode(2);
                             }
-                            CheckLYC();
                         }
                         break;
-                }
-            }
-            else
-            {
-                _gameboy.Mmu.LY = 0;
-                _gameboy.Mmu.STAT &= ~0x03;
-                clocksCount = 0;
+                }*/
             }
         }
 
@@ -249,7 +262,7 @@ namespace GBSharp
             }
             clocksCount = 0;
 
-            ChangeMode(0);
+            //ChangeMode(2);
 
             _tileset = new int[2, 384, 8, 8];
 
@@ -443,10 +456,12 @@ namespace GBSharp
             {
                 case 0:
                     if (Bitwise.IsBitOn(_gameboy.Mmu.STAT, 3)) _gameboy.Mmu.SetInterrupt(Interrupts.LCDStat);
+                    RenderLine();
                     break;
 
                 case 1:
                     if (Bitwise.IsBitOn(_gameboy.Mmu.STAT, 4)) _gameboy.Mmu.SetInterrupt(Interrupts.LCDStat);
+                    _gameboy.Mmu.SetInterrupt(Interrupts.VBlank);
                     break;
 
                 case 2:
@@ -491,6 +506,19 @@ namespace GBSharp
         {
             int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
             return _spPalettes[paletteIndex / 8].Read(_gameboy.Mmu);
+        }
+
+        internal void CheckIfLCDOff(int value)
+        {
+            bool lcdIsOn = Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 7);
+            bool newLCDState = Bitwise.IsBitOn(value, 7);
+
+            if(lcdIsOn && !newLCDState)
+            {
+                _gameboy.Mmu.LY = 0;
+                clocksCount = 0;
+                _gameboy.Mmu.STAT &= ~0x03; // Reset mode to 0 if screen is off
+            }
         }
 
         public struct Color

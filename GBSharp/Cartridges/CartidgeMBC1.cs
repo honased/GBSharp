@@ -15,8 +15,6 @@ namespace GBSharp.Cartridges
 
         private int CartridgeMode { get; set; }
 
-        private bool ERAMWasOpen { get; set; }
-
         protected override void CustomInit()
         {
             ERAMEnabled = false;
@@ -61,23 +59,6 @@ namespace GBSharp.Cartridges
             {
                 case int _ when address < 0x2000:
                     ERAMEnabled = ((value & 0x0F) == 0x0A);
-
-                    if (ERAMEnabled)
-                    {
-                        if (!ERAMWasOpen) Console.WriteLine("Eram Open");
-                        ERAMWasOpen = true;
-                    }
-                    else
-                    {
-                        if (ERAMWasOpen)
-                        {
-                            ERAMWasOpen = false;
-                            // Save game
-                            Console.WriteLine("ERAM Closed");
-                            if (Battery) FileManager.SaveFile(Name, Checksum, ERam);
-                        }
-                    }
-
                     break;
                 case int _ when address < 0x4000:
                     BankRom = value & 0x1F;

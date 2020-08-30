@@ -83,7 +83,7 @@ namespace GBSharp
             return word;
         }
 
-        public int ExecuteCycle()
+        public int ExecuteCycle(out bool interrupt)
         {
             int cycles = CheckInterrupts();
 
@@ -97,7 +97,10 @@ namespace GBSharp
                 _debugger.Debug(instruction, pc);
 
                 cycles = instruction.Execute();
+
+                interrupt = false;
             }
+            else interrupt = true;
 
             return cycles;
         }
@@ -123,7 +126,7 @@ namespace GBSharp
 
             for (int i = 0; i < 5; i++)
             {
-                if ((IE & IF) >> i == 1)
+                if ((((IE & IF) >> i) & 0x01) == 1)
                 {
                     return ExecuteInterrupt(i);
                 }
@@ -142,7 +145,7 @@ namespace GBSharp
                 Push(LoadRegister(Registers16Bit.PC));
                 SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
                 _gameboy.Mmu.IF &= ~(0x1 << interrupt);
-                return 1;
+                return 4;
             }
 
             return 0;

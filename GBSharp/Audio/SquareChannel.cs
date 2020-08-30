@@ -95,6 +95,9 @@ namespace GBSharp.Audio
                 case 0xFF14:
                 case 0xFF19:
                     return (LengthEnabled ? 1 : 0) << 6;
+
+                case 0xFF15:
+                    return 0x00;
             }
 
             throw new InvalidOperationException(String.Format("Cannot read from memory address 0x{0:X4}", address));

@@ -92,7 +92,7 @@ namespace GBSharp
             _gameboy = gameboy;
             SetBios();
 
-            Reset();
+            //Reset();
         }
 
         internal void Reset()
@@ -185,7 +185,7 @@ namespace GBSharp
                     switch(address)
                     {
                         case 0xFF41:
-                            value = (value & ~0x03) | (_io[0x41] & 0x03);
+                            value = (value & ~0x07) | (_io[0x41] & 0x07);
                             break;
 
                         case 0xFF04:
@@ -197,8 +197,8 @@ namespace GBSharp
                             value = 0;
                             break;
 
-                        case 0xFF0F:
-                            value |= 0xE0;
+                        case 0xFF40:
+                            _gameboy.Ppu.CheckIfLCDOff(value);
                             break;
 
                         case 0xFF46:
@@ -214,7 +214,7 @@ namespace GBSharp
                             break;
 
                         case 0xFF70:
-                            if (!_gameboy.IsCGB) value = 0x01;
+                            if (!_gameboy.IsCGB || value == 0x00) value = 0x01;
                             _wramBank = value;
                             break;
 
@@ -224,12 +224,10 @@ namespace GBSharp
                             break;
 
                         case 0xFF69:
-                            if ((STAT & 0x03) == 3) return;
                             _gameboy.Ppu.UpdateBackgroundPalettes(value);
                             break;
 
                         case 0xFF6B:
-                            if ((STAT & 0x03) == 3) return;
                             _gameboy.Ppu.UpdateSpritePalettes(value, -1);
                             break;
 
@@ -243,6 +241,12 @@ namespace GBSharp
 
                         case 0xFF49:
                             _gameboy.Ppu.UpdateSpritePalettes(value, 1);
+                            break;
+
+                        case 0xFF55:
+                            int len = value & 0x7F;
+                            bool mode = Bitwise.IsBitOn(value, 7);
+                            int debug = 0;
                             break;
                     }
 
@@ -300,6 +304,7 @@ namespace GBSharp
                     {
                         return _gameboy.Apu.ReadByte(address, _io);
                     }
+                    if (address == 0xFF41) return (STAT & (~0x04) | ((LY == LYC ? 1 : 0) << 2));
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
                     if (address == 0xFF4D) return (_io[address - 0xFF00] & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7);

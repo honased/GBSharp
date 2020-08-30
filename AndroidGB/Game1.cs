@@ -112,7 +112,7 @@ namespace AndroidGB
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
 
-            _gameboy.StartInBios();
+            //_gameboy.StartInBios();
 
             base.Initialize();
         }
