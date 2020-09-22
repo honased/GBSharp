@@ -1,6 +1,9 @@
 # GBSharp
 A Gameboy emulator written in C# using the .NET framework.
 
+## Examples (Recorded at 30fps)
+![Kirby](/Resources/Kirby.gif)
+
 ## Current Status
 ### 8-bit CPU (Similar to Z80)
 - All [instructions](https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html) implemented.
