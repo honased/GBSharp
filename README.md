@@ -3,6 +3,10 @@ A Gameboy emulator written in C# using the .NET framework.
 
 ## Examples (Recorded at 30fps)
 ![Kirby](/Resources/Kirby.gif)
+![Zelda](/Resources/Zelda.gif)
+![Tetris](/Resources/Tetris.gif)
+![Pokemon](/Resources/Pokemon.gif)
+![Zelda2](/Resources/Zelda2.gif)
 
 ## Current Status
 ### 8-bit CPU (Similar to Z80)
