@@ -58,6 +58,10 @@ namespace MonoGB
                 graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
                 graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
             }
+
+            graphics.PreferredBackBufferWidth = 160*2;
+            graphics.PreferredBackBufferHeight = 144*2;
+
             graphics.ApplyChanges();
 
             gameScale = 2f;
@@ -225,10 +229,10 @@ namespace MonoGB
             else
             {
                 //spriteBatch.Draw(_tiles, new Vector2(GraphicsDevice.Viewport.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 2f, SpriteEffects.None, 0f);
-                spriteBatch.Draw(_frame, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 3, SpriteEffects.None, 0f);
+                spriteBatch.Draw(_frame, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 2, SpriteEffects.None, 0f);
             }
 
-            spriteBatch.DrawString(font, "FPS: " + (1 / (float)gameTime.ElapsedGameTime.TotalSeconds).ToString(), new Vector2(0, GraphicsDevice.Viewport.Height - 20), Color.White);
+            //spriteBatch.DrawString(font, "FPS: " + (1 / (float)gameTime.ElapsedGameTime.TotalSeconds).ToString(), new Vector2(0, GraphicsDevice.Viewport.Height - 20), Color.White);
             
             
             spriteBatch.End();
