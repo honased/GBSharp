@@ -104,7 +104,7 @@ namespace GBSharp.Audio
 
         public void Tick(int clocks)
         {
-            clocks *= 4;
+            //clocks *= 4;
             while (clocks-- > 0)
             {
                 totalClocks += 1;

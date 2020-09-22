@@ -23,6 +23,7 @@ namespace MonoGB
         int _currentTestRom;
         float gameScale;
         Gameboy _gameboy;
+        Color[] colors;
 
         KeyboardState oldState;
 
@@ -70,13 +71,14 @@ namespace MonoGB
 
             //_gameboy.Debug();
             //_cpu.StartInBios();
+            //_gameboy.StartInBios();
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Links Awakening DX.gbc";
+            string path = "Roms/Games/Kirbys Dream Land.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -98,6 +100,8 @@ namespace MonoGB
             this.Window.Title = cartridge.Name;
 
             oldState = Keyboard.GetState();
+
+            colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
 
             Exiting += new EventHandler<EventArgs>(OnExit);
 
@@ -164,8 +168,6 @@ namespace MonoGB
             _gameboy.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift) || _padState.Buttons.Back == ButtonState.Pressed);
 
             _gameboy.ExecuteFrame();
-
-            Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
 
             int[] frameBuffer = _gameboy.GetFrameBuffer();
 

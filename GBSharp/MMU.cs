@@ -161,6 +161,8 @@ namespace GBSharp
                     _cartridge.WriteRom(address, value);
                     break;
                 case int _ when address < 0xA000:
+
+                    int actualMode = (ReadByte(0xFF41)) & 0x03;
                     _vram[(address - 0x8000) + (_vramBank * VRAM_OFFSET)] = value;
                     if(address < 0x9800) _gameboy.Ppu.UpdateTile(address, _vramBank, value);
                     break;
@@ -247,6 +249,8 @@ namespace GBSharp
                             int len = value & 0x7F;
                             bool mode = Bitwise.IsBitOn(value, 7);
                             int debug = 0;
+
+                            throw new Exception("Tried to start an HDMA");
                             break;
                     }
 
