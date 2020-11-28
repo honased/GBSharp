@@ -13,6 +13,9 @@ namespace GBSharp
         private int timerClocks = 0;
         private bool timerEnabled = false;
         int timerClockGoal = 1024;
+        private bool requestInterrupt = false;
+        private bool checkingLow = false;
+        private int internalDiv = 0;
 
         public Timer(Gameboy gameboy)
         {
@@ -21,15 +24,45 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
-            clocks *= 4;
+            if(requestInterrupt)
+            {
+                requestInterrupt = false;
+                _gameboy.Mmu.SetInterrupt(Interrupts.Timer);
+            }
+            
             divClocks += clocks;
+            internalDiv = Bitwise.Wrap16(internalDiv + clocks);
             while(divClocks >= 256)
             {
                 divClocks -= 256;
-                _gameboy.Mmu.DIV = Bitwise.Wrap8(_gameboy.Mmu.DIV + 1);
+                _gameboy.Mmu.DIV = Bitwise.Wrap16(_gameboy.Mmu.DIV + 1);
+
+                if(timerEnabled)
+                {
+                    if(!checkingLow)
+                    {
+                        if(Bitwise.IsBitOn(internalDiv, timerClockGoal))
+                        {
+                            checkingLow = true;
+                        }
+                    }
+                    else
+                    {
+                        if(!Bitwise.IsBitOn(internalDiv, timerClockGoal))
+                        {
+                            checkingLow = false;
+                            _gameboy.Mmu.TIMA = Bitwise.Wrap8(_gameboy.Mmu.TIMA + 1);
+                            if(_gameboy.Mmu.TIMA == 0)
+                            {
+                                _gameboy.Mmu.TIMA = _gameboy.Mmu.TMA;
+                                requestInterrupt = true;
+                            }
+                        }
+                    }
+                }
             }
 
-            if(timerEnabled)
+            /*if(timerEnabled)
             {
                 timerClocks += clocks;
                 while(timerClocks >= timerClockGoal)
@@ -39,19 +72,22 @@ namespace GBSharp
                     if(_gameboy.Mmu.TIMA == 0)
                     {
                         _gameboy.Mmu.TIMA = _gameboy.Mmu.TMA;
-                        _gameboy.Mmu.SetInterrupt(Interrupts.Timer);
+                        requestInterrupt = true;
                     }
                 }
-            }
+            }*/
         }
 
         internal void Reset()
         {
             timerEnabled = false;
-            timerClockGoal = 1024;
+            timerClockGoal = 9;
             divClocks = 0;
             timerClocks = 0;
             timerEnabled = false;
+            requestInterrupt = false;
+            checkingLow = false;
+            internalDiv = 0;
         }
 
         public override string ToString()
@@ -67,10 +103,10 @@ namespace GBSharp
 
             switch(_gameboy.Mmu.TAC & 0x03)
             {
-                case 0: timerClockGoal = 1024; break;
-                case 1: timerClockGoal = 16; break;
-                case 2: timerClockGoal = 64; break;
-                case 3: timerClockGoal = 256; break;
+                case 0: timerClockGoal = 9; break;
+                case 1: timerClockGoal = 3; break;
+                case 2: timerClockGoal = 5; break;
+                case 3: timerClockGoal = 7; break;
 
                 default: throw new Exception("Invalid timer setting!");
             }

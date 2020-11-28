@@ -28,7 +28,7 @@ namespace GBSharp.Cartridges
             if (Battery)
             {
                 byte[] save = FileManager.LoadSaveFile(Name, Checksum);
-                //Array.Copy(save, ERam, save.Length);
+                Array.Copy(save, ERam, save.Length);
             }
         }
 

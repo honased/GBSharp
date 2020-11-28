@@ -52,14 +52,20 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\APU.cs" />
@@ -77,6 +83,7 @@
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPU.Registers.cs" />
     <Compile Include="Debugger.cs" />
+    <Compile Include="DMA.cs" />
     <Compile Include="FileManager.cs" />
     <Compile Include="Gameboy.cs" />
     <Compile Include="Input.cs" />

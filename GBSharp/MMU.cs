@@ -173,7 +173,7 @@ namespace GBSharp
                     _wram[address - 0xC000] = value;
                     break;
                 case int _ when address < 0xE000:
-                    _wram[(address - 0xC000) + (_wramBank * WRAM_OFFSET)] = value;
+                    _wram[(address - 0xD000) + (_wramBank * WRAM_OFFSET)] = value;
                     break;
                 case int _ when address < 0xFE00:
                     WriteByte(value, address - 0x2000);
@@ -226,31 +226,27 @@ namespace GBSharp
                             break;
 
                         case 0xFF69:
-                            _gameboy.Ppu.UpdateBackgroundPalettes(value);
+                            if (_gameboy.IsCGB) _gameboy.Ppu.UpdateBackgroundPalettes(value);
                             break;
 
                         case 0xFF6B:
-                            _gameboy.Ppu.UpdateSpritePalettes(value, -1);
+                            if (_gameboy.IsCGB) _gameboy.Ppu.UpdateSpritePalettes(value, -1);
                             break;
 
                         case 0xFF47:
-                            _gameboy.Ppu.UpdateBackgroundPalettes(value);
+                            if(!_gameboy.IsCGB) _gameboy.Ppu.UpdateBackgroundPalettes(value);
                             break;
 
                         case 0xFF48:
-                            _gameboy.Ppu.UpdateSpritePalettes(value, 0);
+                            if (!_gameboy.IsCGB) _gameboy.Ppu.UpdateSpritePalettes(value, 0);
                             break;
 
                         case 0xFF49:
-                            _gameboy.Ppu.UpdateSpritePalettes(value, 1);
+                            if (!_gameboy.IsCGB) _gameboy.Ppu.UpdateSpritePalettes(value, 1);
                             break;
 
                         case 0xFF55:
-                            int len = value & 0x7F;
-                            bool mode = Bitwise.IsBitOn(value, 7);
-                            int debug = 0;
-
-                            throw new Exception("Tried to start an HDMA");
+                            _gameboy.Dma.StartDMA(_io[0x51], _io[0x52], _io[0x53], _io[0x54], value);
                             break;
                     }
 
@@ -296,7 +292,7 @@ namespace GBSharp
                 case int _ when address < 0xD000:
                     return _wram[address - 0xC000];
                 case int _ when address < 0xE000:
-                    return _wram[(address - 0xC000) + (_wramBank * WRAM_OFFSET)];
+                    return _wram[(address - 0xD000) + (_wramBank * WRAM_OFFSET)];
                 case int _ when address < 0xFE00:
                     return ReadByte(address - 0x2000);
                 case int _ when address < 0xFEA0:
@@ -326,6 +322,10 @@ namespace GBSharp
                             return _gameboy.Ppu.ReadSpritePalettes();
                         }
                         return _io[address - 0xFF00];
+                    }
+                    if(address == 0xFF55)
+                    {
+                        return (_gameboy.IsCGB) ? _io[address - 0xFF00] : 0xFF;
                     }
                     return 0xFF;
                 case int _ when address <= 0xFFFF:

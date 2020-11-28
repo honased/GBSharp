@@ -11,33 +11,31 @@ namespace GBSharp
     public class PPU
     {
         public const int SCREEN_WIDTH = 160, SCREEN_HEIGHT = 144;
-        private int[] FrameBuffer;
+        private int[] FrameBuffer, fb1, fb2;
+        private bool useFb1;
 
         private bool[] BGPriority { get; set; }
 
-        public int[] Tiles
+        public int[] GetTiles(int vramBank)
         {
-            get
+            int[] tiles = new int[384 * 8 * 8 * 4];
+
+            int count = 0;
+            for (int yy = 0; yy < 192; yy++)
             {
-                int[] tiles = new int[384 * 8 * 8 * 4];
-
-                int count = 0;
-                for (int yy = 0; yy < 192; yy++)
+                for (int xx = 0; xx < 128; xx++)
                 {
-                    for (int xx = 0; xx < 128; xx++)
-                    {
-                        int colorIndex = (_tileset[0, xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
-                        Color color2 = _bgPalettes[0].Colors[colorIndex];
-                        tiles[count] = color2.R;
-                        tiles[count + 1] = color2.G;
-                        tiles[count + 2] = color2.B;
-                        tiles[count + 3] = 255;
-                        count += 4;
-                    }
+                    int colorIndex = (_tileset[vramBank, xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
+                    Color color2 = _bgPalettes[0].Colors[colorIndex];
+                    tiles[count] = color2.R;
+                    tiles[count + 1] = color2.G;
+                    tiles[count + 2] = color2.B;
+                    tiles[count + 3] = 255;
+                    count += 4;
                 }
-
-                return tiles;
             }
+
+            return tiles;
         }
 
         private Gameboy _gameboy;
@@ -53,10 +51,12 @@ namespace GBSharp
 
         private int[, , ,] _tileset;
 
-        private PaletteEntry[] _bgPalettes;
-        private PaletteEntry[] _spPalettes;
+        public PaletteEntry[] _bgPalettes;
+        public PaletteEntry[] _spPalettes;
 
-        private class PaletteEntry
+        private int expectedSCX = 0;
+
+        public class PaletteEntry
         {
             public Color[] Colors { get; set; }
 
@@ -186,59 +186,13 @@ namespace GBSharp
                     }
                     else { if (mode != 0) ChangeMode(0); }
                 }
-                
-                /*switch (mode)
-                {
-                    case 2:
-                        if (clocksCount >= OAM_CLOCK_COUNT)
-                        {
-                            clocksCount -= OAM_CLOCK_COUNT;
-                            ChangeMode(3);
-                        }
-                        break;
-
-                    case 3:
-                        if (clocksCount >= VRAM_CLOCK_COUNT)
-                        {
-                            clocksCount -= VRAM_CLOCK_COUNT;
-                            ChangeMode(0);
-                            RenderLine();
-                        }
-                        break;
-
-                    case 0:
-                        if (clocksCount >= HBLANK_CLOCK_COUNT)
-                        {
-                            clocksCount -= HBLANK_CLOCK_COUNT;
-
-                            if (++_gameboy.Mmu.LY == 144)
-                            {
-                                ChangeMode(1);
-                                _gameboy.Mmu.SetInterrupt(Interrupts.VBlank);
-                            }
-                            else ChangeMode(2);
-                        }
-                        break;
-
-                    case 1:
-                        if (clocksCount >= VBLANK_CLOCK_COUNT)
-                        {
-                            clocksCount -= VBLANK_CLOCK_COUNT;
-
-                            if (++_gameboy.Mmu.LY > 153)
-                            {
-                                _gameboy.Mmu.LY = 0;
-                                ChangeMode(2);
-                            }
-                        }
-                        break;
-                }*/
             }
         }
 
         internal ref int[] GetFrameBuffer()
         {
-            return ref FrameBuffer;
+            if (useFb1) return ref fb2;
+            else return ref fb1;
         }
 
         private void CheckLYC()
@@ -253,7 +207,10 @@ namespace GBSharp
 
         internal void Reset()
         {
-            FrameBuffer = new int[SCREEN_WIDTH * SCREEN_HEIGHT * 4];
+            fb1 = new int[SCREEN_WIDTH * SCREEN_HEIGHT * 4];
+            fb2 = new int[SCREEN_WIDTH * SCREEN_HEIGHT * 4];
+            FrameBuffer = fb1;
+            useFb1 = true;
 
             // Initialize it to white
             for (int i = 0; i < FrameBuffer.Length; i++)
@@ -293,7 +250,7 @@ namespace GBSharp
         {
             if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 7))
             {
-                if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 0)) DrawBackground();
+                if (Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 0)) DrawBackground();
                 else
                 {
                     for (int i = 0; i < SCREEN_WIDTH; i++) BGPriority[i] = false;
@@ -332,7 +289,7 @@ namespace GBSharp
                 int paletteNumber = 0, vramBank = 0;
 
                 bool isInWindow = (inWindowY && xx >= wx);
-                int x = isInWindow ? (((xx) / 8) + 32) % 32 : Bitwise.Wrap8(xx + sx) / 8;
+                int x = isInWindow ? (((xx - wx) / 8) + 32) % 32 : Bitwise.Wrap8(xx + sx) / 8;
                 int actualY = isInWindow ? windowY : y;
 
                 int tile;// = _gameboy.Mmu.LoadVRAM(0x9800 + y + x);
@@ -376,7 +333,8 @@ namespace GBSharp
             int lcdc = _gameboy.Mmu.LCDC;
             bool isSpriteHeight16 = Bitwise.IsBitOn(lcdc, 2);
             int spriteHeight = isSpriteHeight16 ? 16 : 8;
-            for(int i = OAM_SIZE - SPRITE_SIZE; i >= 0; i -= SPRITE_SIZE)
+            int spriteCount = 0;
+            for(int i = 0; i < OAM_SIZE - SPRITE_SIZE; i += SPRITE_SIZE)
             {
                 int spriteY = _gameboy.Mmu.LoadOAM(i) - 16;
                 int spriteX = _gameboy.Mmu.LoadOAM(i + 1) - 8;
@@ -398,6 +356,10 @@ namespace GBSharp
 
                 if(ly >= spriteY && ly < spriteY + spriteHeight)
                 {
+                    if(++spriteCount > 10)
+                    {
+                        break;
+                    }
                     int writePosition = (ly * SCREEN_WIDTH * 4) + (spriteX * 4);
                     for(int x = 0; x < 8; x++)
                     {
@@ -462,6 +424,9 @@ namespace GBSharp
                 case 1:
                     if (Bitwise.IsBitOn(_gameboy.Mmu.STAT, 4)) _gameboy.Mmu.SetInterrupt(Interrupts.LCDStat);
                     _gameboy.Mmu.SetInterrupt(Interrupts.VBlank);
+                    useFb1 = !useFb1;
+                    if (useFb1) FrameBuffer = fb1;
+                    else FrameBuffer = fb2;
                     break;
 
                 case 2:
@@ -474,8 +439,11 @@ namespace GBSharp
         {
             if (_gameboy.IsCGB)
             {
-                int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
-                _bgPalettes[paletteIndex / 8].UpdateCGB(_gameboy.Mmu, value);
+                if ((_gameboy.Mmu.STAT & 0x03) != 3)
+                {
+                    int paletteIndex = _gameboy.Mmu.ReadByte(0xFF68) & 0x3F;
+                    _bgPalettes[paletteIndex / 8].UpdateCGB(_gameboy.Mmu, value);
+                }
             }
             else
             {
@@ -493,8 +461,11 @@ namespace GBSharp
         {
             if (_gameboy.IsCGB)
             {
-                int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
-                _spPalettes[paletteIndex / 8].UpdateCGB(_gameboy.Mmu, value);
+                if ((_gameboy.Mmu.STAT & 0x03) != 3)
+                {
+                    int paletteIndex = _gameboy.Mmu.ReadByte(0xFF6A) & 0x3F;
+                    _spPalettes[paletteIndex / 8].UpdateCGB(_gameboy.Mmu, value);
+                }
             }
             else
             {
@@ -519,6 +490,11 @@ namespace GBSharp
                 clocksCount = 0;
                 _gameboy.Mmu.STAT &= ~0x03; // Reset mode to 0 if screen is off
             }
+        }
+
+        public bool IsHBlankMode()
+        {
+            return (_gameboy.Mmu.STAT & 0x03) == 0;
         }
 
         public struct Color

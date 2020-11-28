@@ -45,5 +45,31 @@ namespace GBSharp
                 bw.Close();
             }
         }
+
+        public static bool FileExists(string name)
+        {
+            return File.Exists(SavePath + name);
+        }
+
+        public static Stream GetReadStream(string name)
+        {
+            return File.OpenRead(SavePath + name);
+        }
+
+        public static Stream GetWriteStream(string name)
+        {
+            return File.OpenWrite(SavePath + name);
+        }
+
+        public static void CreateFile(string name)
+        {
+            var fs = File.Create(SavePath + name);
+            fs.Close();
+        }
+
+        public static void DeleteFile(string name)
+        {
+            if (FileExists(name)) File.Delete(SavePath + name);
+        }
     }
 }

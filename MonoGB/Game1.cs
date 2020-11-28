@@ -19,11 +19,14 @@ namespace MonoGB
         SpriteBatch spriteBatch;
         Texture2D _frame;
         Texture2D _tiles;
+        Texture2D _tiles2;
         SpriteFont font;
         int _currentTestRom;
         float gameScale;
         Gameboy _gameboy;
         Color[] colors;
+        Color[] tileColors;
+        Texture2D rectangle;
 
         KeyboardState oldState;
 
@@ -46,6 +49,7 @@ namespace MonoGB
             // TODO: Add your initialization logic here
             _gameboy = new Gameboy();
             _debugMode = true;
+            //_gameboy.Debug();
 
             //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
 
@@ -54,15 +58,17 @@ namespace MonoGB
             IsFixedTimeStep = true;
             if (!_debugMode)
             {
-                graphics.IsFullScreen = true;
-                graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
-                graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+                //graphics.IsFullScreen = true;
+                //graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
+                //graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+                graphics.PreferredBackBufferWidth = PPU.SCREEN_WIDTH * 3;
+                graphics.PreferredBackBufferHeight = PPU.SCREEN_HEIGHT * 3;
             }
             graphics.ApplyChanges();
 
             gameScale = 2f;
 
-            while(PPU.SCREEN_WIDTH * gameScale < graphics.PreferredBackBufferWidth && PPU.SCREEN_HEIGHT * gameScale < graphics.PreferredBackBufferHeight)
+            while(PPU.SCREEN_WIDTH * gameScale <= graphics.PreferredBackBufferWidth && PPU.SCREEN_HEIGHT * gameScale <= graphics.PreferredBackBufferHeight)
             {
                 gameScale++;
             }
@@ -75,10 +81,11 @@ namespace MonoGB
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
             _tiles = new Texture2D(GraphicsDevice, 128, 192);
+            _tiles2 = new Texture2D(GraphicsDevice, 128, 192);
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Kirbys Dream Land.gb";
+            string path = "Roms/Games/Mario Deluxe.gbc";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -87,6 +94,11 @@ namespace MonoGB
             {
                 Console.WriteLine(path);
                 Console.WriteLine("Invalid usage... GBSharp [rom]");
+
+                foreach(string s in args)
+                {
+                    Console.WriteLine("S: " + s);
+                }
 
                 Exit();
                 throw new Exception();
@@ -102,6 +114,7 @@ namespace MonoGB
             oldState = Keyboard.GetState();
 
             colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
+            tileColors = new Color[128 * 192];
 
             Exiting += new EventHandler<EventArgs>(OnExit);
 
@@ -118,6 +131,8 @@ namespace MonoGB
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             font = Content.Load<SpriteFont>("Font");
+            rectangle = new Texture2D(GraphicsDevice, 1, 1);
+            rectangle.SetData(new[] { Color.White });
 
             // TODO: use this.Content to load your game content here
         }
@@ -129,6 +144,7 @@ namespace MonoGB
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
+            rectangle.Dispose();
         }
 
         private Cartridge GetNextTestRom()
@@ -157,7 +173,7 @@ namespace MonoGB
             var _keyState = Keyboard.GetState();
             var _padState = GamePad.GetState(0);
 
-            float deadzone = .15f; ;
+            float deadzone = .15f;
             _gameboy.SetInput(Input.Button.Up, _keyState.IsKeyDown(Keys.Up) || _padState.DPad.Up == ButtonState.Pressed || _padState.ThumbSticks.Left.Y > deadzone);
             _gameboy.SetInput(Input.Button.Down, _keyState.IsKeyDown(Keys.Down) || _padState.DPad.Down == ButtonState.Pressed || _padState.ThumbSticks.Left.Y < -deadzone);
             _gameboy.SetInput(Input.Button.Left, _keyState.IsKeyDown(Keys.Left) || _padState.DPad.Left == ButtonState.Pressed || _padState.ThumbSticks.Left.X < -deadzone);
@@ -181,14 +197,21 @@ namespace MonoGB
             if (_debugMode)
             {
                 //                 tiles w   h
-                /*colors = new Color[384 * 8 * 8];
-                int[] ppuTiles = _gameboy.GetTilesBuffer();
+                int[] ppuTiles = _gameboy.GetTilesBuffer(0);
                 for (int i = 0; i < ppuTiles.Length; i += 4)
                 {
-                    colors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
+                    tileColors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
                 }
 
-                _tiles.SetData<Color>(colors);*/
+                _tiles.SetData<Color>(tileColors);
+
+                ppuTiles = _gameboy.GetTilesBuffer(1);
+                for (int i = 0; i < ppuTiles.Length; i += 4)
+                {
+                    tileColors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
+                }
+
+                _tiles2.SetData<Color>(tileColors);
             }
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
@@ -224,11 +247,28 @@ namespace MonoGB
             }
             else
             {
-                //spriteBatch.Draw(_tiles, new Vector2(GraphicsDevice.Viewport.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 2f, SpriteEffects.None, 0f);
+                spriteBatch.Draw(_tiles, new Vector2(GraphicsDevice.Viewport.Width - _tiles.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 1f, SpriteEffects.None, 0f);
+                spriteBatch.Draw(_tiles2, new Vector2(GraphicsDevice.Viewport.Width, 0), null, Color.White, 0, new Vector2(_tiles.Width, 0), 1f, SpriteEffects.None, 0f);
                 spriteBatch.Draw(_frame, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 3, SpriteEffects.None, 0f);
+
+                int xOffset = (int)(PPU.SCREEN_WIDTH * gameScale + 10);
+
+                /*for(int i = 0; i < 8; i++)
+                {
+                    var entry = _gameboy.Ppu._bgPalettes[i];
+
+                    for(var j = 0; j < 8; j++)
+                    {
+                        if (j == 4) entry = _gameboy.Ppu._spPalettes[i];
+                        PPU.Color color = entry.Colors[j % 4];
+                        Color rectColor = new Color(color.R, color.G, color.B);
+
+                        spriteBatch.Draw(rectangle, new Rectangle(xOffset + j * 11, i * 11, 10, 10), rectColor);
+                    }
+                }*/
             }
 
-            spriteBatch.DrawString(font, "FPS: " + (1 / (float)gameTime.ElapsedGameTime.TotalSeconds).ToString(), new Vector2(0, GraphicsDevice.Viewport.Height - 20), Color.White);
+            //spriteBatch.DrawString(font, "FPS: " + (1 / (float)gameTime.ElapsedGameTime.TotalSeconds).ToString(), new Vector2(0, GraphicsDevice.Viewport.Height - 20), Color.White);
             
             
             spriteBatch.End();
