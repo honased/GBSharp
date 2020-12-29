@@ -31,7 +31,7 @@ namespace FrontEnd.MainMenu
         {
             if (sender is ListBox box && box.SelectedItem is Game game)
             {
-                Process.Start("C:/Users/JEM/Source/Repos/GBSharp/MonoGB/bin/Windows/x86/Debug/MonoGB.exe", game.FilePath);
+                Process.Start("C:/Users/JEM/Source/Repos/GBSharp/MonoGB/bin/Windows/x86/Release/MonoGB.exe", game.FilePath);
             }
         }
     }

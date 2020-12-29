@@ -313,8 +313,22 @@ namespace GBSharp
                 int drawX = hFlip ? 7 - (xx % 8) : xx;
                 int drawY = vFlip ? 7 - (ly % 8) : ly;
 
-                int pixel = isInWindow ? _tileset[vramBank, tileInitLocation + tile, (drawY) % 8, (drawX) % 8]
-                    : _tileset[vramBank, tileInitLocation + tile, (drawY + sy) % 8, (drawX + sx) % 8];
+                int pixel = 0;
+                if (isInWindow)
+                {
+                    drawX %= 8;
+                    drawY %= 8;
+                }
+                else
+                {
+                    if (hFlip) drawX = 7 - ((xx + sx) % 8);
+                    else drawX = (drawX + sx) % 8;
+
+                    if (vFlip) drawY = 7 - ((ly + sy) % 8);
+                    else drawY = (drawY + sy) % 8;
+                }
+
+                pixel = _tileset[vramBank, tileInitLocation + tile, drawY, drawX];
 
                 BGPriority[xx] = (pixel != 0);
 
@@ -394,7 +408,7 @@ namespace GBSharp
             }
         }
 
-        internal void UpdateTile(int address, int vramBank, int value)
+        internal void UpdateTile(int address, int vramBank)
         {
             address &= 0x1FFE;
 
@@ -405,7 +419,8 @@ namespace GBSharp
             {
                 int sx = 1 << (7 - x);
 
-                _tileset[vramBank, tile, y, x] = (((_gameboy.Mmu.LoadVRAM0(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM0(address + 1) & sx) != 0) ? 2 : 0);
+                if(vramBank == 0) _tileset[vramBank, tile, y, x] = (((_gameboy.Mmu.LoadVRAM0(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM0(address + 1) & sx) != 0) ? 2 : 0);
+                else _tileset[vramBank, tile, y, x] = (((_gameboy.Mmu.LoadVRAM1(address) & sx) != 0) ? 1 : 0) + (((_gameboy.Mmu.LoadVRAM1(address + 1) & sx) != 0) ? 2 : 0);
             }
         }
 

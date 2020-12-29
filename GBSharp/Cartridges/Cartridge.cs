@@ -86,6 +86,10 @@ namespace GBSharp
                     cartridge = new CartidgeMBC3() { Battery = true };
                     break;
 
+                case 0x19:
+                    cartridge = new CartidgeMBC5() { Battery = false };
+                    break;
+
                 case 0x1A:
                 case 0x1C:
                 case 0x1D:

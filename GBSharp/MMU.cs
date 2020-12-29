@@ -50,9 +50,9 @@ namespace GBSharp
         public int WX { get { return _io[0x4B]; } }
         public int WY { get { return _io[0x4A]; } }
 
-        public int LCDC { get { return _io[0x40]; } }
+        public int LCDC { get { return _io[0x40]; } set { _io[0x40] = value; } }
         public int LY { get { return _io[0x44]; } set { _io[0x44] = value; } }
-        public int LYC { get { return _io[0x45]; } }
+        public int LYC { get { return _io[0x45]; } set { _io[0x45] = value; } }
         public int STAT { get { return _io[0x41]; } set { _io[0x41] = value; } }
 
         public int Joypad { get { return _io[0x00]; } set { _io[0x00] = value; } }
@@ -161,10 +161,8 @@ namespace GBSharp
                     _cartridge.WriteRom(address, value);
                     break;
                 case int _ when address < 0xA000:
-
-                    int actualMode = (ReadByte(0xFF41)) & 0x03;
                     _vram[(address - 0x8000) + (_vramBank * VRAM_OFFSET)] = value;
-                    if(address < 0x9800) _gameboy.Ppu.UpdateTile(address, _vramBank, value);
+                    if (address < 0x9800) _gameboy.Ppu.UpdateTile(address, _vramBank);
                     break;
                 case int _ when address < 0xC000:
                     _cartridge.WriteERam(address, value);
@@ -193,6 +191,10 @@ namespace GBSharp
                         case 0xFF04:
                             _gameboy.Timer.UpdateDiv();
                             value = 0;
+                            break;
+
+                        case 0xFF05:
+                            _gameboy.Timer.UpdateTIMA();
                             break;
 
                         case 0xFF44:
@@ -307,7 +309,7 @@ namespace GBSharp
                     if (address == 0xFF41) return (STAT & (~0x04) | ((LY == LYC ? 1 : 0) << 2));
                     return _io[address - 0xFF00];
                 case int _ when address < 0xFF80:
-                    if (address == 0xFF4D) return (_io[address - 0xFF00] & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7);
+                    if (address == 0xFF4D) return ((_io[address - 0xFF00] & 0x01) | ((_gameboy.Cpu.DoubleSpeed ? 1 : 0) << 7)) | 0x7E;
                     if (address == 0xFF70) return _wramBank;
                     if (address == 0xFF4F) return _vramBank;
                     if (address == 0xFF68 || address == 0xFF69 ||
