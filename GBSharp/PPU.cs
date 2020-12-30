@@ -290,6 +290,7 @@ namespace GBSharp
                 int paletteNumber = 0, vramBank = 0;
 
                 bool isInWindow = (inWindowY && xx >= wx);
+
                 int x = isInWindow ? (xx - wx) / 8 : Bitwise.Wrap8(xx + sx) / 8;
                 int actualY = isInWindow ? windowY : y;
 
@@ -315,10 +316,12 @@ namespace GBSharp
 
                 int drawX = hFlip ? 7 - (xx % 8) : xx;
                 int drawY = vFlip ? 7 - (ly % 8) : ly;
-
-                int pixel = 0;
+                
                 if (isInWindow)
                 {
+                    drawX = hFlip ? 7 - ((xx - wx) % 8) : (xx - wx);
+                    drawY = vFlip ? 7 - ((ly - wy) % 8) : (ly - wy);
+
                     drawX %= 8;
                     drawY %= 8;
                 }
@@ -331,7 +334,7 @@ namespace GBSharp
                     else drawY = (drawY + sy) % 8;
                 }
 
-                pixel = _tileset[vramBank, tileInitLocation + tile, drawY, drawX];
+                int pixel = _tileset[vramBank, tileInitLocation + tile, drawY, drawX];
 
                 if(!bgPriority) BGPriority[xx] = (pixel != 0) ? 1 : 0;
                 else BGPriority[xx] = 2;

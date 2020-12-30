@@ -85,7 +85,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Pokemon Silver.gbc";//"Roms/Gekkio/Timer/tma_write_reloading.gb";
+            string path = "Roms/Games/pocket.gb";//"Roms/Gekkio/Timer/tma_write_reloading.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
