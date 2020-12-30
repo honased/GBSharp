@@ -14,7 +14,7 @@ namespace GBSharp
         private int[] FrameBuffer, fb1, fb2;
         private bool useFb1;
 
-        private bool[] BGPriority { get; set; }
+        private int[] BGPriority { get; set; }
 
         public int[] GetTiles(int vramBank)
         {
@@ -237,7 +237,7 @@ namespace GBSharp
                 }
             }
 
-            BGPriority = new bool[SCREEN_WIDTH];
+            BGPriority = new int[SCREEN_WIDTH];
 
             _bgPalettes = new PaletteEntry[8];
             for (int i = 0; i < _bgPalettes.Length; i++) _bgPalettes[i] = new PaletteEntry(true);
@@ -253,7 +253,7 @@ namespace GBSharp
                 if (Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 0)) DrawBackground();
                 else
                 {
-                    for (int i = 0; i < SCREEN_WIDTH; i++) BGPriority[i] = false;
+                    for (int i = 0; i < SCREEN_WIDTH; i++) BGPriority[i] = 0;
                 }
                 if(Bitwise.IsBitOn(_gameboy.Mmu.LCDC, 1)) DrawSprites();
             }
@@ -282,6 +282,7 @@ namespace GBSharp
 
             bool shouldValueBeSigned = !Bitwise.IsBitOn(lcdc, 4);
             int tileInitLocation = shouldValueBeSigned ? 256 : 0;
+            bool bgPriority;
 
             for(int xx = 0; xx < SCREEN_WIDTH; xx++)
             {
@@ -289,7 +290,7 @@ namespace GBSharp
                 int paletteNumber = 0, vramBank = 0;
 
                 bool isInWindow = (inWindowY && xx >= wx);
-                int x = isInWindow ? (((xx - wx) / 8) + 32) % 32 : Bitwise.Wrap8(xx + sx) / 8;
+                int x = isInWindow ? (xx - wx) / 8 : Bitwise.Wrap8(xx + sx) / 8;
                 int actualY = isInWindow ? windowY : y;
 
                 int tile;// = _gameboy.Mmu.LoadVRAM(0x9800 + y + x);
@@ -308,7 +309,9 @@ namespace GBSharp
                     vFlip = Bitwise.IsBitOn(value, 6);
                     paletteNumber = value & 0x07;
                     vramBank = (value >> 3) & 0x01;
+                    bgPriority = Bitwise.IsBitOn(value, 7);
                 }
+                else bgPriority = false;
 
                 int drawX = hFlip ? 7 - (xx % 8) : xx;
                 int drawY = vFlip ? 7 - (ly % 8) : ly;
@@ -330,7 +333,8 @@ namespace GBSharp
 
                 pixel = _tileset[vramBank, tileInitLocation + tile, drawY, drawX];
 
-                BGPriority[xx] = (pixel != 0);
+                if(!bgPriority) BGPriority[xx] = (pixel != 0) ? 1 : 0;
+                else BGPriority[xx] = 2;
 
                 Color color = _bgPalettes[paletteNumber].Colors[pixel];
                 FrameBuffer[startingIndex] = color.R;
@@ -390,9 +394,9 @@ namespace GBSharp
                             int pixel = _tileset[vramBank, tileNumber, drawY % 8, drawX];
 
                             //int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
-                            if (pixel != 0)
+                            if (pixel != 0 && BGPriority[spriteX + x] < 2)
                             {
-                                if (objAboveBg || !BGPriority[spriteX + x])
+                                if (objAboveBg || BGPriority[spriteX + x] == 0)
                                 {
                                     Color color = _spPalettes[paletteNumber].Colors[pixel];
                                     FrameBuffer[writePosition] = color.R;

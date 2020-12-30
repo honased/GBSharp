@@ -15,6 +15,7 @@ namespace GBSharp
         private bool checkingLow;
         private int internalDiv;
         private bool overflow;
+        private bool timaWritten;
 
         public Timer(Gameboy gameboy)
         {
@@ -24,6 +25,13 @@ namespace GBSharp
 
         internal void Tick(int clocks)
         {
+            if(timaWritten && cycles < 4)
+            {
+                timaWritten = false;
+                cycles = 0;
+                overflow = false;
+            }
+
             while(clocks-- > 0)
             {
                 internalDiv = Bitwise.Wrap16(internalDiv + 1);
@@ -45,12 +53,15 @@ namespace GBSharp
 
                 if (cycles == 4)
                 {
-                    //_gameboy.Mmu.SetInterrupt(Interrupts.Timer);
+                    _gameboy.Mmu.SetInterrupt(Interrupts.Timer);
                     cycles = 0;
                     overflow = false;
                     _gameboy.Mmu.TIMA = _gameboy.Mmu.TMA;
+                    timaWritten = false;
                 }
             }
+
+            
 
             _gameboy.Mmu.DIV = (internalDiv & 0xFF00) >> 8;
         }
@@ -64,6 +75,7 @@ namespace GBSharp
             checkingLow = false;
             internalDiv = 0;
             overflow = false;
+            timaWritten = false;
         }
 
         public override string ToString()
@@ -93,11 +105,7 @@ namespace GBSharp
 
         internal void UpdateTIMA()
         {
-            if((cycles / 4) != 1)
-            {
-                overflow = false;
-                cycles = 0;
-            }
+            timaWritten = true;
         }
     }
 }
