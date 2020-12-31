@@ -38,9 +38,11 @@ namespace GBSharp
             if(!IsEnabled && _gameboy.IsCGB)
             {
                 Source = (srcHi << 8) | (srcLo & 0xF0);
-                Destination = (destHi << 8) | (destLo & 0xF0);
+                Destination = ((destHi & 0x1F) << 8) | (destLo & 0xF0);
                 Length = ((lenModStrt & 0x7F) + 1) * 16;
                 IsHDMA = Bitwise.IsBitOn(lenModStrt, 7);
+                Source &= 0xFFF0;
+                Destination = (Destination & 0x1FFF) | 0x8000;
                 IsEnabled = true;
             }
         }

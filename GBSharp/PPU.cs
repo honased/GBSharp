@@ -13,6 +13,7 @@ namespace GBSharp
         public const int SCREEN_WIDTH = 160, SCREEN_HEIGHT = 144;
         private int[] FrameBuffer, fb1, fb2;
         private bool useFb1;
+        private int[] oamSprites;
 
         private int[] BGPriority { get; set; }
 
@@ -48,6 +49,7 @@ namespace GBSharp
 
         private const int OAM_SIZE = 0xA0;
         private const int SPRITE_SIZE = 0x04;
+        private const int OAM_HORIZONTAL_LIMIT = 10;
 
         private int[, , ,] _tileset;
 
@@ -244,6 +246,8 @@ namespace GBSharp
 
             _spPalettes = new PaletteEntry[8];
             for (int i = 0; i < _spPalettes.Length; i++) _spPalettes[i] = new PaletteEntry(false);
+
+            oamSprites = new int[OAM_HORIZONTAL_LIMIT];
         }
 
         private void RenderLine()
@@ -355,14 +359,26 @@ namespace GBSharp
             bool isSpriteHeight16 = Bitwise.IsBitOn(lcdc, 2);
             int spriteHeight = isSpriteHeight16 ? 16 : 8;
             int spriteCount = 0;
-            for(int i = 0; i < OAM_SIZE - SPRITE_SIZE; i += SPRITE_SIZE)
+
+            for (int i = 0; i < OAM_SIZE - SPRITE_SIZE; i += SPRITE_SIZE)
             {
                 int spriteY = _gameboy.Mmu.LoadOAM(i) - 16;
-                int spriteX = _gameboy.Mmu.LoadOAM(i + 1) - 8;
-                int tileNumber = _gameboy.Mmu.LoadOAM(i + 2);
+                if (ly >= spriteY && ly < spriteY + spriteHeight)
+                {
+                    oamSprites[spriteCount++] = i;
+                }
+                if (spriteCount >= OAM_HORIZONTAL_LIMIT) break;
+            }
+
+            for(int i = spriteCount - 1; i >= 0; i--)
+            {
+                int index = oamSprites[i];
+                int spriteY = _gameboy.Mmu.LoadOAM(index) - 16;
+                int spriteX = _gameboy.Mmu.LoadOAM(index + 1) - 8;
+                int tileNumber = _gameboy.Mmu.LoadOAM(index + 2);
                 int upperTile = tileNumber & 0xFE;
                 int lowerTile = tileNumber | 0x01;
-                int attribs = _gameboy.Mmu.LoadOAM(i + 3);
+                int attribs = _gameboy.Mmu.LoadOAM(index + 3);
                 bool objAboveBg = !Bitwise.IsBitOn(attribs, 7);
                 bool yFlip = Bitwise.IsBitOn(attribs, 6);
                 bool xFlip = Bitwise.IsBitOn(attribs, 5);
@@ -377,10 +393,6 @@ namespace GBSharp
 
                 if(ly >= spriteY && ly < spriteY + spriteHeight)
                 {
-                    if(++spriteCount > 10)
-                    {
-                        break;
-                    }
                     int writePosition = (ly * SCREEN_WIDTH * 4) + (spriteX * 4);
                     for(int x = 0; x < 8; x++)
                     {

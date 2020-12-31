@@ -48,7 +48,7 @@ namespace MonoGB
         {
             // TODO: Add your initialization logic here
             _gameboy = new Gameboy();
-            _debugMode = false;
+            _debugMode = true;
             //_gameboy.Debug();
 
             //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
@@ -85,7 +85,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Oracle of Seasons.gbc";
+            string path = "Roms/Games/bte.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -167,6 +167,34 @@ namespace MonoGB
                 Exit();
 
             if (Keyboard.GetState().IsKeyDown(Keys.Tab)) _gameboy.Debug();
+
+            if (!_debugMode && Keyboard.GetState().IsKeyDown(Keys.F3))
+            {
+                graphics.IsFullScreen = !graphics.IsFullScreen;
+
+                if(graphics.IsFullScreen)
+                {
+                    graphics.PreferredBackBufferWidth = 1920;
+                    graphics.PreferredBackBufferHeight = 1080;
+                }
+                else
+                {
+                    graphics.PreferredBackBufferWidth = PPU.SCREEN_WIDTH * 3;
+                    graphics.PreferredBackBufferHeight = PPU.SCREEN_HEIGHT * 3;
+                }
+
+                graphics.ApplyChanges();
+
+                gameScale = 2f;
+
+                while (PPU.SCREEN_WIDTH * gameScale <= graphics.PreferredBackBufferWidth && PPU.SCREEN_HEIGHT * gameScale <= graphics.PreferredBackBufferHeight)
+                {
+                    gameScale++;
+                }
+
+                gameScale -= 1;
+            }
+
 
             // TODO: Add your update logic here
 
