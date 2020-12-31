@@ -802,13 +802,13 @@ namespace GBSharp
 
         private int Instruction_EI(Instruction instruction)
         {
-            setIME = 2;
+            setIME = true;
             return 1;
         }
 
         private int Instruction_DI(Instruction instruction)
         {
-            clearIME = 2;
+            IME = false;
             return 1;
         }
 
@@ -822,7 +822,7 @@ namespace GBSharp
         private int Instruction_RETI(Instruction instruction)
         {
             SetRegister(Registers16Bit.PC, Pop());
-            setIME = 1;
+            IME = true;
 
             return 4;
         }
@@ -929,7 +929,7 @@ namespace GBSharp
 
         private void Push(int value)
         {
-            int sp = LoadRegister(Registers16Bit.SP) - 2;
+            int sp = Bitwise.Wrap16(LoadRegister(Registers16Bit.SP) - 2);
             SetRegister(Registers16Bit.SP, sp);
             _gameboy.Mmu.WriteWord(value, sp);
         }
@@ -1183,7 +1183,7 @@ namespace GBSharp
         {
             int sp = LoadRegister(Registers16Bit.SP);
             int val = _gameboy.Mmu.ReadWord(sp);
-            SetRegister(Registers16Bit.SP, sp + 2);
+            SetRegister(Registers16Bit.SP, Bitwise.Wrap16(sp + 2));
 
             return val;
         }

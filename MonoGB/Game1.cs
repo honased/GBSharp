@@ -85,7 +85,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/pocket.gb";//"Roms/Gekkio/Timer/tma_write_reloading.gb";
+            string path = "Roms/Games/Oracle of Seasons.gbc";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -165,6 +165,8 @@ namespace MonoGB
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Tab)) _gameboy.Debug();
 
             // TODO: Add your update logic here
 

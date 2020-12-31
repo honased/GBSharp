@@ -11,8 +11,7 @@ namespace GBSharp
     public partial class CPU
     {
         public bool IME;
-        private int setIME;
-        private int clearIME;
+        private bool setIME;
         private bool Halt { get; set; }
         private bool HaltBug { get; set; }
         private Debugger _debugger;
@@ -36,8 +35,7 @@ namespace GBSharp
             InitializeRegisters();
 
             IME = true;
-            setIME = 0;
-            clearIME = 0;
+            setIME = false;
 
             Halt = false;
             HaltBug = false;
@@ -83,72 +81,65 @@ namespace GBSharp
             return word;
         }
 
-        public int ExecuteCycle(out bool interrupt)
+        public int ExecuteCycle()
         {
-            int cycles = CheckInterrupts();
-
-            if (cycles == 0)
+            if (setIME)
             {
-
-                int pc = LoadRegister(Registers16Bit.PC);
-
-                Instruction instruction = GetNextInstruction();
-
-                _debugger.Debug(instruction, pc);
-
-                cycles = instruction.Execute();
-
-                interrupt = false;
+                setIME = false;
+                IME = true;
             }
-            else interrupt = true;
+
+            int pc = LoadRegister(Registers16Bit.PC);
+            Instruction instruction = GetNextInstruction();
+            _debugger.Debug(instruction, pc);
+            int cycles = instruction.Execute();
+
+
+            int interruptCycles = CheckInterrupts();
+
+            cycles += interruptCycles;
 
             return cycles;
         }
 
         private int CheckInterrupts()
         {
-            int IE = _gameboy.Mmu.IE;
-            int IF = _gameboy.Mmu.IF;
-
-            switch(setIME)
+            if ((_gameboy.Mmu.IE & _gameboy.Mmu.IF) != 0)
             {
-                case 2: setIME = 1; break;
-                case 1: setIME = 0;  IME = true; break;
-                default: setIME = 0; break;
-            }
-
-            switch (clearIME)
-            {
-                case 2: clearIME = 1; break;
-                case 1: clearIME = 0; IME = false; break;
-                default: clearIME = 0; break;
-            }
-
-            for (int i = 0; i < 5; i++)
-            {
-                if ((((IE & IF) >> i) & 0x01) == 1)
-                {
-                    return ExecuteInterrupt(i);
-                }
+                Halt = false;
+                if(IME) return ExecuteInterrupt();
             }
 
             return 0;
         }
 
-        private int ExecuteInterrupt(int interrupt)
+        private int ExecuteInterrupt()
         {
-            if (Halt) Halt = false;
+            IME = false;
 
-            if (IME)
+            int pc = LoadRegister(Registers16Bit.PC);
+            int sp = Bitwise.Wrap16(LoadRegister(Registers16Bit.SP) - 1);
+            _gameboy.Mmu.WriteByte(pc >> 8, sp);
+
+            int vector = 0;
+
+            for (int i = 0; i < 5; i++)
             {
-                IME = false;
-                Push(LoadRegister(Registers16Bit.PC));
-                SetRegister(Registers16Bit.PC, 0x40 + (interrupt * 8));
-                _gameboy.Mmu.IF &= ~(0x1 << interrupt);
-                return 4;
+                if ((((_gameboy.Mmu.IE & _gameboy.Mmu.IF) >> i) & 0x01) == 1)
+                {
+                    vector = 0x40 + (8 * i);
+                    _gameboy.Mmu.IF &= ~(0x1 << i);
+                    break;
+                }
             }
 
-            return 0;
+            SetRegister(Registers16Bit.PC, vector);
+
+            sp = Bitwise.Wrap16(sp - 1);
+            _gameboy.Mmu.WriteByte(pc & 0xFF, sp);
+            SetRegister(Registers16Bit.SP, sp);
+
+            return 4;
         }
 
         public int TestInstruction(int opcode, bool cb=false)

@@ -98,7 +98,7 @@ namespace GBSharp.Audio
 
         internal bool IsPlaying()
         {
-            return Length > 0;
+            return DAC;
         }
 
         protected void WriteEnvelope(int value)

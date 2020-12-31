@@ -59,7 +59,7 @@ namespace GBSharp
         {
             while (CyclesCount < CPU_CYCLES)
             {
-                int cycles = Cpu.ExecuteCycle(out bool interr);
+                int cycles = Cpu.ExecuteCycle();
 
                 int divisorAmount = Cpu.DoubleSpeed ? 2 : 1;
 
@@ -134,7 +134,7 @@ namespace GBSharp
                         int myPC = Cpu.LoadRegister(CPU.Registers16Bit.PC);
                         int instruction = Mmu.ReadByte(myPC);
 
-                        int cycles = Cpu.ExecuteCycle(out bool interrupt);
+                        int cycles = Cpu.ExecuteCycle();
 
                         string[] tokens = sr.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
