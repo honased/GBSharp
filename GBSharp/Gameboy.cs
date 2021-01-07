@@ -1,15 +1,13 @@
 ﻿using GBSharp.Audio;
+using GBSharp.Graphics;
+using GBSharp.Interfaces;
+using GBSharp.Processor;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GBSharp
 {
-    public class Gameboy
+    public class Gameboy : IStateable
     {
         internal CPU Cpu { get; private set; }
         internal MMU Mmu { get; private set; }
@@ -191,6 +189,32 @@ namespace GBSharp
         public void Debug()
         {
             Cpu.Debug();
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(IsCGB);
+            stream.Write(CyclesCount);
+            Cpu.SaveState(stream);
+            Mmu.SaveState(stream);
+            Ppu.SaveState(stream);
+            Apu.SaveState(stream);
+            Input.SaveState(stream);
+            Timer.SaveState(stream);
+            Dma.SaveState(stream);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            IsCGB = stream.ReadBoolean();
+            CyclesCount = stream.ReadInt32();
+            Cpu.LoadState(stream);
+            Mmu.LoadState(stream);
+            Ppu.LoadState(stream);
+            Apu.LoadState(stream);
+            Input.LoadState(stream);
+            Timer.LoadState(stream);
+            Dma.LoadState(stream);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,6 +101,22 @@ namespace GBSharp.Cartridges
         public override void Close()
         {
             if(Battery) FileManager.SaveFile(Name, Checksum, ERam);
+        }
+
+        protected override void CustomSaveState(BinaryWriter stream)
+        {
+            stream.Write(ERAMEnabled);
+            stream.Write(BankRom);
+            stream.Write(BankRam);
+            stream.Write(CartridgeMode);
+        }
+
+        protected override void CustomLoadState(BinaryReader stream)
+        {
+            ERAMEnabled = stream.ReadBoolean();
+            BankRom = stream.ReadInt32();
+            BankRam = stream.ReadInt32();
+            CartridgeMode = stream.ReadInt32();
         }
     }
 }

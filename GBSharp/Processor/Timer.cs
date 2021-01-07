@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using GBSharp.Interfaces;
 
-namespace GBSharp
+namespace GBSharp.Processor
 {
-    internal class Timer
+    internal class Timer : IStateable
     {
-        private Gameboy _gameboy;
+        private readonly Gameboy _gameboy;
         private bool timerEnabled = false;
-        int timerBit;
+        private int timerBit;
         private int cycles;
         private bool checkingLow;
         private int internalDiv;
@@ -106,6 +104,28 @@ namespace GBSharp
         internal void UpdateTIMA()
         {
             timaWritten = true;
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(timerEnabled);
+            stream.Write(timerBit);
+            stream.Write(cycles);
+            stream.Write(checkingLow);
+            stream.Write(internalDiv);
+            stream.Write(overflow);
+            stream.Write(timaWritten);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            timerEnabled = stream.ReadBoolean();
+            timerBit = stream.ReadInt32();
+            cycles = stream.ReadInt32();
+            checkingLow = stream.ReadBoolean();
+            internalDiv = stream.ReadInt32();
+            overflow = stream.ReadBoolean();
+            timaWritten = stream.ReadBoolean();
         }
     }
 }

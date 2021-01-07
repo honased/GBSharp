@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using GBSharp.Interfaces;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 
 namespace GBSharp.Audio
 {
-    public class APU
+    public class APU : IStateable
     {
         private const int FRAME_SEQUENCER_CLOCKS = 8192;
         private const int SAMPLE_GOAL = 95;
@@ -26,7 +21,7 @@ namespace GBSharp.Audio
         private WaveChannel waveChannel;
         private NoiseChannel noiseChannel;
 
-        private Gameboy _gameboy;
+        private readonly Gameboy _gameboy;
 
         private bool On { get; set; }
 
@@ -181,6 +176,56 @@ namespace GBSharp.Audio
                     noiseChannel.AddVolumeInfo(VolumeLeft * (OutputSound[1, 3] ? 1 : 0), VolumeRight * (OutputSound[0, 3] ? 1 : 0));
                 }
             }
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(FrameSequencer);
+            stream.Write(totalClocks);
+            stream.Write(TotalSamples);
+
+            int iLen = OutputSound.GetLength(0);
+            int jLen = OutputSound.GetLength(1);
+            for (int i = 0; i < iLen; i++)
+            {
+                for(int j = 0; j < jLen; j++)
+                {
+                    stream.Write(OutputSound[i, j]);
+                }
+            }
+
+            stream.Write(VolumeLeft);
+            stream.Write(VolumeRight);
+            stream.Write(On);
+            squareChannel.SaveState(stream);
+            squareChannel2.SaveState(stream);
+            waveChannel.SaveState(stream);
+            noiseChannel.SaveState(stream);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            FrameSequencer = stream.ReadInt32();
+            totalClocks = stream.ReadInt32();
+            TotalSamples = stream.ReadInt32();
+
+            int iLen = OutputSound.GetLength(0);
+            int jLen = OutputSound.GetLength(1);
+            for (int i = 0; i < iLen; i++)
+            {
+                for (int j = 0; j < jLen; j++)
+                {
+                    OutputSound[i, j] = stream.ReadBoolean();
+                }
+            }
+
+            VolumeLeft = stream.ReadInt32();
+            VolumeRight = stream.ReadInt32();
+            On = stream.ReadBoolean();
+            squareChannel.LoadState(stream);
+            squareChannel2.LoadState(stream);
+            waveChannel.LoadState(stream);
+            noiseChannel.LoadState(stream);
         }
     }
 }

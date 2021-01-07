@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -118,6 +119,24 @@ namespace GBSharp.Cartridges
             _rtcRegisters[0] = current.Second;
             _rtcRegisters[1] = current.Minute;
             _rtcRegisters[2] = current.Hour;
+        }
+
+        protected override void CustomSaveState(BinaryWriter stream)
+        {
+            stream.Write(ERAMEnabled);
+            stream.Write(BankRom);
+            stream.Write(BankRam);
+            stream.Write(RTCLatch);
+            for (int i = 0; i < _rtcRegisters.Length; i++) stream.Write(_rtcRegisters[i]);
+        }
+
+        protected override void CustomLoadState(BinaryReader stream)
+        {
+            ERAMEnabled = stream.ReadBoolean();
+            BankRom = stream.ReadInt32();
+            BankRam = stream.ReadInt32();
+            RTCLatch = stream.ReadBoolean();
+            for (int i = 0; i < _rtcRegisters.Length; i++) _rtcRegisters[i] = stream.ReadInt32();
         }
     }
 }

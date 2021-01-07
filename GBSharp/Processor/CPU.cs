@@ -1,22 +1,17 @@
-﻿using GBSharp.Audio;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GBSharp.Interfaces;
+using System.IO;
 
-namespace GBSharp
+namespace GBSharp.Processor
 {
-    public partial class CPU
+    public partial class CPU : IStateable
     {
         public bool IME;
         private bool setIME;
         private bool Halt { get; set; }
         private bool HaltBug { get; set; }
-        private Debugger _debugger;
+        private readonly Debugger _debugger;
 
-        private Gameboy _gameboy;
+        private readonly Gameboy _gameboy;
 
         internal bool DoubleSpeed { get; private set; }
 
@@ -149,6 +144,26 @@ namespace GBSharp
             int cycles = instruction.Execute();
             Reset();
             return cycles;
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(IME);
+            stream.Write(setIME);
+            for(int i = 0; i < _registers.Length; i++) stream.Write(_registers[i]);
+            stream.Write(Halt);
+            stream.Write(HaltBug);
+            stream.Write(DoubleSpeed);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            IME = stream.ReadBoolean();
+            setIME = stream.ReadBoolean();
+            for (int i = 0; i < _registers.Length; i++) _registers[i] = stream.ReadInt32();
+            Halt = stream.ReadBoolean();
+            HaltBug = stream.ReadBoolean();
+            DoubleSpeed = stream.ReadBoolean();
         }
     }
 }

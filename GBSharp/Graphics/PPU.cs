@@ -1,14 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GBSharp.Interfaces;
+using System.IO;
 
-namespace GBSharp
+namespace GBSharp.Graphics
 {
-    public class PPU
+    public class PPU : IStateable
     {
         public const int SCREEN_WIDTH = 160, SCREEN_HEIGHT = 144;
         private int[] FrameBuffer, fb1, fb2;
@@ -27,7 +22,7 @@ namespace GBSharp
                 for (int xx = 0; xx < 128; xx++)
                 {
                     int colorIndex = (_tileset[vramBank, xx / 8 + ((yy / 8) * (128 / 8)), yy % 8, xx % 8]);
-                    Color color2 = _bgPalettes[0].Colors[colorIndex];
+                    GBColor color2 = _bgPalettes[0].Colors[colorIndex];
                     tiles[count] = color2.R;
                     tiles[count + 1] = color2.G;
                     tiles[count + 2] = color2.B;
@@ -39,12 +34,11 @@ namespace GBSharp
             return tiles;
         }
 
-        private Gameboy _gameboy;
+        private readonly Gameboy _gameboy;
         private int clocksCount;
 
         private const int OAM_CLOCK_COUNT = 80;
         private const int VRAM_CLOCK_COUNT = 172;
-        private const int HBLANK_CLOCK_COUNT = 204;
         private const int VBLANK_CLOCK_COUNT = 456;
 
         private const int OAM_SIZE = 0xA0;
@@ -56,102 +50,7 @@ namespace GBSharp
         public PaletteEntry[] _bgPalettes;
         public PaletteEntry[] _spPalettes;
 
-        private int expectedSCX = 0;
-
-        public class PaletteEntry
-        {
-            public Color[] Colors { get; set; }
-
-            private int[] red, green, blue;
-
-            public int PaletteIndexAddress { get; private set; }
-            public int PaletteDataAddress { get; private set; }
-
-            public PaletteEntry(bool isBackround)
-            {
-                red = new int[4];
-                green = new int[4];
-                blue = new int[4];
-                Colors = new Color[4];
-
-                PaletteDataAddress =  isBackround ? 0xFF69 : 0xFF6B;
-                PaletteIndexAddress = isBackround ? 0xFF68 : 0xFF6A;
-
-                Reset();
-            }
-
-            public void Reset()
-            {
-                for (int i = 0; i < red.Length; i++) red[i] = 0;
-                for (int i = 0; i < green.Length; i++) green[i] = 0;
-                for (int i = 0; i < blue.Length; i++) blue[i] = 0;
-            }
-
-            public void UpdateCGB(MMU mmu, int value)
-            {
-                int register = mmu.ReadByte(PaletteIndexAddress);
-                bool increment = Bitwise.IsBitOn(register, 7);
-                int index = register & 0x3F;
-
-                int colorToModify = (index % 8) / 2;
-                if((index % 8) % 2 == 0)
-                {
-                    red[colorToModify] = value & 0x1F;
-                    green[colorToModify] = (green[colorToModify] & 0x18) | (value >> 5);
-                }
-                else
-                {
-                    green[colorToModify] = (green[colorToModify] & 0x07) | ((value & 0x03) << 3);
-                    blue[colorToModify] = (value >> 2) & 0x1F;
-                }
-
-                Colors[colorToModify].R = (int)((red[colorToModify] / 31.0) * 255);
-                Colors[colorToModify].G = (int)((green[colorToModify] / 31.0) * 255);
-                Colors[colorToModify].B = (int)((blue[colorToModify] / 31.0) * 255);
-
-                if(increment)
-                {
-                    index = (index + 1) % 64;
-                    mmu.WriteByte(index | (0x80), PaletteIndexAddress);
-                }
-            }
-
-            public void UpdateDMG(int value)
-            {
-                Colors[0] = GetDMGColor(value & 0x03);
-                Colors[1] = GetDMGColor((value >> 2) & 0x03);
-                Colors[2] = GetDMGColor((value >> 4) & 0x03);
-                Colors[3] = GetDMGColor((value >> 6) & 0x03);
-            }
-
-            private Color GetDMGColor(int index)
-            {
-                switch(index)
-                {
-                    case 0: return new Color(224, 248, 208);
-                    case 1: return new Color(136, 192, 112);
-                    case 2: return new Color(52, 104, 86);
-                    case 3: return new Color(8, 24, 32);
-                    default: throw new Exception("Invalid color index");
-                }
-            }
-
-            public int Read(MMU mmu)
-            {
-                int register = mmu.ReadByte(PaletteIndexAddress);
-                int index = register & 0x3F;
-
-                int colorToModify = (index % 8) / 2;
-                if ((index % 8) % 2 == 0)
-                {
-                    return (red[colorToModify] & 0x1F) | ((green[colorToModify] & 0x07) << 5);
-                }
-                else
-                {
-                    return ((green[colorToModify] & 0x18) >> 3) | (blue[colorToModify] << 5);
-                }
-            }
-        }
+        
 
         public PPU(Gameboy gameboy)
         {
@@ -343,7 +242,7 @@ namespace GBSharp
                 if(!bgPriority) BGPriority[xx] = (pixel != 0) ? 1 : 0;
                 else BGPriority[xx] = 2;
 
-                Color color = _bgPalettes[paletteNumber].Colors[pixel];
+                GBColor color = _bgPalettes[paletteNumber].Colors[pixel];
                 FrameBuffer[startingIndex] = color.R;
                 FrameBuffer[startingIndex + 1] = color.G;
                 FrameBuffer[startingIndex + 2] = color.B;
@@ -360,7 +259,7 @@ namespace GBSharp
             int spriteHeight = isSpriteHeight16 ? 16 : 8;
             int spriteCount = 0;
 
-            for (int i = 0; i < OAM_SIZE - SPRITE_SIZE; i += SPRITE_SIZE)
+            for (int i = 0; i < OAM_SIZE; i += SPRITE_SIZE)
             {
                 int spriteY = _gameboy.Mmu.LoadOAM(i) - 16;
                 if (ly >= spriteY && ly < spriteY + spriteHeight)
@@ -413,7 +312,7 @@ namespace GBSharp
                             {
                                 if (objAboveBg || BGPriority[spriteX + x] == 0)
                                 {
-                                    Color color = _spPalettes[paletteNumber].Colors[pixel];
+                                    GBColor color = _spPalettes[paletteNumber].Colors[pixel];
                                     FrameBuffer[writePosition] = color.R;
                                     FrameBuffer[writePosition + 1] = color.G;
                                     FrameBuffer[writePosition + 2] = color.B;
@@ -531,18 +430,50 @@ namespace GBSharp
             return (_gameboy.Mmu.STAT & 0x03) == 0;
         }
 
-        public struct Color
-        {
-            public int R;
-            public int G;
-            public int B;
+        
 
-            public Color(int r, int g, int b)
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(clocksCount);
+            int iLen = _tileset.GetLength(0), jLen = _tileset.GetLength(1), kLen = _tileset.GetLength(2), lLen = _tileset.GetLength(3);
+            for (int i = 0; i < iLen; i++)
             {
-                R = r;
-                G = g;
-                B = b;
+                for (int j = 0; j < jLen; j++)
+                {
+                    for (int k = 0; k < kLen; k++)
+                    {
+                        for(int l = 0; l < lLen; l++)
+                        {
+                            stream.Write(_tileset[i, j, k, l]);
+                        }
+                    }
+                }
             }
+
+            for (int i = 0; i < _bgPalettes.Length; i++) _bgPalettes[i].SaveState(stream);
+            for (int i = 0; i < _spPalettes.Length; i++) _spPalettes[i].SaveState(stream);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            clocksCount = stream.ReadInt32();
+            int iLen = _tileset.GetLength(0), jLen = _tileset.GetLength(1), kLen = _tileset.GetLength(2), lLen = _tileset.GetLength(3);
+            for (int i = 0; i < iLen; i++)
+            {
+                for (int j = 0; j < jLen; j++)
+                {
+                    for (int k = 0; k < kLen; k++)
+                    {
+                        for (int l = 0; l < lLen; l++)
+                        {
+                            _tileset[i, j, k, l] = stream.ReadInt32();
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < _bgPalettes.Length; i++) _bgPalettes[i].LoadState(stream);
+            for (int i = 0; i < _spPalettes.Length; i++) _spPalettes[i].LoadState(stream);
         }
     }
 }

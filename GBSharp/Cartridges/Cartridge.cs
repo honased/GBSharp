@@ -1,4 +1,5 @@
 ﻿using GBSharp.Cartridges;
+using GBSharp.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace GBSharp
 {
-    public abstract class Cartridge
+    public abstract class Cartridge : IStateable
     {
         public string Name { get; private set; }
         public int CartridgeType { get; private set; }
@@ -186,5 +187,20 @@ namespace GBSharp
         public abstract int ReadLowRom(int address);
         public abstract int ReadHighRom(int address);
         public abstract int ReadERam(int address);
+
+        protected abstract void CustomSaveState(BinaryWriter stream);
+        protected abstract void CustomLoadState(BinaryReader stream);
+
+        public void SaveState(BinaryWriter stream)
+        {
+            for (int i = 0; i < ERam.Length; i++) stream.Write(ERam[i]);
+            CustomSaveState(stream);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            for (int i = 0; i < ERam.Length; i++) ERam[i] = stream.ReadInt32();
+            CustomLoadState(stream);
+        }
     }
 }

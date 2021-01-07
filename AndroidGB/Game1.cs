@@ -2,26 +2,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GBSharp;
-using System.IO;
-using Android.OS;
-using Java.Security;
-using Android.Content.PM;
-using System.Security;
-using Android.App.Usage;
-using Android.Webkit;
-using System.IO.IsolatedStorage;
-using Android.Content.Res;
-using Android.App;
-using Java.IO;
 using System;
-using Java.Nio.FileNio;
-using Android.Runtime;
-using System.Collections.Generic;
-using Android.Views;
 using Microsoft.Xna.Framework.Input.Touch;
 using Plugin.FilePicker.Abstractions;
 using Plugin.FilePicker;
-using Android.Locations;
 using System.Threading.Tasks;
 
 namespace AndroidGB

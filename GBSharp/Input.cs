@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
+using GBSharp.Interfaces;
 
 namespace GBSharp
 {
-    public class Input
+    public class Input : IStateable
     {
-        private Gameboy _gameboy;
-
-        private const int MASK_DIRECTION = 0x10, MASK_BUTTON = 0x20;
+        private readonly Gameboy _gameboy;
 
         private int directionInput, buttonInput;
 
@@ -82,6 +77,22 @@ namespace GBSharp
                 }
                 else directionInput = Bitwise.SetBit(directionInput, bitIndex);
             }
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(directionInput);
+            stream.Write(buttonInput);
+            stream.Write(setButtonInterrupt);
+            stream.Write(setDirectionInterrupt);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            directionInput = stream.ReadInt32();
+            buttonInput = stream.ReadInt32();
+            setButtonInterrupt = stream.ReadBoolean();
+            setDirectionInterrupt = stream.ReadBoolean();
         }
     }
 }

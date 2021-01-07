@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
+using GBSharp.Interfaces;
 
 namespace GBSharp.Audio
 {
-    abstract class AudioChannel
+    abstract class AudioChannel : IStateable
     {
         protected int Length { get; set; }
         protected int LengthSet { get; set; }
@@ -128,5 +125,49 @@ namespace GBSharp.Audio
         internal abstract void Enable();
 
         internal abstract void Tick();
+
+        protected abstract void CustomSaveState(BinaryWriter stream);
+
+        protected abstract void CustomLoadState(BinaryReader stream);
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(Length);
+            stream.Write(LengthSet);
+            stream.Write(Frequency);
+            stream.Write(FrequencyTimer);
+            stream.Write(Enabled);
+            stream.Write(DAC);
+            stream.Write(SequencePointer);
+            stream.Write(LengthEnabled);
+            stream.Write(Volume);
+            stream.Write(VolumeSet);
+            stream.Write(OutputVolume);
+            stream.Write(EnvelopeAdd);
+            stream.Write(EnvelopeTime);
+            stream.Write(EnvelopeTimeSet);
+            stream.Write(EnvelopeEnabled);
+            CustomSaveState(stream);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            Length = stream.ReadInt32();
+            LengthSet = stream.ReadInt32();
+            Frequency = stream.ReadInt32();
+            FrequencyTimer = stream.ReadInt32();
+            Enabled = stream.ReadBoolean();
+            DAC = stream.ReadBoolean();
+            SequencePointer = stream.ReadInt32();
+            LengthEnabled = stream.ReadBoolean();
+            Volume = stream.ReadInt32();
+            VolumeSet = stream.ReadInt32();
+            OutputVolume = stream.ReadInt32();
+            EnvelopeAdd = stream.ReadBoolean();
+            EnvelopeTime = stream.ReadInt32();
+            EnvelopeTimeSet = stream.ReadInt32();
+            EnvelopeEnabled = stream.ReadBoolean();
+            CustomLoadState(stream);
+        }
     }
 }

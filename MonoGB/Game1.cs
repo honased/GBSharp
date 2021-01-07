@@ -4,12 +4,10 @@ using Microsoft.Xna.Framework.Input;
 using GBSharp;
 using System.IO;
 using System;
-using GBSharp.Audio;
+using GBSharp.Graphics;
 
 namespace MonoGB
 {
-    // Check gekkio
-
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
@@ -48,7 +46,7 @@ namespace MonoGB
         {
             // TODO: Add your initialization logic here
             _gameboy = new Gameboy();
-            _debugMode = true;
+            _debugMode = false;
             //_gameboy.Debug();
 
             //_cpu.SetPalette(new PPU.Color(8, 24, 32), new PPU.Color(52, 104, 86), new PPU.Color(136, 192, 112), new PPU.Color(224, 248, 208));
@@ -85,7 +83,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/bte.gb";
+            string path = "Roms/Games/jml-a09.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -167,6 +165,22 @@ namespace MonoGB
                 Exit();
 
             if (Keyboard.GetState().IsKeyDown(Keys.Tab)) _gameboy.Debug();
+
+            if(Keyboard.GetState().IsKeyDown(Keys.F1) && ! oldState.IsKeyDown(Keys.F1))
+            {
+                using(BinaryWriter bw = new BinaryWriter(File.Create("savestate.sav")))
+                {
+                    _gameboy.SaveState(bw);
+                }
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.F2) && !oldState.IsKeyDown(Keys.F2))
+            {
+                using (BinaryReader br = new BinaryReader(File.OpenRead("savestate.sav")))
+                {
+                    _gameboy.LoadState(br);
+                }
+            }
 
             if (!_debugMode && Keyboard.GetState().IsKeyDown(Keys.F3))
             {

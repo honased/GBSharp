@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -165,6 +166,28 @@ namespace GBSharp.Audio
             else returnFrequency += SweepOld;
 
             return returnFrequency;
+        }
+
+        protected override void CustomSaveState(BinaryWriter stream)
+        {
+            stream.Write(Duty);
+            stream.Write(SweepTime);
+            stream.Write(SweepTimeSet);
+            stream.Write(SweepDecrease);
+            stream.Write(SweepShift);
+            stream.Write(SweepOld);
+            stream.Write(SweepEnabled);
+        }
+
+        protected override void CustomLoadState(BinaryReader stream)
+        {
+            Duty = stream.ReadInt32();
+            SweepTime = stream.ReadInt32();
+            SweepTimeSet = stream.ReadInt32();
+            SweepDecrease = stream.ReadBoolean();
+            SweepShift = stream.ReadInt32();
+            SweepOld = stream.ReadInt32();
+            SweepEnabled = stream.ReadBoolean();
         }
     }
 }

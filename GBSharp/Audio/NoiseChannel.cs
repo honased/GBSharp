@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -117,6 +118,22 @@ namespace GBSharp.Audio
             Length = 64 - LengthSet;
 
             if (Length == 0) Length = 64;
+        }
+
+        protected override void CustomSaveState(BinaryWriter stream)
+        {
+            stream.Write(ShiftFrequency);
+            stream.Write(ShiftWidth);
+            stream.Write(DividingRatio);
+            stream.Write(LFSR);
+        }
+
+        protected override void CustomLoadState(BinaryReader stream)
+        {
+            ShiftFrequency = stream.ReadInt32();
+            ShiftWidth = stream.ReadBoolean();
+            DividingRatio = stream.ReadInt32();
+            LFSR = stream.ReadInt32();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -112,6 +113,16 @@ namespace GBSharp.Audio
             if (Length == 0) Length = 256;
 
             SequencePointer = 0;
+        }
+
+        protected override void CustomSaveState(BinaryWriter stream)
+        {
+            for (int i = 0; i < Samples.Length; i++) stream.Write(Samples[i]);
+        }
+
+        protected override void CustomLoadState(BinaryReader stream)
+        {
+            for (int i = 0; i < Samples.Length; i++) Samples[i] = stream.ReadInt32();
         }
     }
 }

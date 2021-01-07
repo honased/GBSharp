@@ -1,23 +1,19 @@
-﻿using GBSharp.Audio;
-using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GBSharp.Interfaces;
+using GBSharp.Processor;
+using System.IO;
 
 namespace GBSharp
 {
-    public class MMU
+    public class MMU : IStateable
     {
         private int[] _bios;
-        private int[] _vram;
-        private int[] _wram;
-        private int[] _eram;
-        private int[] _zram;
-        private int[] _oam;
-        private int[] _io;
-        private Gameboy _gameboy;
+        private readonly int[] _vram;
+        private readonly int[] _wram;
+        private readonly int[] _eram;
+        private readonly int[] _zram;
+        private readonly int[] _oam;
+        private readonly int[] _io;
+        private readonly Gameboy _gameboy;
 
         private int _wramBank;
         private const int WRAM_OFFSET = 0x1000;
@@ -373,6 +369,32 @@ namespace GBSharp
         internal void DisableInterrupt(Interrupts interrupt)
         {
             IF = Bitwise.ClearBit(IF, (int)interrupt);
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            for (int i = 0; i < _bios.Length; i++) stream.Write(_bios[i]);
+            for (int i = 0; i < _vram.Length; i++) stream.Write(_vram[i]);
+            for (int i = 0; i < _wram.Length; i++) stream.Write(_wram[i]);
+            for (int i = 0; i < _eram.Length; i++) stream.Write(_eram[i]);
+            for (int i = 0; i < _zram.Length; i++) stream.Write(_zram[i]);
+            for (int i = 0; i < _oam.Length; i++) stream.Write(_oam[i]);
+            for (int i = 0; i < _io.Length; i++) stream.Write(_io[i]);
+            stream.Write(_inBios);
+            _cartridge.SaveState(stream);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            for (int i = 0; i < _bios.Length; i++) _bios[i] = stream.ReadInt32();
+            for (int i = 0; i < _vram.Length; i++) _vram[i] = stream.ReadInt32();
+            for (int i = 0; i < _wram.Length; i++) _wram[i] = stream.ReadInt32();
+            for (int i = 0; i < _eram.Length; i++) _eram[i] = stream.ReadInt32();
+            for (int i = 0; i < _zram.Length; i++) _zram[i] = stream.ReadInt32();
+            for (int i = 0; i < _oam.Length; i++) _oam[i] = stream.ReadInt32();
+            for (int i = 0; i < _io.Length; i++) _io[i] = stream.ReadInt32();
+            _inBios = stream.ReadBoolean();
+            _cartridge.LoadState(stream);
         }
     }
 }

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GBSharp.Interfaces;
+using System;
+using System.IO;
 
 namespace GBSharp
 {
-    public class DMA
+    public class DMA : IStateable
     {
         public int Source { get; private set; }
         public int Destination { get; private set; }
@@ -15,7 +13,7 @@ namespace GBSharp
         public bool IsEnabled { get; private set; }
         private int _lastIndex;
 
-        private Gameboy _gameboy;
+        private readonly Gameboy _gameboy;
 
         public DMA(Gameboy gameboy)
         {
@@ -90,6 +88,26 @@ namespace GBSharp
         public int Read()
         {
             return ((IsEnabled) ? 0x80 : 0x00) | (Math.Max(0, (Length/16) - 1));
+        }
+
+        public void SaveState(BinaryWriter stream)
+        {
+            stream.Write(Source);
+            stream.Write(Destination);
+            stream.Write(Length);
+            stream.Write(IsHDMA);
+            stream.Write(IsEnabled);
+            stream.Write(_lastIndex);
+        }
+
+        public void LoadState(BinaryReader stream)
+        {
+            Source = stream.ReadInt32();
+            Destination = stream.ReadInt32();
+            Length = stream.ReadInt32();
+            IsHDMA = stream.ReadBoolean();
+            IsEnabled = stream.ReadBoolean();
+            _lastIndex = stream.ReadInt32();
         }
     }
 }

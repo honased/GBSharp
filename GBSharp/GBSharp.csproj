@@ -80,22 +80,24 @@
     <Compile Include="Cartridges\CartidgeMBC1.cs" />
     <Compile Include="Cartridges\CartidgeMBC0.cs" />
     <Compile Include="Cartridges\Cartridge.cs" />
-    <Compile Include="CPU\CPU.cs" />
-    <Compile Include="CPU\CPU.Registers.cs" />
+    <Compile Include="Graphics\Palette.cs" />
+    <Compile Include="Processor\CPU.cs" />
+    <Compile Include="Processor\CPU.Registers.cs" />
     <Compile Include="Debugger.cs" />
-    <Compile Include="DMA.cs" />
+    <Compile Include="Interfaces\IStateable.cs" />
+    <Compile Include="Memory\DMA.cs" />
     <Compile Include="FileManager.cs" />
     <Compile Include="Gameboy.cs" />
     <Compile Include="Input.cs" />
-    <Compile Include="MMU.cs" />
-    <Compile Include="PPU.cs" />
+    <Compile Include="Memory\MMU.cs" />
+    <Compile Include="Graphics\PPU.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Timer.cs" />
+    <Compile Include="Processor\Timer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Compile Include="CPU\CPU.Instructions.cs" />
+    <Compile Include="Processor\CPU.Instructions.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
