@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input.Touch;
 using Plugin.FilePicker.Abstractions;
 using Plugin.FilePicker;
 using System.Threading.Tasks;
+using GBSharp.Graphics;
 
 namespace AndroidGB
 {
