@@ -188,7 +188,7 @@ namespace MonoGB
                 }
             }
 
-            if (!_debugMode && Keyboard.GetState().IsKeyDown(Keys.F3))
+            if (!_debugMode && Keyboard.GetState().IsKeyDown(Keys.F3) && !oldState.IsKeyDown(Keys.F3))
             {
                 graphics.IsFullScreen = !graphics.IsFullScreen;
 
@@ -215,13 +215,6 @@ namespace MonoGB
                 gameScale -= 1;
             }
 
-
-            // Clear frame queue if it is greater than 5
-            if(_gameboy.frameQueue.Count > 5)
-            {
-                _gameboy.frameQueue.Clear();
-            }
-
             var _keyState = Keyboard.GetState();
             var _padState = GamePad.GetState(0);
 
@@ -237,11 +230,9 @@ namespace MonoGB
 
             //_gameboy.ExecuteFrame();
 
-            Console.WriteLine(_gameboy.frameQueue.Count);
-
-            if (_gameboy.frameQueue.Count > 0)
+            if (_gameboy.GetFrameBufferCount() > 0)
             {
-                int[] frameBuffer = _gameboy.frameQueue.Dequeue();
+                int[] frameBuffer = _gameboy.DequeueFrameBuffer();
 
                 for (int i = 0; i < frameBuffer.Length; i += 4)
                 {

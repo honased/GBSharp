@@ -80,6 +80,7 @@
     <Compile Include="Cartridges\CartidgeMBC1.cs" />
     <Compile Include="Cartridges\CartidgeMBC0.cs" />
     <Compile Include="Cartridges\Cartridge.cs" />
+    <Compile Include="Graphics\FrameQueue.cs" />
     <Compile Include="Graphics\Palette.cs" />
     <Compile Include="Processor\CPU.cs" />
     <Compile Include="Processor\CPU.Registers.cs" />

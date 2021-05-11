@@ -23,7 +23,7 @@ namespace GBSharp
         public int CyclesCount { get; private set; }
         public const int CPU_CYCLES = 17556 * 4;
 
-        public Queue<int[]> frameQueue;
+        private FrameQueue frameQueue;
 
         public Gameboy()
         {
@@ -50,7 +50,7 @@ namespace GBSharp
             Timer.Reset();
             Dma.Reset();
 
-            frameQueue = new Queue<int[]>();
+            frameQueue = new FrameQueue();
         }
 
         public void StartInBios()
@@ -93,11 +93,6 @@ namespace GBSharp
             return ref buffer;
         }
 
-        public bool IsFrameBufferReady()
-        {
-            return Ppu.IsFrameBufferReady;
-        }
-
         public int[] GetTilesBuffer(int vramBank)
         {
             return Ppu.GetTiles(vramBank);
@@ -125,69 +120,6 @@ namespace GBSharp
                 Cpu.SetRegister(CPU.Registers16Bit.BC, 0x0000);
                 Cpu.SetRegister(CPU.Registers16Bit.DE, 0x0008);
                 Cpu.SetRegister(CPU.Registers16Bit.HL, 0x007C);
-            }
-
-            if(false)
-            {
-                using(StreamReader sr = new StreamReader("test.txt"))
-                {
-                    int oldPC = 0;
-                    while(!sr.EndOfStream)
-                    {
-                        int myAF = Cpu.LoadRegister(CPU.Registers16Bit.AF);
-                        int myBC = Cpu.LoadRegister(CPU.Registers16Bit.BC);
-                        int myDE = Cpu.LoadRegister(CPU.Registers16Bit.DE);
-                        int myHL = Cpu.LoadRegister(CPU.Registers16Bit.HL);
-                        int mySP = Cpu.LoadRegister(CPU.Registers16Bit.SP);
-                        int myPC = Cpu.LoadRegister(CPU.Registers16Bit.PC);
-                        int instruction = Mmu.ReadByte(myPC);
-
-                        int cycles = Cpu.ExecuteCycle();
-
-                        string[] tokens = sr.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                        int readAF = Convert.ToInt32(tokens[0].Substring(2), 16) << 8;
-                        if (tokens[1].Contains("C")) readAF += 16;
-                        if (tokens[1].Contains("H")) readAF += 32;
-                        if (tokens[1].Contains("N")) readAF += 64;
-                        if (tokens[1].Contains("Z")) readAF += 128;
-
-                        int readBC = Convert.ToInt32(tokens[2].Substring(3), 16);
-                        int readDE = Convert.ToInt32(tokens[3].Substring(3), 16);
-                        int readHL = Convert.ToInt32(tokens[4].Substring(3), 16);
-                        int readSP = Convert.ToInt32(tokens[5].Substring(3), 16);
-                        int readPC = Convert.ToInt32(tokens[6].Substring(3), 16);
-
-                        int readCycles = Convert.ToInt32(tokens[8].Replace(")", ""));
-
-                        if(myAF != readAF)
-                        {
-                            //throw new Exception("Bad AF");
-                        }
-                        if (myBC != readBC)
-                        {
-                            throw new Exception("Bad BC");
-                        }
-                        if (myDE != readDE)
-                        {
-                            throw new Exception("Bad DE");
-                        }
-                        if (myHL != readHL)
-                        {
-                            throw new Exception("Bad HL");
-                        }
-                        if (mySP != readSP)
-                        {
-                            throw new Exception("Bad SP");
-                        }
-                        if (readPC != myPC)
-                        {
-                            throw new Exception("Bad PC");
-                        }
-
-                        oldPC = myPC;
-                    }
-                }
             }
         }
 
@@ -250,6 +182,30 @@ namespace GBSharp
 
                     CyclesCount += cycles / divisorAmount;
                 }
+            }
+        }
+
+        internal void EnqeueFrameBuffer(int[] frame)
+        {
+            lock(this)
+            {
+                frameQueue.Enqueue(frame);
+            }
+        }
+
+        public int[] DequeueFrameBuffer()
+        {
+            lock(this)
+            {
+                return frameQueue.Dequeue();
+            }
+        }
+
+        public int GetFrameBufferCount()
+        {
+            lock(this)
+            {
+                return frameQueue.Count;
             }
         }
     }
