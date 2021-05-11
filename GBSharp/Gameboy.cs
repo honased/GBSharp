@@ -3,6 +3,7 @@ using GBSharp.Graphics;
 using GBSharp.Interfaces;
 using GBSharp.Processor;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace GBSharp
@@ -21,6 +22,8 @@ namespace GBSharp
 
         public int CyclesCount { get; private set; }
         public const int CPU_CYCLES = 17556 * 4;
+
+        public Queue<int[]> frameQueue;
 
         public Gameboy()
         {
@@ -46,6 +49,8 @@ namespace GBSharp
             Input.Reset();
             Timer.Reset();
             Dma.Reset();
+
+            frameQueue = new Queue<int[]>();
         }
 
         public void StartInBios()
@@ -86,6 +91,11 @@ namespace GBSharp
         {
             ref int[] buffer = ref Ppu.GetFrameBuffer();
             return ref buffer;
+        }
+
+        public bool IsFrameBufferReady()
+        {
+            return Ppu.IsFrameBufferReady;
         }
 
         public int[] GetTilesBuffer(int vramBank)

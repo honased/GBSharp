@@ -10,6 +10,8 @@ namespace GBSharp.Graphics
         private bool useFb1;
         private int[] oamSprites;
 
+        internal bool IsFrameBufferReady { get; private set; }
+
         private int[] BGPriority { get; set; }
 
         public int[] GetTiles(int vramBank)
@@ -92,8 +94,11 @@ namespace GBSharp.Graphics
 
         internal ref int[] GetFrameBuffer()
         {
+            IsFrameBufferReady = false;
+
             if (useFb1) return ref fb2;
             else return ref fb1;
+
         }
 
         private void CheckLYC()
@@ -147,6 +152,8 @@ namespace GBSharp.Graphics
             for (int i = 0; i < _spPalettes.Length; i++) _spPalettes[i] = new PaletteEntry(false);
 
             oamSprites = new int[OAM_HORIZONTAL_LIMIT];
+
+            IsFrameBufferReady = false;
         }
 
         private void RenderLine()
@@ -360,6 +367,10 @@ namespace GBSharp.Graphics
                     useFb1 = !useFb1;
                     if (useFb1) FrameBuffer = fb1;
                     else FrameBuffer = fb2;
+                    IsFrameBufferReady = true;
+
+                    _gameboy.frameQueue.Enqueue(FrameBuffer.Clone() as int[]);
+
                     break;
 
                 case 2:

@@ -172,9 +172,9 @@ namespace MonoGB
 
             if (Keyboard.GetState().IsKeyDown(Keys.Tab)) _gameboy.Debug();
 
-            if(Keyboard.GetState().IsKeyDown(Keys.F1) && ! oldState.IsKeyDown(Keys.F1))
+            if (Keyboard.GetState().IsKeyDown(Keys.F1) && !oldState.IsKeyDown(Keys.F1))
             {
-                using(BinaryWriter bw = new BinaryWriter(File.Create("savestate.sav")))
+                using (BinaryWriter bw = new BinaryWriter(File.Create("savestate.sav")))
                 {
                     _gameboy.SaveState(bw);
                 }
@@ -192,7 +192,7 @@ namespace MonoGB
             {
                 graphics.IsFullScreen = !graphics.IsFullScreen;
 
-                if(graphics.IsFullScreen)
+                if (graphics.IsFullScreen)
                 {
                     graphics.PreferredBackBufferWidth = 1920;
                     graphics.PreferredBackBufferHeight = 1080;
@@ -216,9 +216,11 @@ namespace MonoGB
             }
 
 
-            // TODO: Add your update logic here
-
-            if (!IsActive) return;
+            // Clear frame queue if it is greater than 5
+            if(_gameboy.frameQueue.Count > 5)
+            {
+                _gameboy.frameQueue.Clear();
+            }
 
             var _keyState = Keyboard.GetState();
             var _padState = GamePad.GetState(0);
@@ -235,33 +237,38 @@ namespace MonoGB
 
             //_gameboy.ExecuteFrame();
 
-            int[] frameBuffer = _gameboy.GetFrameBuffer();
+            Console.WriteLine(_gameboy.frameQueue.Count);
 
-            for(int i = 0; i < frameBuffer.Length; i+=4)
+            if (_gameboy.frameQueue.Count > 0)
             {
-                colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
-            }
+                int[] frameBuffer = _gameboy.frameQueue.Dequeue();
 
-            _frame.SetData<Color>(colors);
-
-            if (_debugMode)
-            {
-                //                 tiles w   h
-                int[] ppuTiles = _gameboy.GetTilesBuffer(0);
-                for (int i = 0; i < ppuTiles.Length; i += 4)
+                for (int i = 0; i < frameBuffer.Length; i += 4)
                 {
-                    tileColors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
+                    colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
                 }
 
-                _tiles.SetData<Color>(tileColors);
+                _frame.SetData<Color>(colors);
 
-                ppuTiles = _gameboy.GetTilesBuffer(1);
-                for (int i = 0; i < ppuTiles.Length; i += 4)
+                if (_debugMode)
                 {
-                    tileColors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
-                }
+                    //                 tiles w   h
+                    int[] ppuTiles = _gameboy.GetTilesBuffer(0);
+                    for (int i = 0; i < ppuTiles.Length; i += 4)
+                    {
+                        tileColors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
+                    }
 
-                _tiles2.SetData<Color>(tileColors);
+                    _tiles.SetData<Color>(tileColors);
+
+                    ppuTiles = _gameboy.GetTilesBuffer(1);
+                    for (int i = 0; i < ppuTiles.Length; i += 4)
+                    {
+                        tileColors[i / 4] = new Color(ppuTiles[i], ppuTiles[i + 1], ppuTiles[i + 2], ppuTiles[i + 3]);
+                    }
+
+                    _tiles2.SetData<Color>(tileColors);
+                }
             }
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
