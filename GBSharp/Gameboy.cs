@@ -216,5 +216,31 @@ namespace GBSharp
             Timer.LoadState(stream);
             Dma.LoadState(stream);
         }
+
+        public void Run()
+        {
+            while(true)
+            {
+                while(Apu.GetPendingBufferCount() < 3)
+                {
+                    int cycles = Cpu.ExecuteCycle();
+
+                    int divisorAmount = Cpu.DoubleSpeed ? 2 : 1;
+
+                    int dmaCycles = Dma.CopyData();
+
+                    cycles *= 4;
+
+                    Timer.Tick(cycles + dmaCycles);
+
+                    Input.Tick();
+                    Ppu.Tick((cycles + dmaCycles) / divisorAmount);
+
+                    Apu.Tick((cycles + dmaCycles) / divisorAmount);
+
+                    CyclesCount += cycles / divisorAmount;
+                }
+            }
+        }
     }
 }

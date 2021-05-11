@@ -169,5 +169,10 @@ namespace GBSharp.Audio
             EnvelopeEnabled = stream.ReadBoolean();
             CustomLoadState(stream);
         }
+
+        internal int GetPendingBufferCount()
+        {
+            return Emitter.GetPendingBufferCount();
+        }
     }
 }

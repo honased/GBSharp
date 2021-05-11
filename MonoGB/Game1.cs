@@ -5,6 +5,7 @@ using GBSharp;
 using System.IO;
 using System;
 using GBSharp.Graphics;
+using System.Threading;
 
 namespace MonoGB
 {
@@ -29,6 +30,8 @@ namespace MonoGB
         KeyboardState oldState;
 
         private bool _debugMode;
+
+        Thread thread;
 
         public Game1()
         {
@@ -83,7 +86,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/jml-a09.gb";
+            string path = "Roms/Games/Kirbys Dream Land.gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -115,6 +118,9 @@ namespace MonoGB
             tileColors = new Color[128 * 192];
 
             Exiting += new EventHandler<EventArgs>(OnExit);
+
+            thread = new Thread(new ThreadStart(_gameboy.Run));
+            thread.Start();
 
             base.Initialize();
         }
@@ -227,7 +233,7 @@ namespace MonoGB
             _gameboy.SetInput(Input.Button.Start, _keyState.IsKeyDown(Keys.Space) || _padState.Buttons.Start == ButtonState.Pressed);
             _gameboy.SetInput(Input.Button.Select, _keyState.IsKeyDown(Keys.LeftShift) || _padState.Buttons.Back == ButtonState.Pressed);
 
-            _gameboy.ExecuteFrame();
+            //_gameboy.ExecuteFrame();
 
             int[] frameBuffer = _gameboy.GetFrameBuffer();
 
@@ -323,6 +329,7 @@ namespace MonoGB
         private void OnExit(Object sender, EventArgs args)
         {
             _gameboy.Close();
+            thread.Abort();
         }
     }
 }

@@ -227,5 +227,10 @@ namespace GBSharp.Audio
             waveChannel.LoadState(stream);
             noiseChannel.LoadState(stream);
         }
+
+        internal int GetPendingBufferCount()
+        {
+            return squareChannel.GetPendingBufferCount();
+        }
     }
 }

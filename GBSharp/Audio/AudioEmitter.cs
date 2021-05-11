@@ -64,6 +64,11 @@ namespace GBSharp.Audio
             if(_instance.PendingBufferCount < 3) _instance.SubmitBuffer(_monoBuffer);
         }
 
+        internal int GetPendingBufferCount()
+        {
+            return _instance.PendingBufferCount;
+        }
+
         private static void ConvertBuffer(float[,] from, byte[] to)
         {
             const int bytesPerSample = 2;
