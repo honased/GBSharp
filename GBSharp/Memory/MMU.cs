@@ -184,6 +184,11 @@ namespace GBSharp
                             value = (value & ~0x07) | (_io[0x41] & 0x07);
                             break;
 
+                        case 0xFF01:
+                        case 0xFF02:
+                            _gameboy.LinkCable.WriteByte(address, value);
+                            break;
+
                         case 0xFF04:
                             _gameboy.Timer.UpdateDiv();
                             value = 0;
@@ -298,6 +303,11 @@ namespace GBSharp
                 case int _ when address < 0xFF00:
                     return 0;
                 case int _ when address < 0xFF4C:
+                    if (address == 0xFF01 || address == 0xFF02)
+                    {
+                        return _gameboy.LinkCable.ReadByte(address, _io);
+                    }
+
                     if (address >= 0xFF10 && address <= 0xFF26)
                     {
                         return _gameboy.Apu.ReadByte(address, _io);

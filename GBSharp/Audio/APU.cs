@@ -15,6 +15,8 @@ namespace GBSharp.Audio
         private bool[,] OutputSound { get; set; }
         private int VolumeLeft { get; set; }
         private int VolumeRight { get; set; }
+        private bool OutputVinSO1 { get; set; }
+        private bool OutputVinSO2 { get; set; }
 
         private SquareChannel squareChannel;
         private SquareChannel squareChannel2;
@@ -46,6 +48,9 @@ namespace GBSharp.Audio
             VolumeLeft = 0;
             VolumeRight = 0;
             On = false;
+
+            OutputVinSO1 = false;
+            OutputVinSO2 = false;
         }
 
         public void WriteByte(int address, int value)
@@ -64,6 +69,8 @@ namespace GBSharp.Audio
                     case 0xFF24:
                         VolumeLeft = (value >> 4) & 0x07;
                         VolumeRight = value & 0x07;
+                        OutputVinSO2 = Bitwise.IsBitOn(value, 7);
+                        OutputVinSO1 = Bitwise.IsBitOn(value, 3);
                         break;
 
                     case 0xFF25:
@@ -80,10 +87,25 @@ namespace GBSharp.Audio
         public int ReadByte(int address, int[] memory)
         {
             if (address <= 0xFF14) return squareChannel.ReadByte(address);
-            if (address <= 0xFF19) return squareChannel2.ReadByte(address);
-            if (address <= 0xFF1E) return waveChannel.ReadByte(address);
-            if (address >= 0xFF20 && address <= 0xFF23) return noiseChannel.ReadByte(address);
-            if (address == 0xFF26)
+            else if (address <= 0xFF19) return squareChannel2.ReadByte(address);
+            else if (address <= 0xFF1E) return waveChannel.ReadByte(address);
+            else if (address >= 0xFF20 && address <= 0xFF23) return noiseChannel.ReadByte(address);
+            else if(address == 0xFF24)
+            {
+                return ((OutputVinSO2 ? 1 : 0) << 7) | ((OutputVinSO1 ? 1 : 0) << 3)
+                        | ((VolumeLeft & 0x07) << 4) | (VolumeRight & 0x07);
+            }
+            else if(address == 0xFF25)
+            {
+                int output = 0;
+                for (int i = 0; i < 8; i++)
+                {
+                    output |= ((OutputSound[i / 4, i % 4] ? 1 : 0) << i);
+                }
+
+                return output;
+            }
+            else if (address == 0xFF26)
             {
                 int returnMem = memory[address - 0xFF00] & 0x80;
                 returnMem |= (squareChannel.IsPlaying() ? 1 : 0);
@@ -196,6 +218,8 @@ namespace GBSharp.Audio
 
             stream.Write(VolumeLeft);
             stream.Write(VolumeRight);
+            stream.Write(OutputVinSO1);
+            stream.Write(OutputVinSO2);
             stream.Write(On);
             squareChannel.SaveState(stream);
             squareChannel2.SaveState(stream);
@@ -221,6 +245,8 @@ namespace GBSharp.Audio
 
             VolumeLeft = stream.ReadInt32();
             VolumeRight = stream.ReadInt32();
+            OutputVinSO1 = stream.ReadBoolean();
+            OutputVinSO2 = stream.ReadBoolean();
             On = stream.ReadBoolean();
             squareChannel.LoadState(stream);
             squareChannel2.LoadState(stream);

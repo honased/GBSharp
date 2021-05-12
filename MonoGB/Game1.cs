@@ -86,7 +86,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Kirbys Dream Land.gb";
+            string path = "Roms/Games/Dr. Mario (World).gb";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndroidGB", "AndroidGB\Andr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrontEnd", "FrontEnd\FrontEnd.csproj", "{78F5BA7B-5C7F-4941-8A75-0A003AF670A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBServer", "GBServer\GBServer.csproj", "{32F81418-1058-45EB-9F1F-C971C5F7B9C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,14 @@ Global
 		{78F5BA7B-5C7F-4941-8A75-0A003AF670A8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78F5BA7B-5C7F-4941-8A75-0A003AF670A8}.Release|x86.ActiveCfg = Release|Any CPU
 		{78F5BA7B-5C7F-4941-8A75-0A003AF670A8}.Release|x86.Build.0 = Release|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{32F81418-1058-45EB-9F1F-C971C5F7B9C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

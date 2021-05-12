@@ -20,6 +20,8 @@ namespace GBSharp
 
         internal DMA Dma { get; private set; }
 
+        internal LinkCable LinkCable { get; private set; }
+
         public int CyclesCount { get; private set; }
         public const int CPU_CYCLES = 17556 * 4;
 
@@ -35,6 +37,7 @@ namespace GBSharp
 
             Cpu = new CPU(this);
             Dma = new DMA(this);
+            LinkCable = new LinkCable(this);
 
             Reset();
         }
@@ -49,6 +52,7 @@ namespace GBSharp
             Input.Reset();
             Timer.Reset();
             Dma.Reset();
+            LinkCable.Reset();
 
             frameQueue = new FrameQueue();
         }
