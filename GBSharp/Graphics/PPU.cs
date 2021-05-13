@@ -241,7 +241,7 @@ namespace GBSharp.Graphics
                 int pixel = _tileset[vramBank, tileInitLocation + tile, drawY, drawX];
 
                 if(!bgPriority) BGPriority[xx] = (pixel != 0) ? 1 : 0;
-                else BGPriority[xx] = 2;
+                else BGPriority[xx] = (pixel != 0) ? 2: 3;
 
                 GBColor color = _bgPalettes[paletteNumber].Colors[pixel];
                 FrameBuffer[startingIndex] = color.R;
@@ -309,9 +309,9 @@ namespace GBSharp.Graphics
                             int pixel = _tileset[vramBank, tileNumber, drawY % 8, drawX];
 
                             //int colorIndex = GetSpriteColorIndexFromPalette(pixel, paletteNumber);
-                            if (pixel != 0 && BGPriority[spriteX + x] < 2)
+                            if (pixel != 0 && BGPriority[spriteX + x] != 2)
                             {
-                                if (objAboveBg || BGPriority[spriteX + x] == 0)
+                                if (objAboveBg || BGPriority[spriteX + x] == 0 || (!objAboveBg && BGPriority[spriteX + x] == 3))
                                 {
                                     GBColor color = _spPalettes[paletteNumber].Colors[pixel];
                                     FrameBuffer[writePosition] = color.R;
