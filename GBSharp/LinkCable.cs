@@ -68,7 +68,7 @@ namespace GBSharp
                         transferInProgress = Bitwise.IsBitOn(value, 7);
                         clockSpeed = Bitwise.IsBitOn(value, 1);
                         shiftClock = Bitwise.IsBitOn(value, 0);
-                        if (!oldTransfer && transferInProgress && shiftClock && socket.IsAlive && ENABLED)
+                        if (!oldTransfer && transferInProgress && shiftClock && ENABLED && socket.IsAlive)
                         {
                             socket.Send(data);
                         }

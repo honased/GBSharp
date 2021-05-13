@@ -250,6 +250,7 @@ namespace GBSharp
 
                         case 0xFF55:
                             _gameboy.Dma.StartDMA(_io[0x51], _io[0x52], _io[0x53], _io[0x54], value);
+                            //_gameboy.Debug();
                             break;
                     }
 
@@ -333,7 +334,7 @@ namespace GBSharp
                     }
                     if(address == 0xFF55)
                     {
-                        return (_gameboy.IsCGB) ? _io[address - 0xFF00] : 0xFF;
+                        return (_gameboy.IsCGB) ? _gameboy.Dma.Read() : 0xFF;
                     }
                     return 0xFF;
                 case int _ when address <= 0xFFFF:

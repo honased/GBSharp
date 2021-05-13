@@ -87,7 +87,7 @@ namespace GBSharp
 
         public int Read()
         {
-            return ((IsEnabled) ? 0x80 : 0x00) | (Math.Max(0, (Length/16) - 1));
+            return (Length == 0) ? 0xFF : Math.Max(0, (Length/16) - 1);
         }
 
         public void SaveState(BinaryWriter stream)
