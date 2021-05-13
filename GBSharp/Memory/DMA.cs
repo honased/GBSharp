@@ -39,9 +39,9 @@ namespace GBSharp
                 Destination = ((destHi & 0x1F) << 8) | (destLo & 0xF0);
                 Length = ((lenModStrt & 0x7F) + 1) * 16;
                 IsHDMA = Bitwise.IsBitOn(lenModStrt, 7);
-                Source &= 0xFFF0;
-                Destination = (Destination & 0x1FFF) | 0x8000;
+                Destination |= 0x8000;
                 IsEnabled = true;
+                _lastIndex = 0;
             }
         }
 
@@ -53,6 +53,7 @@ namespace GBSharp
                 if(!IsHDMA)
                 {
                     int count = 0;
+                    int oldLen = Length;
                     while(Length > 0)
                     {
                         Length--;
@@ -60,7 +61,7 @@ namespace GBSharp
                         count++;
                     }
                     IsEnabled = false;
-                    return (_gameboy.Cpu.DoubleSpeed) ? Length : Length / 2;
+                    return (_gameboy.Cpu.DoubleSpeed) ? oldLen : oldLen / 2;
                 }
                 else
                 {
