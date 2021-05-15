@@ -1,4 +1,5 @@
 ﻿using GBSharp.Interfaces;
+using System;
 using System.IO;
 
 namespace GBSharp.Graphics
@@ -9,6 +10,7 @@ namespace GBSharp.Graphics
         private int[] FrameBuffer, fb1, fb2;
         private bool useFb1;
         private int[] oamSprites;
+        private int lyVal = 0;
 
         private int[] BGPriority { get; set; }
 

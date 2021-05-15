@@ -26,6 +26,7 @@ namespace MonoGB
         Color[] colors;
         Color[] tileColors;
         Texture2D rectangle;
+        int picCount = 0;
 
         KeyboardState oldState;
 
@@ -35,7 +36,9 @@ namespace MonoGB
 
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
+            IsFixedTimeStep = true;
+            graphics = new GraphicsDeviceManager(this) { SynchronizeWithVerticalRetrace = true };
+            graphics.ApplyChanges();
             Content.RootDirectory = "Content";
         }
 
@@ -86,7 +89,7 @@ namespace MonoGB
 
             //CartridgeLoader.LoadDataIntoMemory(_mmu, CartridgeLoader.LoadCart("Roms/opus5.gb"), 0x00);
 
-            string path = "Roms/Games/Shantae (USA).gbc";
+            string path = "Roms/Games/Pokemon Silver.gbc";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -123,6 +126,8 @@ namespace MonoGB
             thread.Start();
 
             base.Initialize();
+
+            Directory.CreateDirectory("Pictures");
         }
 
         /// <summary>
@@ -241,6 +246,8 @@ namespace MonoGB
 
                 _frame.SetData<Color>(colors);
 
+                //_frame.SaveAsPng(File.Create("Pictures/pict" + picCount++ + ".png"), PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
+
                 if (_debugMode)
                 {
                     //                 tiles w   h
@@ -261,6 +268,7 @@ namespace MonoGB
                     _tiles2.SetData<Color>(tileColors);
                 }
             }
+            else Console.WriteLine("Didn't get frame: " + DateTime.Now.Ticks);
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
             {
