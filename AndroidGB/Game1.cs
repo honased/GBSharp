@@ -8,6 +8,7 @@ using Plugin.FilePicker.Abstractions;
 using Plugin.FilePicker;
 using System.Threading.Tasks;
 using GBSharp.Graphics;
+using System.Threading;
 
 namespace AndroidGB
 {
@@ -28,9 +29,11 @@ namespace AndroidGB
         Button select;
         Button btnB;
         Button btnA;
-        SpriteFont font;
         Cartridge cartridge;
         Task<Cartridge> task;
+        Color[] colors;
+
+        static Thread thread;
 
         public Game1()
         {
@@ -96,8 +99,11 @@ namespace AndroidGB
             gameScale -= 1;
 
             _frame = new Texture2D(GraphicsDevice, PPU.SCREEN_WIDTH, PPU.SCREEN_HEIGHT);
+            colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
 
             //_gameboy.StartInBios();
+
+            thread = new Thread(new ThreadStart(_gameboy.Run));
 
             base.Initialize();
         }
@@ -204,13 +210,17 @@ namespace AndroidGB
         {
             if (task.IsCompleted)
             {
-                if(cartridge == null)
+                if (cartridge == null)
                 {
                     cartridge = task.Result;
                     _gameboy.LoadCartridge(cartridge);
+                    thread.Start();
                 }
                 if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+                {
+                    Close();
                     Exit();
+                }
 
                 dpad.Reset();
                 start.Reset();
@@ -256,23 +266,23 @@ namespace AndroidGB
                 _gameboy.SetInput(Input.Button.B, btnB.Down);
                 _gameboy.SetInput(Input.Button.A, btnA.Down);
 
-                _gameboy.ExecuteFrame();
+                //_gameboy.ExecuteFrame();
 
-                Color[] colors = new Color[PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT];
-
-                int[] frameBuffer = _gameboy.GetFrameBuffer();
-
-                for (int i = 0; i < frameBuffer.Length; i += 4)
+                if (_gameboy.GetFrameBufferCount() > 0)
                 {
-                    colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
-                }
 
-                _frame.SetData<Color>(colors);
+                    int[] frameBuffer = _gameboy.DequeueFrameBuffer();
+
+                    for (int i = 0; i < frameBuffer.Length; i += 4)
+                    {
+                        colors[i / 4] = new Color(frameBuffer[i], frameBuffer[i + 1], frameBuffer[i + 2], frameBuffer[i + 3]);
+                    }
+
+                    _frame.SetData<Color>(colors);
+                }
             }
 
             base.Update(gameTime);
-
-            
         }
 
         /// <summary>
@@ -305,6 +315,14 @@ namespace AndroidGB
             }
 
             base.Draw(gameTime);
+        }
+
+        public void Close()
+        {
+            if(cartridge != null)
+            {
+                _gameboy.Close();
+            }
         }
     }
 }

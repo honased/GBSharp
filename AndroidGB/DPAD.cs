@@ -60,8 +60,6 @@ namespace AndroidGB
             int width = (int)(_texture.Width/2 * Scale);
             int height = (int)(_texture.Height/2 * Scale);
 
-            int bufferWidth = 50, bufferHeight = 50;
-
             XAxis = Math.Clamp((mx - _position.X) / width, -1, 1);
             YAxis = Math.Clamp((my - _position.Y) / height, -1, 1);
 
