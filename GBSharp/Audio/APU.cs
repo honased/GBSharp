@@ -27,9 +27,12 @@ namespace GBSharp.Audio
 
         private bool On { get; set; }
 
+        internal IAudioEmitter Emitter { get; private set; }
+
         public APU(Gameboy gameboy)
         {
             _gameboy = gameboy;
+            Emitter = _gameboy.ConstructEmitter();
             Reset();
         }
 
@@ -39,10 +42,10 @@ namespace GBSharp.Audio
             totalClocks = 0;
             TotalSamples = 0;
 
-            squareChannel = new SquareChannel();
-            squareChannel2 = new SquareChannel();
-            waveChannel = new WaveChannel();
-            noiseChannel = new NoiseChannel();
+            squareChannel = new SquareChannel(_gameboy, 0);
+            squareChannel2 = new SquareChannel(_gameboy, 1);
+            waveChannel = new WaveChannel(_gameboy, 2);
+            noiseChannel = new NoiseChannel(_gameboy, 3);
 
             OutputSound = new bool[2, 4];
             VolumeLeft = 0;
@@ -256,7 +259,7 @@ namespace GBSharp.Audio
 
         internal int GetPendingBufferCount()
         {
-            return squareChannel.GetPendingBufferCount();
+            return Emitter.GetPendingBufferCount();
         }
     }
 }

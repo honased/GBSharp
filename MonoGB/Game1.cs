@@ -51,7 +51,7 @@ namespace MonoGB
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            _gameboy = new Gameboy();
+            _gameboy = new Gameboy(() => { return new AudioEmitter(); });
             _debugMode = false;
             //_gameboy.Debug();
 
@@ -268,7 +268,6 @@ namespace MonoGB
                     _tiles2.SetData<Color>(tileColors);
                 }
             }
-            else Console.WriteLine("Didn't get frame: " + DateTime.Now.Ticks);
 
             if (_keyState.IsKeyDown(Keys.R) && !oldState.IsKeyDown(Keys.R))
             {

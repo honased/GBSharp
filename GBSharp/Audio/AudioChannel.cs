@@ -21,10 +21,14 @@ namespace GBSharp.Audio
         protected int EnvelopeTimeSet { get; set; }
         protected bool EnvelopeEnabled { get; set; }
 
-        internal AudioEmitter Emitter { get; private set; }
+        internal int Source { get; private set; }
 
-        public AudioChannel()
+        protected Gameboy _gameboy;
+
+        public AudioChannel(Gameboy gameboy, int source)
         {
+            _gameboy = gameboy;
+            Source = source;
             Reset();
         }
 
@@ -45,7 +49,6 @@ namespace GBSharp.Audio
             EnvelopeTime = 0;
             EnvelopeTimeSet = 0;
             EnvelopeEnabled = false;
-            Emitter = new AudioEmitter();
 
             CustomReset();
         }
@@ -113,7 +116,7 @@ namespace GBSharp.Audio
 
         internal void AddVolumeInfo(int leftVolume, int rightVolume)
         {
-            Emitter.AddVolumeInfo(OutputVolume, leftVolume, rightVolume);
+            _gameboy.Apu.Emitter.AddVolumeInfo(Source, OutputVolume, leftVolume, rightVolume);
         }
 
         protected abstract void CustomReset();
@@ -168,11 +171,6 @@ namespace GBSharp.Audio
             EnvelopeTimeSet = stream.ReadInt32();
             EnvelopeEnabled = stream.ReadBoolean();
             CustomLoadState(stream);
-        }
-
-        internal int GetPendingBufferCount()
-        {
-            return Emitter.GetPendingBufferCount();
         }
     }
 }

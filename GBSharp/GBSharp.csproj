@@ -51,7 +51,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MonoGame.Framework, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -73,7 +72,7 @@
   <ItemGroup>
     <Compile Include="Audio\APU.cs" />
     <Compile Include="Audio\AudioChannel.cs" />
-    <Compile Include="Audio\AudioEmitter.cs" />
+    <Compile Include="Audio\IAudioEmitter.cs" />
     <Compile Include="Audio\NoiseChannel.cs" />
     <Compile Include="Audio\WaveChannel.cs" />
     <Compile Include="Audio\SquareChannel.cs" />

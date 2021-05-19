@@ -8,6 +8,8 @@ using System.IO;
 
 namespace GBSharp
 {
+    public delegate IAudioEmitter ConstructAudioEmitter();
+
     public class Gameboy : IStateable
     {
         internal CPU Cpu { get; private set; }
@@ -27,8 +29,11 @@ namespace GBSharp
 
         private FrameQueue frameQueue;
 
-        public Gameboy()
+        internal ConstructAudioEmitter ConstructEmitter { get; private set; }
+
+        public Gameboy(ConstructAudioEmitter constructor)
         {
+            ConstructEmitter = constructor;
             Mmu = new MMU(this);
             Ppu = new PPU(this);
             Apu = new APU(this);
@@ -211,6 +216,11 @@ namespace GBSharp
             {
                 return frameQueue.Count;
             }
+        }
+
+        public void SetEmitterConstructor(ConstructAudioEmitter method)
+        {
+            ConstructEmitter = method;
         }
     }
 }

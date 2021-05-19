@@ -1,5 +1,4 @@
-﻿// Adapted from code written by David Gouveia at https://www.david-gouveia.com/creating-a-basic-synth-in-xna-part-ii
-
+﻿using GBSharp.Audio;
 using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
@@ -7,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.Audio
+namespace MonoGB
 {
-    class AudioEmitter
+    class AudioSource
     {
         private DynamicSoundEffectInstance _instance;
         private const int ChannelsCount = 2;
@@ -19,7 +18,7 @@ namespace GBSharp.Audio
         private byte[] _monoBuffer;
         private int _bufferPos;
 
-        public AudioEmitter()
+        public AudioSource()
         {
             _instance = new DynamicSoundEffectInstance(SampleRate, AudioChannels.Stereo);
             _workingBuffer = new float[ChannelsCount, SamplesPerBuffer];
@@ -32,15 +31,15 @@ namespace GBSharp.Audio
             _bufferPos = 0;
         }
 
-        ~AudioEmitter()
+        ~AudioSource()
         {
             _instance.Dispose();
         }
 
-        internal void AddVolumeInfo(int volume, int leftVolume, int rightVolume)
+        public void AddVolumeInfo(int volume, int leftVolume, int rightVolume)
         {
             float vol = volume / 15.0f;
-            if(_bufferPos < SamplesPerBuffer)
+            if (_bufferPos < SamplesPerBuffer)
             {
                 _workingBuffer[0, _bufferPos] = vol * (leftVolume / 7.0f);
                 _workingBuffer[1, _bufferPos] = vol * (rightVolume / 7.0f);
@@ -51,7 +50,7 @@ namespace GBSharp.Audio
             if (BufferFilled()) SubmitBuffer();
         }
 
-        internal bool BufferFilled()
+        private bool BufferFilled()
         {
             return _bufferPos >= SamplesPerBuffer;
         }
@@ -61,10 +60,10 @@ namespace GBSharp.Audio
             _bufferPos = 0;
 
             ConvertBuffer(_workingBuffer, _monoBuffer);
-            if(_instance.PendingBufferCount < 3) _instance.SubmitBuffer(_monoBuffer);
+            _instance.SubmitBuffer(_monoBuffer);
         }
 
-        internal int GetPendingBufferCount()
+        public int GetPendingBufferCount()
         {
             return _instance.PendingBufferCount;
         }
@@ -100,6 +99,31 @@ namespace GBSharp.Audio
                 }
             }
         }
+    }
+    
+    class AudioEmitter : IAudioEmitter
+    {
+        private AudioSource[] _sources;
 
+        public AudioEmitter()
+        {
+            _sources = new AudioSource[4];
+            for(int i = 0; i < 4; i++)
+            {
+                _sources[i] = new AudioSource();
+            }
+        }
+
+        public void AddVolumeInfo(int source, int volume, int leftVolume, int rightVolume)
+        {
+            _sources[source].AddVolumeInfo(volume, leftVolume, rightVolume);
+        }
+
+        
+
+        public int GetPendingBufferCount()
+        {
+            return _sources[0].GetPendingBufferCount();
+        }
     }
 }

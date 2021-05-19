@@ -17,6 +17,8 @@ namespace GBSharp.Audio
 
         private static readonly int[] Dividers = new int[] { 8, 16, 32, 48, 64, 80, 96, 112 };
 
+        public NoiseChannel(Gameboy gameboy, int source) : base(gameboy, source) { }
+
         protected override void CustomReset()
         {
             ShiftFrequency = 0;

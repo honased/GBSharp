@@ -11,10 +11,12 @@ namespace GBTK
             var nativeWindowSettings = new NativeWindowSettings()
             {
                 Size = new Vector2i(800, 600),
-                Title = "GBSharp",
+                Title = "GBSharp"
             };
 
-            using (FrontEnd frontEnd = new FrontEnd(GameWindowSettings.Default, nativeWindowSettings))
+            var gws = new GameWindowSettings() { IsMultiThreaded = false, RenderFrequency = 60, UpdateFrequency = 60 };
+
+            using (Window frontEnd = new Window(gws, nativeWindowSettings))
             {
                 frontEnd.Run();
             }

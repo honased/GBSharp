@@ -37,9 +37,9 @@ namespace GBSharp.Graphics
 
         public void Enqueue(int[] buffer)
         {
-            if(Count >= MAX_LENGTH)
+            while(Count >= MAX_LENGTH)
             {
-                Clear();
+                Dequeue();
             }
 
             // Copy contents of array

@@ -16,6 +16,8 @@ namespace GBSharp.Audio
             Samples = new int[0x10];
         }
 
+        public WaveChannel(Gameboy gameboy, int source) : base(gameboy, source) { }
+
         internal override void WriteByte(int address, int value)
         {
             switch (address)

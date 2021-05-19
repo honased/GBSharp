@@ -23,6 +23,8 @@ namespace GBSharp.Audio
         private int SweepOld { get; set; }
         private bool SweepEnabled { get; set; }
 
+        public SquareChannel(Gameboy gameboy, int source) : base(gameboy, source) { }
+
         protected override void CustomReset()
         {
             Duty = 0;
