@@ -53,7 +53,7 @@ namespace GBTK
 
         public void UpdateTexture(byte[] pixels)
         {
-            Debug.Assert(pixels.Length == Width * Height, "Incorrect size given for pixels array");
+            Debug.Assert(pixels.Length == Width * Height * 4, "Incorrect size given for pixels array");
 
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, Handle);

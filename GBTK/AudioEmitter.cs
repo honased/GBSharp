@@ -18,6 +18,7 @@ namespace GBTK
         private float[,] _workingBuffer;
         private byte[] _monoBuffer;
         private Thread updateThread;
+        private bool _isAlive;
 
         public AudioSource()
         {
@@ -34,12 +35,18 @@ namespace GBTK
             }
 
             _bufferPos = 0;
+            _isAlive = true;
 
             updateThread = new Thread(new ThreadStart(Update));
 
             updateThread.Start();
 
             Console.WriteLine("Created");
+        }
+
+        internal void Close()
+        {
+            _isAlive = false;
         }
 
         public bool BufferFilled()
@@ -89,7 +96,7 @@ namespace GBTK
 
         private void Update()
         {
-            while (true)
+            while (_isAlive)
             {
                 AL.GetSource(Source, ALGetSourcei.BuffersProcessed, out int processedCount);
 
@@ -157,11 +164,6 @@ namespace GBTK
             }
         }
 
-        ~AudioEmitter()
-        {
-           //_instance.Dispose();
-        }
-
         public void AddVolumeInfo(int source, int volume, int leftVolume, int rightVolume)
         {
             sources[source].AddVolumeInfo(volume, leftVolume, rightVolume);
@@ -172,6 +174,12 @@ namespace GBTK
             return sources[0].GetPendingBufferCount();
         }
 
-        
+        public void Close()
+        {
+            foreach (AudioSource aSource in sources)
+            {
+                aSource.Close();
+            }
+        }
     }
 }

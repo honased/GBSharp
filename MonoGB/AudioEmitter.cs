@@ -125,5 +125,10 @@ namespace MonoGB
         {
             return _sources[0].GetPendingBufferCount();
         }
+
+        public void Close()
+        {
+
+        }
     }
 }

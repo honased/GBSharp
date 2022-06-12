@@ -39,6 +39,7 @@ namespace GBTK
         private Texture _texture;
         private ALDevice device;
         private ALContext context;
+        private bool _isAlive;
         Thread thread;
         byte[] texArr;
 
@@ -55,7 +56,7 @@ namespace GBTK
 
             _gameboy = new Gameboy(() => { return new AudioEmitter(); });
 
-            string path = "Roms/Games/Pokemon Silver.gbc";
+            string path = "Roms/Games/Mario Deluxe.gbc ";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) path = args[1];
@@ -79,6 +80,7 @@ namespace GBTK
             _gameboy.LoadCartridge(cartridge);
 
             thread = new Thread(new ThreadStart(_gameboy.Run));
+            _isAlive = true;
             thread.Start();
         }
 
@@ -134,14 +136,16 @@ namespace GBTK
                 Close();
             }
 
-            _gameboy.SetInput(Input.Button.Up, KeyboardState.IsKeyDown(Keys.Up));
-            _gameboy.SetInput(Input.Button.Down, KeyboardState.IsKeyDown(Keys.Down));
-            _gameboy.SetInput(Input.Button.Left, KeyboardState.IsKeyDown(Keys.Left));
-            _gameboy.SetInput(Input.Button.Right, KeyboardState.IsKeyDown(Keys.Right));
-            _gameboy.SetInput(Input.Button.B, KeyboardState.IsKeyDown(Keys.A));
-            _gameboy.SetInput(Input.Button.A, KeyboardState.IsKeyDown(Keys.S));
-            _gameboy.SetInput(Input.Button.Start, KeyboardState.IsKeyDown(Keys.Space));
-            _gameboy.SetInput(Input.Button.Select, KeyboardState.IsKeyDown(Keys.LeftShift));
+            int index = 0;
+            float deadzone = 0.35f;
+            _gameboy.SetInput(Input.Button.Up, KeyboardState.IsKeyDown(Keys.Up) || JoystickStates[index].GetAxis(1) < -deadzone);
+            _gameboy.SetInput(Input.Button.Down, KeyboardState.IsKeyDown(Keys.Down) || JoystickStates[index].GetAxis(1) > deadzone);
+            _gameboy.SetInput(Input.Button.Left, KeyboardState.IsKeyDown(Keys.Left) || JoystickStates[index].GetAxis(0) < -deadzone);
+            _gameboy.SetInput(Input.Button.Right, KeyboardState.IsKeyDown(Keys.Right) || JoystickStates[index].GetAxis(0) > deadzone);
+            _gameboy.SetInput(Input.Button.B, KeyboardState.IsKeyDown(Keys.A) || JoystickStates[index].IsButtonDown(2));
+            _gameboy.SetInput(Input.Button.A, KeyboardState.IsKeyDown(Keys.S) || JoystickStates[index].IsButtonDown(0));
+            _gameboy.SetInput(Input.Button.Start, KeyboardState.IsKeyDown(Keys.Space) || JoystickStates[index].IsButtonDown(7));
+            _gameboy.SetInput(Input.Button.Select, KeyboardState.IsKeyDown(Keys.LeftShift) || JoystickStates[index].IsButtonDown(6));
 
             base.OnUpdateFrame(args);
         }
@@ -192,6 +196,12 @@ namespace GBTK
             ALC.CloseDevice(device);
 
             base.OnUnload();
+        }
+
+        protected override void OnClosed()
+        {
+            _gameboy.Close();
+            base.OnClosed();
         }
     }
 }

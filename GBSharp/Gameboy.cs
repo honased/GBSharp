@@ -31,6 +31,8 @@ namespace GBSharp
 
         internal ConstructAudioEmitter ConstructEmitter { get; private set; }
 
+        private bool IsAlive { get; set; }
+
         public Gameboy(ConstructAudioEmitter constructor)
         {
             ConstructEmitter = constructor;
@@ -58,6 +60,7 @@ namespace GBSharp
             Timer.Reset();
             Dma.Reset();
             LinkCable.Reset();
+            IsAlive = true;
 
             frameQueue = new FrameQueue();
         }
@@ -94,6 +97,8 @@ namespace GBSharp
         public void Close()
         {
             Mmu._cartridge.Close();
+            IsAlive = false;
+            Apu.Emitter.Close();
         }
 
         public ref int[] GetFrameBuffer()
@@ -170,7 +175,7 @@ namespace GBSharp
 
         public void Run()
         {
-            while(true)
+            while(IsAlive)
             {
                 while(Apu.GetPendingBufferCount() < 3)
                 {
